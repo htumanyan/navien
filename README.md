@@ -1,4 +1,4 @@
-# The Wire Protocol betweeb Navien tankless water heaters and external deices 
+# Navien Tankless Heather Protocol
 
 This repository captures reverse engineered description of the low level details on communication between Navien tankless water heaters and the Navilink WiFi lite device.
 
