@@ -8,4 +8,6 @@ Navien supports several types of remote control devices. The older generation, s
 
 ![image](doc/Navien.png)
 
-## The protocol over RS485 line
+## Protocols
+### [RS485 Connection](/doc/rs485.md)
+### [2-Wire Connection](/doc/2-wire.md)
