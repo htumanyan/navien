@@ -5,7 +5,7 @@
 The checksum algorithm initially appeared to be similar to CRC. After trying all known CRC values and implementations and failing to find a match to observed network traces I've pivoted to the hard way of reversing the assembly code and coding the algorithm in C/C++ based on inferred knowledge.
 
 ## Data Input
-Notice that the checksum is generated across the whol packet, which includes the header and the data payload. Essentially, the validation code removes the very last byte that carries the checksum, computes the checksum on the remaining buffer and then compares the computation result to the removed byte. Similarly, the sender computes the checksum over the whole message that includes the header and data and then appends the computed checksum byte at the end.
+Notice that the checksum is generated across the whole packet, which includes the header and the data payload. Essentially, the validation code removes the very last byte that carries the checksum, computes the checksum on the remaining buffer and then compares the computation result to the removed byte. Similarly, the sender computes the checksum over the whole message that includes the header and data and then appends the computed checksum byte at the end.
 
 ## Seed Values
 
