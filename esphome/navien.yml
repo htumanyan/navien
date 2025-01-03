@@ -1,0 +1,106 @@
+# Basic Config
+---
+substitutions:
+  #   # https://esphome.io/guides/configuration-types.html#substitutions
+  device_name: navien-heater # hostname & entity_id
+  friendly_name: "Navien Gas Heater" # Displayed in HA frontend
+
+esphome:
+  # https://esphome.io/components/esphome
+  name: ${device_name}
+  platform: ESP8266
+  board: d1_mini
+
+external_components:
+  - source: 
+      type: local
+      path: .
+    components: [navien]
+  
+wifi:
+  ssid: "XXX"
+  password: "YYYYYY"
+    
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "XXXX"
+    password: "ZZZZZZ"
+
+
+web_server:
+  port: 80
+  # https://esphome.io/components/web_server.html
+
+logger:
+#  level: VERBOSE #makes uart stream available in esphome logstream
+  baud_rate: 0 #disable logging over uart
+
+  hardware_uart: UART1 # redirect logs to UART1 GPIO2 to avoid conflicts
+                       # with the MCU communication through the main hardware UART
+
+  # https://esphome.io/components/logger
+
+api:
+
+ota:
+
+
+uart:
+#  tx_pin: TX
+#  rx_pin: RX
+  tx_pin: GPIO15
+#  rx_pin: GPIO13
+  rx_pin:
+    number: GPIO13
+    mode:
+      input: true
+      pullup: false
+      
+  baud_rate: 19200
+  stop_bits: 1
+  parity: none
+  rx_buffer_size: 8192
+  id: main_hw_uart
+
+
+text_sensor:
+  - platform: version
+    name: $friendly_name ESPHome Version
+    id: esphome_version
+    hide_timestamp: True
+  - platform: wifi_info
+    ip_address:
+      id: ip_address
+      name: $friendly_name IP Address
+    mac_address:
+      name: $friendly_name Mac
+      id: mac_address
+
+sensor:
+  - platform: uptime
+    name: $friendly_name Uptime Sensor
+  - platform: wifi_signal
+    name: $friendly_name wifi signal
+  - platform: navien
+    name: $friendly_name Test sensor
+    uart_id: main_hw_uart
+    target_temperature:
+      name: $friendly_name Target Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    inlet_temperature:
+      name: $friendly_name Inlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    outlet_temperature:
+      name: $friendly_name Outlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    water_flow:
+      name: $friendly_name Water Flow
+      filters:
+        - lambda: return x / 3.785;
+      unit_of_measurement: "GPM"
