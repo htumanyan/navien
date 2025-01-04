@@ -16,15 +16,17 @@ external_components:
       type: local
       path: .
     components: [navien]
+
+
   
 wifi:
-  ssid: "XXX"
-  password: "YYYYYY"
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
     
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "XXXX"
-    password: "ZZZZZZ"
+    ssid: !secret ap_ssid
+    password: !secret ap_password
 
 
 web_server:
