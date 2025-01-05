@@ -14,4 +14,4 @@ Navien supports several types of remote control devices. The older generation, s
 
 ## Sources
 
-### [ESPHome Module](/esphome/readme.md)
+### [ESPHome Module](/esphome/README.md)
