@@ -15,3 +15,6 @@ Navien supports several types of remote control devices. The older generation, s
 ## Sources
 
 ### [ESPHome Module](/esphome/README.md)
+
+## Hardware/Firmware Exploration
+## [Navien Wifi Link Lite](doc/navien_wifi_debug.md)
