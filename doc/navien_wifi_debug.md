@@ -21,7 +21,7 @@ The SWD setup for this board is as follows:
 
 1. Install OpenOCD package
 2. Connect ST-Link V2 Emulator Downloader Programmer to SWD pins as shown on the Diagram 2. For my experiments I've used a [cheap programmer from amazon](https://www.amazon.com/gp/product/B07SQV6VLZ) plugged into the USB port of the macbook.
-![Navien Board Diagram](navien_stlink_connect.png)
+![Navien ST-Link Connect](navien_stlink_connect.png)
 
 
 3. Start OpenOCD in the command shell with the following command (replace the path to openocd binary as necessary if it is not in your $PATH)
