@@ -14,8 +14,8 @@ esphome:
 external_components:
   - source: 
       type: local
-      path: .
-    components: [navien]
+      path: components
+    components: [navien, nbutton]
 
 
   
@@ -35,12 +35,14 @@ web_server:
 
 logger:
 #  level: VERBOSE #makes uart stream available in esphome logstream
-  baud_rate: 0 #disable logging over uart
+  baud_rate: 9600 #disable logging over uart
 
   hardware_uart: UART1 # redirect logs to UART1 GPIO2 to avoid conflicts
                        # with the MCU communication through the main hardware UART
 
   # https://esphome.io/components/logger
+  level: DEBUG
+  esp8266_store_log_strings_in_flash: false
 
 api:
 
@@ -106,3 +108,7 @@ sensor:
       filters:
         - lambda: return x / 3.785;
       unit_of_measurement: "GPM"
+
+switch:
+  - platform: navien
+    name: NavienOnOff

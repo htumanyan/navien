@@ -1,6 +1,24 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor, uart
+from esphome.components import output
+
+
+
+print ("Hello compojnents navien")
+
+#import CONFIG_NAVIEN_ID
+#import navien_ns
+
+NAVIEN_NAMESPACE = "navien"
+NAVIEN_CONFIG_ID = "navien"
+
+navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
+
+Navien = navien_ns.class_("Navien", cg.PollingComponent, uart.UARTDevice)
+print ("Hello compojnents navien - imported")
+
+
 from esphome.const import (
     CONF_ID, UNIT_EMPTY, ICON_EMPTY,
     CONF_LATITUDE,
@@ -13,13 +31,7 @@ from esphome.const import (
     UNIT_CELSIUS,
 )
 
-DEPENDENCIES = ["uart"]
 
-
-navien_sensor_ns = cg.esphome_ns.namespace("navien")
-Navien = navien_sensor_ns.class_(
-    "Navien", cg.PollingComponent, uart.UARTDevice
-)
 
 
 #CONFIG_SCHEMA = (
@@ -33,6 +45,8 @@ UNIT_LPM = "l/m"
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
+
+
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
@@ -64,6 +78,7 @@ CONFIG_SCHEMA = cv.All(
 )
 
 
+
 async def to_code(config):
 #    var = await sensor.new_sensor(config)
     var = cg.new_Pvariable(config[CONF_ID])
@@ -85,3 +100,7 @@ async def to_code(config):
     if CONF_WATER_FLOW in config:
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
         cg.add(var.set_water_flow_sensor(sens))
+
+
+print ("Finished compojnents navien")
+

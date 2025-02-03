@@ -59,7 +59,16 @@ const uint8_t PACKET_TYPE_GAS   = 0x0F;
 
 const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
-     
+
+/**                                                                                        
+ * Hardcoded command packets. Some commands have no used data. Therefore rather than assemblying a packet
+ * we just pre-compute/hardcode and just send the static const buffer when need to send the command.
+ *
+ *                                                                                        on/off
+ *				  0xF7							   byte
+ */								
+const uint8_t TURN_OFF_CMD[] = {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x0b,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A};
+const uint8_t TURN_ON_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x0a,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xCE};
   
 typedef struct {
   uint8_t unknown_05;
@@ -154,11 +163,11 @@ typedef enum{
 } READ_STATE;
 
 
-
   
 class Navien : public PollingComponent, public uart::UARTDevice {
 public:
-  void setup() override;
+  virtual float get_setup_priority() const { return setup_priority::HARDWARE; }
+  virtual void setup() override;
   void update() override;
   void loop() override;
   void dump_config() override;
@@ -207,6 +216,17 @@ protected:
   // Called then the direction is from Navien to reporting device
   // and the type field is PACKET_TYPE_GAS 
   void parse_gas();
+
+
+public:
+  /**
+   * Send commands
+   */
+  void send_turn_on_cmd();
+  void send_turn_off_cmd();
+  
+protected:
+  void send_cmd(const uint8_t * buffer, uint8 len);
   
 protected:
   // Keeps track of the state machine and iterates through
@@ -228,6 +248,7 @@ public:
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
 
+
 protected:
   /**
    * Sensor definitions
@@ -238,5 +259,16 @@ protected:
   sensor::Sensor *water_flow_sensor;
 };
 
+class NavienOnOffSwitch : public switch_::Switch, public Component {
+    protected:
+      Navien * parent;
+    public:
+      void setup() override;
+
+      void set_parent(Navien * parent) {this->parent = parent;}
+      void write_state(bool state) override;
+      void dump_config() override;
+};
+    
 }  // namespace navien
 }  // namespace esphome

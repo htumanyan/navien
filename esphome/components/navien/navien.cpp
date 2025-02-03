@@ -1,4 +1,6 @@
 #include <cmath>
+
+#include "esphome.h"
 #include "esphome/core/log.h"
 #include "navien.h"
 
@@ -9,6 +11,15 @@ namespace navien {
 static const char *TAG = "navien.sensor";
 
 void Navien::setup() {
+  ESP_LOGCONFIG(TAG, "Setting rs485 into receive mode");
+  // Set the rs485 into receive mode
+  pinMode(D5, OUTPUT);
+  digitalWrite(D5, LOW);
+
+  // Set the driver into regular mode (from undefined startup)
+  ESP_LOGCONFIG(TAG, "Activating TTL/CMOS buffer");
+  pinMode(D6, OUTPUT);
+  digitalWrite(D6, HIGH);
 }
 
 void Navien::update() {
@@ -152,7 +163,7 @@ void Navien::parse_packet(){
     break;
   }
 
-  ESP_LOGV(TAG, "Calculated checksum over %d bytes => 0x%02X", HDR_SIZE + this->recv_buffer.hdr.len, crc);
+  //  ESP_LOGV(TAG, "Calculated checksum over %d bytes => 0x%02X", HDR_SIZE + this->recv_buffer.hdr.len, crc);
 
 }
 
@@ -212,8 +223,22 @@ void Navien::loop() {
   }
 }
 
+void Navien::send_cmd(const uint8_t * buffer, uint8 len){
+  if (buffer && len)
+    this->write_array(buffer, len);
+}
+  
+void Navien::send_turn_on_cmd(){
+  this->send_cmd(TURN_ON_CMD, sizeof(TURN_OFF_CMD));
+}
+
+void Navien::send_turn_off_cmd(){
+  this->send_cmd(TURN_OFF_CMD, sizeof(TURN_OFF_CMD));
+}
+  
 void Navien::dump_config(){
-    ESP_LOGCONFIG(TAG, "Empty UART sensor");
+  //ESP_LOGCONFIG(TAG, "Calling setup from dump_config");
+  //this->setup();
 }
 
  /**
@@ -289,6 +314,35 @@ uint8_t Navien::checksum(const uint8_t * buffer, uint8_t len, uint16_t seed){
     }
   }
   return result;
+}
+
+void NavienOnOffSwitch::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", this->name_.c_str());
+
+  bool initial_state = true;//this->get_initial_state_with_restore_mode().value_or(false);
+
+  // write state before setup
+  if (initial_state) {
+    this->turn_on();
+  } else {
+    this->turn_off();
+  }
+
+}
+
+void NavienOnOffSwitch::write_state(bool state) {
+  if (state){
+    ESP_LOGD(TAG, "Turning on Navien");
+    this->parent->send_turn_on_cmd();
+  }else{
+    ESP_LOGD(TAG, "Turning off Navien");
+    this->parent->send_turn_off_cmd();
+  }
+  this->publish_state(state);
+}
+
+void NavienOnOffSwitch::dump_config(){
+    ESP_LOGCONFIG(TAG, "Empty custom switch");
 }
   
 }  // namespace navien
