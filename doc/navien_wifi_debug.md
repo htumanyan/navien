@@ -3,7 +3,7 @@
 ## Hardware
 Navien Wifi Lite has two processors onboard: ARM STM32F4 and quite exotic MIXCHIP ECM3280-E wifi module, ironically also ARM based according to the [datasheet](DS0145EN_EMC3280_v2.3.pdf).
 
-STM32F4 is wired to MAX485 RS485 transciever on one side and to connected to the MIXCHIP ECM3280-E wifi module on the other. STM32F4 has all the code and logic of parsing the line level protocol over RS485 connection to Navien decies. MIXCHIP ECM3280-E appears to be taking the Wifi connectivity, registration and also communication with Navien app through AWS cloud.
+STM32F4 is wired to MAX485 RS485 transciever on one side and connected to the MIXCHIP ECM3280-E wifi module on the other. STM32F4 has all the code and logic of parsing the line level protocol over RS485 connection to Navien decies. MIXCHIP ECM3280-E appears to be taking the Wifi connectivity, registration and also communication with Navien app through AWS cloud.
 
 Notice that the communication to cloud servers is over TLS/SSL, which makes packet capture quite difficult. It is not clear whether client cert validation is implemented or potential MiM interception is possible to substitute keys and extract payloads.
 
