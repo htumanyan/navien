@@ -185,20 +185,6 @@ typedef enum _DEVICE_POWER_STATE{
 } DEVICE_POWER_STATE;
   
 typedef struct{
-  struct{
-    uint8_t set_temp;
-    uint8_t outlet_temp;
-    uint8_t inlet_temp;
-    float flow_lpm;
-  } water;
-  struct{
-    uint8_t  set_temp;
-    uint8_t  outlet_temp;
-    uint8_t  inlet_temp;
-    uint16_t accumulated_gas_usage;
-    uint16_t current_gas_usage;
-  } gas;
-
   uint16_t           controller_version;
   uint16_t           panel_version;
   DEVICE_POWER_STATE power;
@@ -216,11 +202,10 @@ typedef struct _NAVIEN_CMD{
   _NAVIEN_CMD(const uint8_t * b, uint8_t l): buffer(b), len(l) {}
 } NAVIEN_CMD;
   
-class Navien : public PollingComponent, public uart::UARTDevice {
+class Navien : public Component, public uart::UARTDevice {
 public:
   virtual float get_setup_priority() const { return setup_priority::HARDWARE; }
   virtual void setup() override;
-  void update() override;
   void loop() override;
   void dump_config() override;
 
@@ -290,10 +275,6 @@ protected:
   RECV_BUFFER  recv_buffer;
   //uint8_t      recv_ptr;
   //bool         found_marker;
-
-  // Data, extracted from gas and water packers and stored
-  // Once the "update" is called this data gets reported to readers.
-  NAVIEN_STATE state;
 
   // How many packets were received
   uint32_t received_cnt;

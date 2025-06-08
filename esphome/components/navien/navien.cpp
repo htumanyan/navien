@@ -20,7 +20,6 @@ void Navien::setup() {
   this->is_connected = false;
 }
   
-void Navien::update() {
   // here we track how many packets were received
   // since the last update
   // if Navien is connected and we receive packets, the
@@ -40,18 +39,6 @@ void Navien::update() {
     this->inlet_temp_sensor->publish_state(0);
     this->water_flow_sensor->publish_state(0);
   }
-  
-  if (this->target_temp_sensor != nullptr)
-    this->target_temp_sensor->publish_state(this->state.gas.set_temp);
-
-  if (this->outlet_temp_sensor != nullptr)
-    this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
-
-  if (this->inlet_temp_sensor != nullptr)
-      this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
-
-  if (this->water_flow_sensor != nullptr)
-    this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
 
 #ifdef USE_SWITCH
   if (this->power_switch != nullptr){
@@ -83,27 +70,29 @@ bool Navien::seek_to_marker(){
 void Navien::parse_water(){
   ESP_LOGV(TAG, "Got Water Packet => %d bytes", this->recv_buffer.hdr.len + HDR_SIZE);
   //Navien::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
-      
+
   ESP_LOGV(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X",
 	   this->recv_buffer.water.set_temp,
 	   this->recv_buffer.water.inlet_temp,
 	   this->recv_buffer.water.outlet_temp,
 	   this->recv_buffer.water.water_flow
-  
   );
+
   /*
-  this->state.water.set_temp    = Navien::t2f(this->recv_buffer.water.set_temp);
-  this->state.water.outlet_temp = Navien::t2f(this->recv_buffer.water.outlet_temp);
-  this->state.water.inlet_temp = Navien::t2f(this->recv_buffer.water.inlet_temp);
-  this->state.water.flow_gpm = Navien::flow2gpm(this->recv_buffer.water.water_flow);
+  const uint8_t set_temp    = Navien::t2f(this->recv_buffer.water.set_temp);
+  const uint8_t outlet_temp = Navien::t2f(this->recv_buffer.water.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2f(this->recv_buffer.water.inlet_temp);
+  const float flow_gpm = Navien::flow2gpm(this->recv_buffer.water.water_flow);
   */
   
-  this->state.water.set_temp    = Navien::t2c(this->recv_buffer.water.set_temp);
-  this->state.water.outlet_temp = Navien::t2c(this->recv_buffer.water.outlet_temp);
-  this->state.water.inlet_temp = Navien::t2c(this->recv_buffer.water.inlet_temp);
-
+  const uint8_t set_temp    = Navien::t2c(this->recv_buffer.water.set_temp);
+  const uint8_t outlet_temp = Navien::t2c(this->recv_buffer.water.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2c(this->recv_buffer.water.inlet_temp);
   
-  this->state.water.flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
+  const float flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
+
+  ESP_LOGV(TAG, "Set Temp: %d, Inlet: %d, Outlet: %d, flow: %f, power status %d",
+           set_temp, inlet_temp, outlet_temp, flow_lpm, this->recv_buffer.water.system_power);
 
   uint8_t power = this->recv_buffer.water.system_power;
   if (power & POWER_STATUS_ON_OFF_MASK)
@@ -118,6 +107,9 @@ void Navien::parse_water(){
 	   this->state.water.flow_lpm,
 	   this->recv_buffer.water.system_power
   );
+
+  if (this->water_flow_sensor != nullptr)
+    this->water_flow_sensor->publish_state(flow_lpm);
 }
 
 void Navien::parse_gas(){
@@ -128,30 +120,30 @@ void Navien::parse_gas(){
 	   this->recv_buffer.gas.outlet_temp
   );
   
-  this->state.gas.set_temp    = Navien::t2c(this->recv_buffer.gas.set_temp);
-  this->state.gas.outlet_temp = Navien::t2c(this->recv_buffer.gas.outlet_temp);
-  this->state.gas.inlet_temp = Navien::t2c(this->recv_buffer.gas.inlet_temp);
+  const uint8_t set_temp    = Navien::t2c(this->recv_buffer.gas.set_temp);
+  const uint8_t outlet_temp = Navien::t2c(this->recv_buffer.gas.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2c(this->recv_buffer.gas.inlet_temp);
   
-  this->state.gas.accumulated_gas_usage = this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo;
-  this->state.gas.current_gas_usage = this->recv_buffer.gas.current_gas_hi << 8 | this->recv_buffer.gas.current_gas_lo;
+  const uint16_t accumulated_gas_usage = this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo;
+  const uint16_t current_gas_usage = this->recv_buffer.gas.current_gas_hi << 8 | this->recv_buffer.gas.current_gas_lo;
 
-  this->state.controller_version = this->recv_buffer.gas.controller_version_hi << 8 | this->recv_buffer.gas.controller_version_lo;
-  this->state.panel_version = this->recv_buffer.gas.panel_version_hi << 8 | this->recv_buffer.gas.panel_version_lo;
+  const uint16_t controller_version = this->recv_buffer.gas.controller_version_hi << 8 | this->recv_buffer.gas.controller_version_lo;
+  const uint16_t panel_version = this->recv_buffer.gas.panel_version_hi << 8 | this->recv_buffer.gas.panel_version_lo;
   /*
-  this->state.gas.set_temp    = Navien::t2f(this->recv_buffer.gas.set_temp);
-  this->state.gas.outlet_temp = Navien::t2f(this->recv_buffer.gas.outlet_temp);
-  this->state.gas.inlet_temp = Navien::t2f(this->recv_buffer.gas.inlet_temp);
+  const uint8_t set_temp    = Navien::t2f(this->recv_buffer.gas.set_temp);
+  const uint8_t outlet_temp = Navien::t2f(this->recv_buffer.gas.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2f(this->recv_buffer.gas.inlet_temp);
   */
 
   ESP_LOGV(TAG, "Set Gas Temp: %d, Inlet: %d, Outlet: %d, Controller: %d, Panel: %d, Cur Usage: %d, Accum Usage %d",
-	   this->state.gas.set_temp,
-	   this->state.gas.inlet_temp,
-	   this->state.gas.outlet_temp,
-	   this->state.controller_version,
-	   this->state.panel_version,
-	   this->state.gas.current_gas_usage,
-	   this->state.gas.accumulated_gas_usage
-	   );
+	   set_temp, inlet_temp, outlet_temp, controller_version, panel_version, current_gas_usage, accumulated_gas_usage);
+
+  if (this->target_temp_sensor != nullptr)
+    this->target_temp_sensor->publish_state(set_temp);
+  if (this->outlet_temp_sensor != nullptr)
+    this->outlet_temp_sensor->publish_state(outlet_temp);
+  if (this->inlet_temp_sensor != nullptr)
+    this->inlet_temp_sensor->publish_state(inlet_temp);
 }
 
 void Navien::parse_control_packet(){
