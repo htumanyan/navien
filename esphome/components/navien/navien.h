@@ -2,6 +2,9 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#ifdef USE_SWITCH
+#include "esphome/components/switch/switch.h"
+#endif
 #include "esphome/components/uart/uart.h"
 
 namespace esphome {
@@ -226,7 +229,7 @@ public:
   void send_turn_off_cmd();
   
 protected:
-  void send_cmd(const uint8_t * buffer, uint8 len);
+  void send_cmd(const uint8_t * buffer, uint8_t len);
   
 protected:
   // Keeps track of the state machine and iterates through
@@ -259,6 +262,7 @@ protected:
   sensor::Sensor *water_flow_sensor;
 };
 
+#ifdef USE_SWITCH
 class NavienOnOffSwitch : public switch_::Switch, public Component {
     protected:
       Navien * parent;
@@ -269,6 +273,7 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
       void write_state(bool state) override;
       void dump_config() override;
 };
-    
+#endif
+
 }  // namespace navien
 }  // namespace esphome
