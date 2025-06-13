@@ -218,6 +218,7 @@ protected:
   static float flow2gpm(uint8_t f);
   static uint8_t t2c(uint8_t);
   static float flow2lpm(uint8_t f);
+  static float usage2cum(uint16_t f);
 
   /**
    * 
@@ -292,6 +293,8 @@ public:
   void set_inlet_temp_sensor(sensor::Sensor *sensor) { inlet_temp_sensor = sensor; }
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
+  void set_current_gas_sensor(sensor::Sensor *sensor) { current_gas_sensor = sensor; }
+  void set_accumulated_gas_sensor(sensor::Sensor *sensor) { accumulated_gas_sensor = sensor; }
 
 #ifdef USE_SWITCH
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
@@ -300,10 +303,12 @@ protected:
   /**
    * Sensor definitions
    */
-  sensor::Sensor *target_temp_sensor;
-  sensor::Sensor *outlet_temp_sensor;
-  sensor::Sensor *inlet_temp_sensor;
-  sensor::Sensor *water_flow_sensor;
+  sensor::Sensor *target_temp_sensor = nullptr;
+  sensor::Sensor *outlet_temp_sensor = nullptr;
+  sensor::Sensor *inlet_temp_sensor = nullptr;
+  sensor::Sensor *water_flow_sensor = nullptr;
+  sensor::Sensor *current_gas_sensor = nullptr;
+  sensor::Sensor *accumulated_gas_sensor = nullptr;
 
 #ifdef USE_SWITCH
   switch_::Switch *power_switch;

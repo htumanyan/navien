@@ -117,7 +117,7 @@ void Navien::parse_gas(){
   const uint8_t outlet_temp = Navien::t2c(this->recv_buffer.gas.outlet_temp);
   const uint8_t inlet_temp = Navien::t2c(this->recv_buffer.gas.inlet_temp);
   
-  const uint16_t accumulated_gas_usage = this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo;
+  const float accumulated_gas_usage = usage2cum(this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo);
   const uint16_t current_gas_usage = this->recv_buffer.gas.current_gas_hi << 8 | this->recv_buffer.gas.current_gas_lo;
 
   this->state.controller_version = this->recv_buffer.gas.controller_version_hi << 8 | this->recv_buffer.gas.controller_version_lo;
@@ -128,7 +128,7 @@ void Navien::parse_gas(){
   const uint8_t inlet_temp = Navien::t2f(this->recv_buffer.gas.inlet_temp);
   */
 
-  ESP_LOGV(TAG, "Set Gas Temp: %d, Inlet: %d, Outlet: %d, Controller: %d, Panel: %d, Cur Usage: %d, Accum Usage %d",
+  ESP_LOGV(TAG, "Set Gas Temp: %d, Inlet: %d, Outlet: %d, Controller: %d, Panel: %d, Cur Usage: %d, Accum Usage %f",
            set_temp, inlet_temp, outlet_temp, state.controller_version, state.panel_version, current_gas_usage, accumulated_gas_usage);
 
   if (this->target_temp_sensor != nullptr)
@@ -137,6 +137,10 @@ void Navien::parse_gas(){
     this->outlet_temp_sensor->publish_state(outlet_temp);
   if (this->inlet_temp_sensor != nullptr)
     this->inlet_temp_sensor->publish_state(inlet_temp);
+  if (this->current_gas_sensor != nullptr)
+    this->current_gas_sensor->publish_state(current_gas_usage);
+  if (this->accumulated_gas_sensor != nullptr)
+    this->accumulated_gas_sensor->publish_state(accumulated_gas_usage);
 }
 
 void Navien::parse_control_packet(){
@@ -296,13 +300,21 @@ void Navien::dump_config(){
 }
 
  /**
- * Convert flow units to liters/min values
+ * Convert water flow units to liters/min values
  * flow is reported as 0.1 liter units.
  */
 float Navien::flow2lpm(uint8_t f){
   return (float)f / 10.f;
 }
   
+ /**
+ * Convert gas usage units to cubic meters values
+ * usage is reported as 0.1 cubic meter units.
+ */
+float Navien::usage2cum(uint16_t f){
+  return (float)f / 10.f;
+}
+
 /**
  * Convert flow units to GPM values
  * flow is reported as 0.1 liter units.
