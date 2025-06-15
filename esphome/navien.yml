@@ -1,5 +1,5 @@
 # Basic Config
----
+
 substitutions:
   #   # https://esphome.io/guides/configuration-types.html#substitutions
   device_name: navien-heater # hostname & entity_id
@@ -144,9 +144,9 @@ switch:
 button:
   - platform: restart
     name: "Restart"
-  - platform: navien
-    name: NavienHotButton
-    id: NavienHotButton
+#  - platform: navien
+#    name: NavienHotButton
+#    id: NavienHotButton
   - platform: template
     name: "Wired Hot Button"
     on_press:
