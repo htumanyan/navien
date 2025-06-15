@@ -1,7 +1,11 @@
 #pragma once
 
+#include <cinttypes>
+#include <list>
+
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/switch/switch.h"
 #include "esphome/components/uart/uart.h"
 
 namespace esphome {
@@ -60,30 +64,65 @@ const uint8_t PACKET_TYPE_GAS   = 0x0F;
 const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
 
+
+const uint8_t POWER_STATUS_ON_OFF_MASK = 0x05;
+  
 /**                                                                                        
- * Hardcoded command packets. Some commands have no used data. Therefore rather than assemblying a packet
+ * Hardcoded command packets. Some commands have no uses data. Therefore rather than assemblying a packet
  * we just pre-compute/hardcode and just send the static const buffer when need to send the command.
  *
- *                                                                                        on/off
- *				  0xF7							   byte
+ *                                                                                                  on/off
+ *				             0xF7			 			    byte
  */								
-const uint8_t TURN_OFF_CMD[] = {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x0b,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A};
-const uint8_t TURN_ON_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x0a,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xCE};
+const uint8_t TURN_OFF_CMD[]   =        {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x0b,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A};
+const uint8_t TURN_ON_CMD[]    =        {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x0a,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xCE};
+
+
+const uint8_t HOT_BUTTON_PRESS_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6A};
+const uint8_t HOT_BUTTON_RELSE_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2A};
+
+const uint8_t RECIRC_ON_CMD[]        =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x08, 0xD9, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0};
+  //  F7,05,0F,50,10,0C,4F,00,00,00,00,08,D9,00,00,00,00,00,D0
+
+const uint8_t NAVILINK_PRESENT[]     =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x03, 0x4a, 0x00, 0x01, 0x55};
   
 typedef struct {
-  uint8_t unknown_05;
   uint8_t unknown_06;
   uint8_t unknown_07;
   uint8_t unknown_08;
-  uint8_t unknown_09;
+  /**
+   * Kudos and credits to individuals below for this byte
+   * tsquared at https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567
+   * David Carson (dacarson)
+   * raptordemon
+   *
+   * This is a bitmask field
+   * Observed values (binary)
+   * 00100101 - turned on
+   * 00100000 - turned off
+   */
+  uint8_t system_power; 
+  uint8_t unknown_10;
   uint8_t set_temp;
   uint8_t outlet_temp;
   uint8_t inlet_temp;
-  uint8_t unknown_11;
-  uint8_t unknown_12;
-  uint8_t unknown_13;
   uint8_t unknown_14;
+  uint8_t unknown_15;
+  uint8_t unknown_17;
+  //  uint8_t unknown_17;
   uint8_t water_flow;
+  uint8_t unknown_19;
+  uint8_t unknown_20;
+  uint8_t unknown_21;
+  uint8_t unknown_22;
+  uint8_t unknown_23;
+  /**
+   * Kudos and credits to individuals below for this byte
+   * tsquared at https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567
+   *
+   * 
+   */
+  uint8_t system_status;
 } WATER_DATA;
 
 typedef struct {
@@ -137,6 +176,11 @@ typedef union{
     uint8_t    raw_data[128];
 } RECV_BUFFER;
 
+
+typedef enum _DEVICE_POWER_STATE{
+  POWER_OFF,
+  POWER_ON
+} DEVICE_POWER_STATE;
   
 typedef struct{
   struct{
@@ -149,11 +193,13 @@ typedef struct{
     uint8_t  set_temp;
     uint8_t  outlet_temp;
     uint8_t  inlet_temp;
-    uint16_t controller_version;
-    uint16_t panel_version;
     uint16_t accumulated_gas_usage;
     uint16_t current_gas_usage;
   } gas;
+
+  uint16_t           controller_version;
+  uint16_t           panel_version;
+  DEVICE_POWER_STATE power;
 } NAVIEN_STATE;
   
 typedef enum{
@@ -162,7 +208,11 @@ typedef enum{
   HEADER_PARSED
 } READ_STATE;
 
-
+typedef struct _NAVIEN_CMD{
+  const uint8_t * buffer;
+  uint8_t   len;
+  _NAVIEN_CMD(const uint8_t * b, uint8_t l): buffer(b), len(l) {}
+} NAVIEN_CMD;
   
 class Navien : public PollingComponent, public uart::UARTDevice {
 public:
@@ -224,6 +274,7 @@ public:
    */
   void send_turn_on_cmd();
   void send_turn_off_cmd();
+  void send_hot_button_cmd();
   
 protected:
   void send_cmd(const uint8_t * buffer, uint8 len);
@@ -242,13 +293,24 @@ protected:
   // Once the "update" is called this data gets reported to readers.
   NAVIEN_STATE state;
 
+  // How many packets were received
+  uint32_t received_cnt;
+
+  // How many packets were updated
+  uint32_t updated_cnt;
+  
+  // true if connected to Navien.
+  // otherwie - false.
+  bool is_connected;
+
+  std::list<NAVIEN_CMD> cmd_buffer;
 public:
   void set_target_temp_sensor(sensor::Sensor *sensor) { target_temp_sensor = sensor; }
   void set_inlet_temp_sensor(sensor::Sensor *sensor) { inlet_temp_sensor = sensor; }
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
 
-
+  void set_power_switch(switch_::Switch * ps){power_switch = ps;}
 protected:
   /**
    * Sensor definitions
@@ -257,6 +319,8 @@ protected:
   sensor::Sensor *outlet_temp_sensor;
   sensor::Sensor *inlet_temp_sensor;
   sensor::Sensor *water_flow_sensor;
+
+  switch_::Switch *power_switch;
 };
 
 class NavienOnOffSwitch : public switch_::Switch, public Component {
@@ -265,8 +329,20 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
     public:
       void setup() override;
 
-      void set_parent(Navien * parent) {this->parent = parent;}
+      void set_parent(Navien * parent);
       void write_state(bool state) override;
+      void dump_config() override;
+};
+
+class NavienHotButton : public button::Button, public Component {
+    protected:
+      Navien * parent;
+    public:
+      void setup() override;
+
+      void set_parent(Navien * parent);
+
+      void press_action() override;
       void dump_config() override;
 };
     

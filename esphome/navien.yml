@@ -10,12 +10,19 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: d1_mini
+#  on_boot:
+#    priority: -100
+#    then:
+#      - output.turn_on: my_slow_pwm
+#      - output.set_level:
+#          id: my_slow_pwm
+#          level: "50%"
 
 external_components:
   - source: 
       type: local
       path: components
-    components: [navien, nbutton]
+    components: [navien]
 
 
   
@@ -50,10 +57,7 @@ ota:
 
 
 uart:
-#  tx_pin: TX
-#  rx_pin: RX
   tx_pin: GPIO15
-#  rx_pin: GPIO13
   rx_pin:
     number: GPIO13
     mode:
@@ -108,7 +112,51 @@ sensor:
       filters:
         - lambda: return x / 3.785;
       unit_of_measurement: "GPM"
+      
+
 
 switch:
   - platform: navien
     name: NavienOnOff
+  - platform: gpio
+    id: hot_button
+    pin: D5
+    name: "D5"
+    restore_mode: RESTORE_DEFAULT_ON
+    internal: true
+  - platform: gpio
+    id: hb4
+    pin: D4
+    name: "D4"
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    id: hb3
+    pin: D3
+    name: "D3"
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    id: hb2
+    pin: D2
+    name: "D2"
+    restore_mode: RESTORE_DEFAULT_OFF
+
+
+button:
+  - platform: restart
+    name: "Restart"
+  - platform: navien
+    name: NavienHotButton
+    id: NavienHotButton
+  - platform: template
+    name: "Wired Hot Button"
+    on_press:
+    - switch.turn_off: hot_button
+    - delay: 500ms
+    - switch.turn_on: hot_button
+
+
+#output:
+#  - platform: slow_pwm
+##    pin: GPIO14
+#    id: my_slow_pwm
+#    period: 1s
