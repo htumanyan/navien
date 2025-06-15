@@ -50,7 +50,7 @@ There is a [working C/C++ code](/src/checksum.cpp) with test vectors derived fro
 gcc -g crc.cpp
 ```
 
-It will product the default a.out file in the current working directory that will run the tests if executed.
+It will produce the default a.out file in the current working directory that will run the tests if executed.
 
 [Link to the working code with test cases](/src/checksum.cpp)
 
