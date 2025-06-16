@@ -11,9 +11,36 @@ namespace navien {
 static const char *TAG = "navien.sensor";
 
 void Navien::setup() {
-}
+  this->state.power = POWER_OFF;
 
+  this->received_cnt = 0;
+  this->updated_cnt = 0;
+  
+  // Initially our status is NOT CONNECTED.
+  this->is_connected = false;
+}
+  
 void Navien::update() {
+  // here we track how many packets were received
+  // since the last update
+  // if Navien is connected and we receive packets, the
+  // received packet count should be greater than the last time
+  // we did an update. If it is not it means we no longer receive packets
+  // and therefore should change our status to disconnected
+  if (this->received_cnt > this->updated_cnt){
+    this->updated_cnt = this->received_cnt;
+    this->is_connected = true;
+  }else{
+    this->is_connected = false;
+  }
+  
+  if (!this->is_connected){
+    this->target_temp_sensor->publish_state(0);
+    this->outlet_temp_sensor->publish_state(0);
+    this->inlet_temp_sensor->publish_state(0);
+    this->water_flow_sensor->publish_state(0);
+  }
+  
   if (this->target_temp_sensor != nullptr)
     this->target_temp_sensor->publish_state(this->state.gas.set_temp);
 
@@ -23,14 +50,19 @@ void Navien::update() {
   if (this->inlet_temp_sensor != nullptr)
       this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
 
-    if (this->water_flow_sensor != nullptr)
-      this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
+  if (this->water_flow_sensor != nullptr)
+    this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
+
+  if (this->power_switch != nullptr){
+    switch(this->state.power){
+    case POWER_ON:
+      this->power_switch->publish_state(true);
+      break;
+    default:
+      this->power_switch->publish_state(false);
+    }
+  }
 }
-  /*
-void Navien::clear_buffer(){
-  //  Navien::print_buffer(this->recv_buffer.raw_data, this->recv_ptr);
-  memset(this->recv_buffer.raw_data, 0x00, sizeof(this->recv_buffer.raw_data));
-  }*/
 
 bool Navien::seek_to_marker(){
   uint8_t byte;
@@ -71,11 +103,18 @@ void Navien::parse_water(){
   
   this->state.water.flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
 
-  ESP_LOGV(TAG, "Set Temp: %d, Inlet: %d, Outlet: %d, flow: %f",
+  uint8 power = this->recv_buffer.water.system_power;
+  if (power & POWER_STATUS_ON_OFF_MASK)
+    this->state.power = POWER_ON;
+  else
+    this->state.power = POWER_OFF;
+    
+  ESP_LOGV(TAG, "Set Temp: %d, Inlet: %d, Outlet: %d, flow: %f, power status %d",
 	   this->state.water.set_temp,
 	   this->state.water.inlet_temp,
 	   this->state.water.outlet_temp,
-	   this->state.water.flow_lpm
+	   this->state.water.flow_lpm,
+	   this->recv_buffer.water.system_power
   );
 }
 
@@ -91,10 +130,11 @@ void Navien::parse_gas(){
   this->state.gas.outlet_temp = Navien::t2c(this->recv_buffer.gas.outlet_temp);
   this->state.gas.inlet_temp = Navien::t2c(this->recv_buffer.gas.inlet_temp);
   
-  this->state.gas.controller_version = this->recv_buffer.gas.controller_version_hi << 8 | this->recv_buffer.gas.controller_version_lo;
-  this->state.gas.panel_version = this->recv_buffer.gas.panel_version_hi << 8 | this->recv_buffer.gas.panel_version_lo;
   this->state.gas.accumulated_gas_usage = this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo;
   this->state.gas.current_gas_usage = this->recv_buffer.gas.current_gas_hi << 8 | this->recv_buffer.gas.current_gas_lo;
+
+  this->state.controller_version = this->recv_buffer.gas.controller_version_hi << 8 | this->recv_buffer.gas.controller_version_lo;
+  this->state.panel_version = this->recv_buffer.gas.panel_version_hi << 8 | this->recv_buffer.gas.panel_version_lo;
   /*
   this->state.gas.set_temp    = Navien::t2f(this->recv_buffer.gas.set_temp);
   this->state.gas.outlet_temp = Navien::t2f(this->recv_buffer.gas.outlet_temp);
@@ -105,8 +145,8 @@ void Navien::parse_gas(){
 	   this->state.gas.set_temp,
 	   this->state.gas.inlet_temp,
 	   this->state.gas.outlet_temp,
-	   this->state.gas.controller_version,
-	   this->state.gas.panel_version,
+	   this->state.controller_version,
+	   this->state.panel_version,
 	   this->state.gas.current_gas_usage,
 	   this->state.gas.accumulated_gas_usage
 	   );
@@ -140,14 +180,19 @@ void Navien::parse_packet(){
     crc_c = Navien::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, CHECKSUM_SEED_4B);
     if (crc_c != crc_r){
       ESP_LOGE(TAG, "Status Packet checksum error: 0x%02X (calc) != 0x%02X (recv)", crc_c, crc_r);
+      Navien::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
       break;
     }
+    // We've received one packet successfully, means we are connected
+    this->is_connected = true;
+    this->received_cnt++;
     parse_status_packet();
     break;
   case PACKET_DIRECTION_CONTROL:
     crc_c = Navien::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, CHECKSUM_SEED_62);
     if (crc_c != crc_r){
       ESP_LOGE(TAG, "Control Packet checksum error: 0x%02X (calc) != 0x%02X (recv)", crc_c, crc_r);
+      Navien::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
       break;
     }
     parse_control_packet();
@@ -206,6 +251,17 @@ void Navien::loop() {
 	break;
       }
       ESP_LOGV(TAG, "Got Packet => %d bytes", len+HDR_SIZE );
+
+      if (!this->cmd_buffer.empty()){
+	/// there are queued commands. Need to send them
+	NAVIEN_CMD cmd = cmd_buffer.back();
+	cmd_buffer.pop_back();
+	this->write_array(cmd.buffer, cmd.len);
+      }else{
+      //Navilink keeps sending this sequence every time it receives a packet
+	this->send_cmd(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+      }
+       
       //Navien::print_buffer(this->recv_buffer.raw_data, len+HDR_SIZE);
       this->parse_packet();
       available = this->available();
@@ -215,16 +271,36 @@ void Navien::loop() {
 }
 
 void Navien::send_cmd(const uint8_t * buffer, uint8_t len){
-  if (buffer && len)
+  /*  if (buffer && len){
     this->write_array(buffer, len);
+    }*/
+  this->cmd_buffer.push_front(NAVIEN_CMD(buffer, len));
 }
   
 void Navien::send_turn_on_cmd(){
-  this->send_cmd(TURN_ON_CMD, sizeof(TURN_OFF_CMD));
+  // Send twice. In experiments I've noticed
+  // that sending once does not always work and that
+  // the Navilink sends the commands multiple times
+  this->send_cmd(TURN_ON_CMD, sizeof(TURN_ON_CMD));
+  this->send_cmd(TURN_ON_CMD, sizeof(TURN_ON_CMD));
 }
 
 void Navien::send_turn_off_cmd(){
+  // Send twice. In experiments I've noticed
+  // that sending once does not always work and that
+  // the Navilink sends the commands multiple times
   this->send_cmd(TURN_OFF_CMD, sizeof(TURN_OFF_CMD));
+  this->send_cmd(TURN_OFF_CMD, sizeof(TURN_OFF_CMD));
+}
+
+void Navien::send_hot_button_cmd(){
+  //this->send_cmd(RECIRC_ON_CMD, sizeof(RECIRC_ON_CMD));
+  //return;  
+    this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
+    //    delay(1);
+    this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
+    //delay(15);
+    this->send_cmd(HOT_BUTTON_RELSE_CMD, sizeof(HOT_BUTTON_RELSE_CMD));
 }
   
 void Navien::dump_config(){
@@ -333,10 +409,33 @@ void NavienOnOffSwitch::write_state(bool state) {
   this->publish_state(state);
 }
 
+void NavienOnOffSwitch::set_parent(Navien * parent) {
+  this->parent = parent;
+  parent->set_power_switch(this);
+}
+  
 void NavienOnOffSwitch::dump_config(){
     ESP_LOGCONFIG(TAG, "Empty custom switch");
 }
 #endif
+
+
+void NavienHotButton::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", this->name_.c_str());
+}
+
+void NavienHotButton::press_action(){
+  this->parent->send_hot_button_cmd();
+}
+
+void NavienHotButton::set_parent(Navien * parent) {
+  this->parent = parent;
+  //  parent->set_hot_button(this);
+}
+  
+void NavienHotButton::dump_config(){
+    ESP_LOGCONFIG(TAG, "Navien Hot Button");
+}
   
 }  // namespace navien
 }  // namespace esphome

@@ -1,5 +1,3 @@
-print ("Hello compojnents switch")
-
 from esphome.components import switch
 import esphome.config_validation as cv
 import esphome.codegen as cg
@@ -24,7 +22,6 @@ print ("Hello compojnents switch - ns")
 #navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
 NavienOnOff = navien_ns.class_("NavienOnOffSwitch", switch.Switch, cg.Component)
-
 
 
 CONFIG_SCHEMA = (
