@@ -53,6 +53,7 @@ void Navien::update() {
   if (this->water_flow_sensor != nullptr)
     this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
 
+#ifdef USE_SWITCH
   if (this->power_switch != nullptr){
     switch(this->state.power){
     case POWER_ON:
@@ -62,6 +63,7 @@ void Navien::update() {
       this->power_switch->publish_state(false);
     }
   }
+#endif
 }
 
 bool Navien::seek_to_marker(){
@@ -103,7 +105,7 @@ void Navien::parse_water(){
   
   this->state.water.flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
 
-  uint8 power = this->recv_buffer.water.system_power;
+  uint8_t power = this->recv_buffer.water.system_power;
   if (power & POWER_STATUS_ON_OFF_MASK)
     this->state.power = POWER_ON;
   else
@@ -420,6 +422,7 @@ void NavienOnOffSwitch::dump_config(){
 #endif
 
 
+#ifdef USE_BUTTON
 void NavienHotButton::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", this->name_.c_str());
 }
@@ -436,6 +439,7 @@ void NavienHotButton::set_parent(Navien * parent) {
 void NavienHotButton::dump_config(){
     ESP_LOGCONFIG(TAG, "Navien Hot Button");
 }
+#endif
   
 }  // namespace navien
 }  // namespace esphome

@@ -312,7 +312,9 @@ public:
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
 
+#ifdef USE_SWITCH
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
+#endif
 protected:
   /**
    * Sensor definitions
@@ -322,7 +324,9 @@ protected:
   sensor::Sensor *inlet_temp_sensor;
   sensor::Sensor *water_flow_sensor;
 
+#ifdef USE_SWITCH
   switch_::Switch *power_switch;
+#endif
 };
 
 #ifdef USE_SWITCH
@@ -338,6 +342,7 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
 };
 #endif
 
+#ifdef USE_BUTTON
 class NavienHotButton : public button::Button, public Component {
     protected:
       Navien * parent;
@@ -349,6 +354,7 @@ class NavienHotButton : public button::Button, public Component {
       void press_action() override;
       void dump_config() override;
 };
+#endif
     
 }  // namespace navien
 }  // namespace esphome
