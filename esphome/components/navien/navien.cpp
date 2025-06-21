@@ -11,20 +11,6 @@ namespace navien {
 static const char *TAG = "navien.sensor";
 
 void Navien::setup() {
-  ESP_LOGCONFIG(TAG, "Setting rs485 into receive mode");
-  // Set the rs485 into receive mode
-  //pinMode(D5, OUTPUT);
-  //digitalWrite(D5, LOW);
-
-  // Set the driver into regular mode (from undefined startup)
-  ESP_LOGCONFIG(TAG, "Activating TTL/CMOS buffer");
-  pinMode(D6, OUTPUT);
-  digitalWrite(D6, HIGH);
-
-
-  pinMode(D2, OUTPUT);
-  digitalWrite(D2, HIGH);
-
   this->state.power = POWER_OFF;
 
   this->received_cnt = 0;
@@ -67,6 +53,7 @@ void Navien::update() {
   if (this->water_flow_sensor != nullptr)
     this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
 
+#ifdef USE_SWITCH
   if (this->power_switch != nullptr){
     switch(this->state.power){
     case POWER_ON:
@@ -76,6 +63,7 @@ void Navien::update() {
       this->power_switch->publish_state(false);
     }
   }
+#endif
 }
 
 bool Navien::seek_to_marker(){
@@ -117,7 +105,7 @@ void Navien::parse_water(){
   
   this->state.water.flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
 
-  uint8 power = this->recv_buffer.water.system_power;
+  uint8_t power = this->recv_buffer.water.system_power;
   if (power & POWER_STATUS_ON_OFF_MASK)
     this->state.power = POWER_ON;
   else
@@ -213,7 +201,7 @@ void Navien::parse_packet(){
     break;
   }
 
-  //  ESP_LOGV(TAG, "Calculated checksum over %d bytes => 0x%02X", HDR_SIZE + this->recv_buffer.hdr.len, crc);
+  //  ESP_LOGV(TAG, "Calculated checksum over %d bytes => 0x%02X", HDR_SIZE + this->recv_buffer.hdr.len, crc_c);
 
 }
 
@@ -284,7 +272,7 @@ void Navien::loop() {
   }
 }
 
-void Navien::send_cmd(const uint8_t * buffer, uint8 len){
+void Navien::send_cmd(const uint8_t * buffer, uint8_t len){
   /*  if (buffer && len){
     this->write_array(buffer, len);
     }*/
@@ -397,6 +385,7 @@ uint8_t Navien::checksum(const uint8_t * buffer, uint8_t len, uint16_t seed){
   return result;
 }
 
+#ifdef USE_SWITCH
 void NavienOnOffSwitch::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", this->name_.c_str());
 
@@ -430,8 +419,10 @@ void NavienOnOffSwitch::set_parent(Navien * parent) {
 void NavienOnOffSwitch::dump_config(){
     ESP_LOGCONFIG(TAG, "Empty custom switch");
 }
+#endif
 
 
+#ifdef USE_BUTTON
 void NavienHotButton::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", this->name_.c_str());
 }
@@ -448,6 +439,7 @@ void NavienHotButton::set_parent(Navien * parent) {
 void NavienHotButton::dump_config(){
     ESP_LOGCONFIG(TAG, "Navien Hot Button");
 }
+#endif
   
 }  // namespace navien
 }  // namespace esphome

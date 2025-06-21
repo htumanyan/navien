@@ -5,7 +5,9 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
+#endif
 #include "esphome/components/uart/uart.h"
 
 namespace esphome {
@@ -277,7 +279,7 @@ public:
   void send_hot_button_cmd();
   
 protected:
-  void send_cmd(const uint8_t * buffer, uint8 len);
+  void send_cmd(const uint8_t * buffer, uint8_t len);
   
 protected:
   // Keeps track of the state machine and iterates through
@@ -310,7 +312,9 @@ public:
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
 
+#ifdef USE_SWITCH
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
+#endif
 protected:
   /**
    * Sensor definitions
@@ -320,9 +324,12 @@ protected:
   sensor::Sensor *inlet_temp_sensor;
   sensor::Sensor *water_flow_sensor;
 
+#ifdef USE_SWITCH
   switch_::Switch *power_switch;
+#endif
 };
 
+#ifdef USE_SWITCH
 class NavienOnOffSwitch : public switch_::Switch, public Component {
     protected:
       Navien * parent;
@@ -333,7 +340,9 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
       void write_state(bool state) override;
       void dump_config() override;
 };
+#endif
 
+#ifdef USE_BUTTON
 class NavienHotButton : public button::Button, public Component {
     protected:
       Navien * parent;
@@ -345,6 +354,7 @@ class NavienHotButton : public button::Button, public Component {
       void press_action() override;
       void dump_config() override;
 };
+#endif
     
 }  // namespace navien
 }  // namespace esphome

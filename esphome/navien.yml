@@ -56,6 +56,17 @@ api:
 ota:
 
 
+output:
+  # Set the rs485 into receive mode
+  - platform: gpio
+    pin: GPIO14
+    inverted: true
+    id: uart_rs485_receive_mode
+  # Set the driver into regular mode (from undefined startup)
+  - platform: gpio
+    pin: GPIO12
+    id: uart_driver_regular_mode
+
 uart:
   tx_pin: GPIO15
   rx_pin:
