@@ -38,6 +38,8 @@ wifi:
 
 web_server:
   port: 80
+  # Also show the internal sensors in the web server.
+  # include_internal: true
   # https://esphome.io/components/web_server.html
 
 logger:
@@ -103,26 +105,61 @@ sensor:
   - platform: navien
     name: $friendly_name Test sensor
     uart_id: main_hw_uart
+    # These are internal sensors, updated in real-time as the packets come in.
     target_temperature:
-      name: $friendly_name Target Temp
+      name: $friendly_name Target Temp (Internal)
+      id: internal_target_temp
+      internal: true
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     inlet_temperature:
-      name: $friendly_name Inlet Temp
+      name: $friendly_name Inlet Temp (Internal)
+      id: internal_inlet_temp
+      internal: true
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     outlet_temperature:
-      name: $friendly_name Outlet Temp
+      name: $friendly_name Outlet Temp (Internal)
+      id: internal_outlet_temp
+      internal: true
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     water_flow:
-      name: $friendly_name Water Flow
+      name: $friendly_name Water Flow (Internal)
+      id: internal_water_flow
+      internal: true
       filters:
         - lambda: return x / 3.785;
       unit_of_measurement: "GPM"
+
+  # These are external sensors sent to Home Assistant, updated periodically.
+  - platform: template
+    name: $friendly_name Target Temp
+    lambda: return id(internal_target_temp).state;
+    unit_of_measurement: "°F"
+    accuracy_decimals: 2
+    update_interval: 5s
+  - platform: template
+    name: $friendly_name Inlet Temp
+    lambda: return id(internal_inlet_temp).state;
+    unit_of_measurement: "°F"
+    accuracy_decimals: 2
+    update_interval: 5s
+  - platform: template
+    name: $friendly_name Outlet Temp
+    lambda: return id(internal_outlet_temp).state;
+    unit_of_measurement: "°F"
+    accuracy_decimals: 2
+    update_interval: 5s
+  - platform: template
+    name: $friendly_name Water Flow
+    lambda: return id(internal_water_flow).state;
+    unit_of_measurement: "GPM"
+    accuracy_decimals: 2
+    update_interval: 5s
       
 
 
