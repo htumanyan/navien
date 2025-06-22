@@ -39,6 +39,8 @@ void Navien::update() {
     this->outlet_temp_sensor->publish_state(0);
     this->inlet_temp_sensor->publish_state(0);
     this->water_flow_sensor->publish_state(0);
+    this->current_gas_sensor->publish_state(0);
+    this->accumulated_gas_sensor->publish_state(0);
   }
 
 #ifdef USE_SWITCH
