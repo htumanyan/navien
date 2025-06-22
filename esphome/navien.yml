@@ -135,19 +135,23 @@ sensor:
         - lambda: return x / 3.785;
       unit_of_measurement: "GPM"
     current_gas_usage:
-      name: $friendly_name Current Gas Usage
+      name: $friendly_name Current Gas Usage (Internal)
+      id: internal_current_gas_usage
+      internal: true
       # Convert from thermochemical (assumed) kcal to International Table
       # (assumed) BTU.
       filters:
-        - lambda: return x * 3.9656668314;
+        - multiply: 3.9656668314
       unit_of_measurement: "BTU"
     accumulated_gas_usage:
-      name: $friendly_name Accumulated Gas Usage
+      name: $friendly_name Accumulated Gas Usage (Internal)
+      id: internal_accumulated_gas_usage
+      internal: true
       # Convert from cubic meters to cubic feet.  This doesn't convert to therms
       # since that depends on the heating values/therm factors, which vary based
       # on the source of the gas.
       filters:
-        - lambda: return x * 35.31466672;
+        - multiply: 35.31466672
       unit_of_measurement: "ft³"
 
   # These are external sensors sent to Home Assistant, updated periodically.
@@ -173,6 +177,18 @@ sensor:
     name: $friendly_name Water Flow
     lambda: return id(internal_water_flow).state;
     unit_of_measurement: "GPM"
+    accuracy_decimals: 2
+    update_interval: 5s
+  - platform: template
+    name: $friendly_name Current Gas Usage
+    lambda: return id(internal_current_gas_usage).state;
+    unit_of_measurement: "BTU"
+    accuracy_decimals: 2
+    update_interval: 5s
+  - platform: template
+    name: $friendly_name Accumulated Gas Usage
+    lambda: return id(internal_accumulated_gas_usage).state;
+    unit_of_measurement: "ft³"
     accuracy_decimals: 2
     update_interval: 5s
       

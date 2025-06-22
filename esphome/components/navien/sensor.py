@@ -15,7 +15,7 @@ NAVIEN_CONFIG_ID = "navien"
 
 navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
-Navien = navien_ns.class_("Navien", cg.Component, uart.UARTDevice)
+Navien = navien_ns.class_("Navien", cg.PollingComponent, uart.UARTDevice)
 print ("Hello compojnents navien - imported")
 
 
@@ -36,6 +36,7 @@ from esphome.const import (
 
 #CONFIG_SCHEMA = (
 #    sensor.sensor_schema(Navien, unit_of_measurement=UNIT_EMPTY, icon=ICON_EMPTY, accuracy_decimals=1,)
+#    .extend(cv.polling_component_schema("60s"))
 #    .extend(uart.UART_DEVICE_SCHEMA)
 #)
 
@@ -84,6 +85,7 @@ CONFIG_SCHEMA = cv.All(
             ),
         }
     )
+    .extend(cv.polling_component_schema("5s"))
     .extend(uart.UART_DEVICE_SCHEMA)
 )
 

@@ -202,10 +202,11 @@ typedef struct _NAVIEN_CMD{
   _NAVIEN_CMD(const uint8_t * b, uint8_t l): buffer(b), len(l) {}
 } NAVIEN_CMD;
   
-class Navien : public Component, public uart::UARTDevice {
+class Navien : public PollingComponent, public uart::UARTDevice {
 public:
   virtual float get_setup_priority() const { return setup_priority::HARDWARE; }
   virtual void setup() override;
+  void update() override;
   void loop() override;
   void dump_config() override;
 
@@ -276,6 +277,10 @@ protected:
   RECV_BUFFER  recv_buffer;
   //uint8_t      recv_ptr;
   //bool         found_marker;
+
+  // Data, extracted from gas and water packers and stored
+  // Once the "update" is called this data gets reported to readers.
+  NAVIEN_STATE state;
 
   // How many packets were received
   uint32_t received_cnt;

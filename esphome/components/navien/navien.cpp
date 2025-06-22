@@ -71,7 +71,7 @@ bool Navien::seek_to_marker(){
 void Navien::parse_water(){
   ESP_LOGV(TAG, "Got Water Packet => %d bytes", this->recv_buffer.hdr.len + HDR_SIZE);
   //Navien::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
-
+      
   ESP_LOGV(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X",
 	   this->recv_buffer.water.set_temp,
 	   this->recv_buffer.water.inlet_temp,
