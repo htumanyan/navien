@@ -41,10 +41,14 @@ from esphome.const import (
 #)
 
 UNIT_LPM = "l/m"
+UNIT_KILOCALORIE = "kcal"
+UNIT_CUBIC_METERS = "m^3"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
+CONF_CURRENT_GAS_USAGE      = "current_gas_usage"
+CONF_ACCUMULATED_GAS_USAGE  = "accumulated_gas_usage"
 
 
 
@@ -69,6 +73,14 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
+                accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_CURRENT_GAS_USAGE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_KILOCALORIE,
+                accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_ACCUMULATED_GAS_USAGE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CUBIC_METERS,
                 accuracy_decimals=2,
             ),
         }
@@ -100,6 +112,14 @@ async def to_code(config):
     if CONF_WATER_FLOW in config:
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
         cg.add(var.set_water_flow_sensor(sens))
+
+    if CONF_CURRENT_GAS_USAGE in config:
+        sens = await sensor.new_sensor(config[CONF_CURRENT_GAS_USAGE])
+        cg.add(var.set_current_gas_sensor(sens))
+
+    if CONF_ACCUMULATED_GAS_USAGE in config:
+        sens = await sensor.new_sensor(config[CONF_ACCUMULATED_GAS_USAGE])
+        cg.add(var.set_accumulated_gas_sensor(sens))
 
 
 print ("Finished compojnents navien")

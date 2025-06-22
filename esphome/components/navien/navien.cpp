@@ -11,20 +11,6 @@ namespace navien {
 static const char *TAG = "navien.sensor";
 
 void Navien::setup() {
-  ESP_LOGCONFIG(TAG, "Setting rs485 into receive mode");
-  // Set the rs485 into receive mode
-  //pinMode(D5, OUTPUT);
-  //digitalWrite(D5, LOW);
-
-  // Set the driver into regular mode (from undefined startup)
-  ESP_LOGCONFIG(TAG, "Activating TTL/CMOS buffer");
-  pinMode(D6, OUTPUT);
-  digitalWrite(D6, HIGH);
-
-
-  pinMode(D2, OUTPUT);
-  digitalWrite(D2, HIGH);
-
   this->state.power = POWER_OFF;
 
   this->received_cnt = 0;
@@ -53,20 +39,11 @@ void Navien::update() {
     this->outlet_temp_sensor->publish_state(0);
     this->inlet_temp_sensor->publish_state(0);
     this->water_flow_sensor->publish_state(0);
+    this->current_gas_sensor->publish_state(0);
+    this->accumulated_gas_sensor->publish_state(0);
   }
-  
-  if (this->target_temp_sensor != nullptr)
-    this->target_temp_sensor->publish_state(this->state.gas.set_temp);
 
-  if (this->outlet_temp_sensor != nullptr)
-    this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
-
-  if (this->inlet_temp_sensor != nullptr)
-      this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
-
-  if (this->water_flow_sensor != nullptr)
-    this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
-
+#ifdef USE_SWITCH
   if (this->power_switch != nullptr){
     switch(this->state.power){
     case POWER_ON:
@@ -76,6 +53,7 @@ void Navien::update() {
       this->power_switch->publish_state(false);
     }
   }
+#endif
 }
 
 bool Navien::seek_to_marker(){
@@ -101,35 +79,32 @@ void Navien::parse_water(){
 	   this->recv_buffer.water.inlet_temp,
 	   this->recv_buffer.water.outlet_temp,
 	   this->recv_buffer.water.water_flow
-  
   );
+
   /*
-  this->state.water.set_temp    = Navien::t2f(this->recv_buffer.water.set_temp);
-  this->state.water.outlet_temp = Navien::t2f(this->recv_buffer.water.outlet_temp);
-  this->state.water.inlet_temp = Navien::t2f(this->recv_buffer.water.inlet_temp);
-  this->state.water.flow_gpm = Navien::flow2gpm(this->recv_buffer.water.water_flow);
+  const uint8_t set_temp    = Navien::t2f(this->recv_buffer.water.set_temp);
+  const uint8_t outlet_temp = Navien::t2f(this->recv_buffer.water.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2f(this->recv_buffer.water.inlet_temp);
+  const float flow_gpm = Navien::flow2gpm(this->recv_buffer.water.water_flow);
   */
   
-  this->state.water.set_temp    = Navien::t2c(this->recv_buffer.water.set_temp);
-  this->state.water.outlet_temp = Navien::t2c(this->recv_buffer.water.outlet_temp);
-  this->state.water.inlet_temp = Navien::t2c(this->recv_buffer.water.inlet_temp);
-
+  const uint8_t set_temp    = Navien::t2c(this->recv_buffer.water.set_temp);
+  const uint8_t outlet_temp = Navien::t2c(this->recv_buffer.water.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2c(this->recv_buffer.water.inlet_temp);
   
-  this->state.water.flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
+  const float flow_lpm = Navien::flow2lpm(this->recv_buffer.water.water_flow);
 
-  uint8 power = this->recv_buffer.water.system_power;
+  uint8_t power = this->recv_buffer.water.system_power;
   if (power & POWER_STATUS_ON_OFF_MASK)
     this->state.power = POWER_ON;
   else
     this->state.power = POWER_OFF;
     
   ESP_LOGV(TAG, "Set Temp: %d, Inlet: %d, Outlet: %d, flow: %f, power status %d",
-	   this->state.water.set_temp,
-	   this->state.water.inlet_temp,
-	   this->state.water.outlet_temp,
-	   this->state.water.flow_lpm,
-	   this->recv_buffer.water.system_power
-  );
+           set_temp, inlet_temp, outlet_temp, flow_lpm, this->recv_buffer.water.system_power);
+
+  if (this->water_flow_sensor != nullptr)
+    this->water_flow_sensor->publish_state(flow_lpm);
 }
 
 void Navien::parse_gas(){
@@ -140,30 +115,34 @@ void Navien::parse_gas(){
 	   this->recv_buffer.gas.outlet_temp
   );
   
-  this->state.gas.set_temp    = Navien::t2c(this->recv_buffer.gas.set_temp);
-  this->state.gas.outlet_temp = Navien::t2c(this->recv_buffer.gas.outlet_temp);
-  this->state.gas.inlet_temp = Navien::t2c(this->recv_buffer.gas.inlet_temp);
+  const uint8_t set_temp    = Navien::t2c(this->recv_buffer.gas.set_temp);
+  const uint8_t outlet_temp = Navien::t2c(this->recv_buffer.gas.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2c(this->recv_buffer.gas.inlet_temp);
   
-  this->state.gas.accumulated_gas_usage = this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo;
-  this->state.gas.current_gas_usage = this->recv_buffer.gas.current_gas_hi << 8 | this->recv_buffer.gas.current_gas_lo;
+  const float accumulated_gas_usage = usage2cum(this->recv_buffer.gas.cumulative_gas_hi << 8 | this->recv_buffer.gas.cumulative_gas_lo);
+  const uint16_t current_gas_usage = this->recv_buffer.gas.current_gas_hi << 8 | this->recv_buffer.gas.current_gas_lo;
 
   this->state.controller_version = this->recv_buffer.gas.controller_version_hi << 8 | this->recv_buffer.gas.controller_version_lo;
   this->state.panel_version = this->recv_buffer.gas.panel_version_hi << 8 | this->recv_buffer.gas.panel_version_lo;
   /*
-  this->state.gas.set_temp    = Navien::t2f(this->recv_buffer.gas.set_temp);
-  this->state.gas.outlet_temp = Navien::t2f(this->recv_buffer.gas.outlet_temp);
-  this->state.gas.inlet_temp = Navien::t2f(this->recv_buffer.gas.inlet_temp);
+  const uint8_t set_temp    = Navien::t2f(this->recv_buffer.gas.set_temp);
+  const uint8_t outlet_temp = Navien::t2f(this->recv_buffer.gas.outlet_temp);
+  const uint8_t inlet_temp = Navien::t2f(this->recv_buffer.gas.inlet_temp);
   */
 
-  ESP_LOGV(TAG, "Set Gas Temp: %d, Inlet: %d, Outlet: %d, Controller: %d, Panel: %d, Cur Usage: %d, Accum Usage %d",
-	   this->state.gas.set_temp,
-	   this->state.gas.inlet_temp,
-	   this->state.gas.outlet_temp,
-	   this->state.controller_version,
-	   this->state.panel_version,
-	   this->state.gas.current_gas_usage,
-	   this->state.gas.accumulated_gas_usage
-	   );
+  ESP_LOGV(TAG, "Set Gas Temp: %d, Inlet: %d, Outlet: %d, Controller: %d, Panel: %d, Cur Usage: %d, Accum Usage %f",
+           set_temp, inlet_temp, outlet_temp, state.controller_version, state.panel_version, current_gas_usage, accumulated_gas_usage);
+
+  if (this->target_temp_sensor != nullptr)
+    this->target_temp_sensor->publish_state(set_temp);
+  if (this->outlet_temp_sensor != nullptr)
+    this->outlet_temp_sensor->publish_state(outlet_temp);
+  if (this->inlet_temp_sensor != nullptr)
+    this->inlet_temp_sensor->publish_state(inlet_temp);
+  if (this->current_gas_sensor != nullptr)
+    this->current_gas_sensor->publish_state(current_gas_usage);
+  if (this->accumulated_gas_sensor != nullptr)
+    this->accumulated_gas_sensor->publish_state(accumulated_gas_usage);
 }
 
 void Navien::parse_control_packet(){
@@ -213,7 +192,7 @@ void Navien::parse_packet(){
     break;
   }
 
-  //  ESP_LOGV(TAG, "Calculated checksum over %d bytes => 0x%02X", HDR_SIZE + this->recv_buffer.hdr.len, crc);
+  //  ESP_LOGV(TAG, "Calculated checksum over %d bytes => 0x%02X", HDR_SIZE + this->recv_buffer.hdr.len, crc_c);
 
 }
 
@@ -284,7 +263,7 @@ void Navien::loop() {
   }
 }
 
-void Navien::send_cmd(const uint8_t * buffer, uint8 len){
+void Navien::send_cmd(const uint8_t * buffer, uint8_t len){
   /*  if (buffer && len){
     this->write_array(buffer, len);
     }*/
@@ -323,13 +302,21 @@ void Navien::dump_config(){
 }
 
  /**
- * Convert flow units to liters/min values
+ * Convert water flow units to liters/min values
  * flow is reported as 0.1 liter units.
  */
 float Navien::flow2lpm(uint8_t f){
   return (float)f / 10.f;
 }
   
+ /**
+ * Convert gas usage units to cubic meters values
+ * usage is reported as 0.1 cubic meter units.
+ */
+float Navien::usage2cum(uint16_t f){
+  return (float)f / 10.f;
+}
+
 /**
  * Convert flow units to GPM values
  * flow is reported as 0.1 liter units.
@@ -397,6 +384,7 @@ uint8_t Navien::checksum(const uint8_t * buffer, uint8_t len, uint16_t seed){
   return result;
 }
 
+#ifdef USE_SWITCH
 void NavienOnOffSwitch::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", this->name_.c_str());
 
@@ -430,8 +418,10 @@ void NavienOnOffSwitch::set_parent(Navien * parent) {
 void NavienOnOffSwitch::dump_config(){
     ESP_LOGCONFIG(TAG, "Empty custom switch");
 }
+#endif
 
 
+#ifdef USE_BUTTON
 void NavienHotButton::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", this->name_.c_str());
 }
@@ -448,6 +438,7 @@ void NavienHotButton::set_parent(Navien * parent) {
 void NavienHotButton::dump_config(){
     ESP_LOGCONFIG(TAG, "Navien Hot Button");
 }
+#endif
   
 }  // namespace navien
 }  // namespace esphome
