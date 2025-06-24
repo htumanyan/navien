@@ -50,6 +50,11 @@ api:
 ota:
 
 
+output:
+  - platform: gpio
+    pin: GPIO4  # D2 on esp8266
+    id: uart_esp8266_d2
+
 uart:
   tx_pin: GPIO15
   rx_pin:

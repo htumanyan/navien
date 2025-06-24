@@ -11,7 +11,9 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
+#endif
 #include "esphome/components/uart/uart.h"
 
 namespace esphome {
