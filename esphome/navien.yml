@@ -10,13 +10,6 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: d1_mini
-#  on_boot:
-#    priority: -100
-#    then:
-#      - output.turn_on: my_slow_pwm
-#      - output.set_level:
-#          id: my_slow_pwm
-#          level: "50%"
 
 external_components:
   - source: 
@@ -35,6 +28,7 @@ wifi:
     ssid: !secret ap_ssid
     password: !secret ap_password
 
+captive_portal:
 
 web_server:
   port: 80
@@ -42,13 +36,13 @@ web_server:
 
 logger:
 #  level: VERBOSE #makes uart stream available in esphome logstream
-  baud_rate: 9600 #disable logging over uart
+  baud_rate: 0 #disable logging over uart
 
   hardware_uart: UART1 # redirect logs to UART1 GPIO2 to avoid conflicts
                        # with the MCU communication through the main hardware UART
 
   # https://esphome.io/components/logger
-  level: DEBUG
+  level: INFO
   esp8266_store_log_strings_in_flash: false
 
 api:
@@ -112,7 +106,7 @@ sensor:
       filters:
         - lambda: return x / 3.785;
       unit_of_measurement: "GPM"
-      
+    real_time: true           
 
 
 switch:

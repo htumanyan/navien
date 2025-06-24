@@ -45,7 +45,7 @@ UNIT_LPM = "l/m"
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
-
+CONF_REAL_TIME          = "real_time"
 
 
 CONFIG_SCHEMA = cv.All(
@@ -71,6 +71,7 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_LPM,
                 accuracy_decimals=2,
             ),
+            cv.Optional(CONF_REAL_TIME): cv.boolean
         }
     )
     .extend(cv.polling_component_schema("5s"))
@@ -101,6 +102,5 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
         cg.add(var.set_water_flow_sensor(sens))
 
-
-print ("Finished compojnents navien")
-
+    if CONF_REAL_TIME in config:
+        cg.add(var.set_real_time(config[CONF_REAL_TIME]))
