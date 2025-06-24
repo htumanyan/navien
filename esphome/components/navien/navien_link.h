@@ -5,7 +5,9 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
+#endif
 #include "esphome/components/uart/uart.h"
 
 #include "navien_proto.h"
@@ -147,7 +149,7 @@ protected:
 
 
 protected:
-  void send_cmd(const uint8_t * buffer, uint8 len);
+  void send_cmd(const uint8_t * buffer, uint8_t len);
   
 protected:
   // Uart Send/Receive facility

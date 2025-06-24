@@ -22,8 +22,8 @@ void Navien::setup() {
   //digitalWrite(D6, HIGH);
 
 
-  pinMode(D2, OUTPUT);
-  digitalWrite(D2, HIGH);
+  // pinMode(D2, OUTPUT);
+  // digitalWrite(D2, HIGH);
 
   this->state.power = POWER_OFF;
 }
@@ -99,6 +99,7 @@ void Navien::update() {
   if (this->water_flow_sensor != nullptr)
     this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
 
+#ifdef USE_SWITCH
   if (this->power_switch != nullptr){
     switch(this->state.power){
     case POWER_ON:
@@ -108,6 +109,7 @@ void Navien::update() {
       this->power_switch->publish_state(false);
     }
   }
+#endif
 }
 
   
@@ -134,6 +136,7 @@ void Navien::print_buffer(const uint8_t *data, size_t length) {
  }
 
 
+#ifdef USE_SWITCH
 void NavienOnOffSwitch::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", this->name_.c_str());
 
@@ -167,8 +170,10 @@ void NavienOnOffSwitch::set_parent(Navien * parent) {
 void NavienOnOffSwitch::dump_config(){
     ESP_LOGCONFIG(TAG, "Empty custom switch");
 }
+#endif
 
 
+#ifdef USE_BUTTON
 void NavienHotButton::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", this->name_.c_str());
 }
@@ -185,6 +190,7 @@ void NavienHotButton::set_parent(Navien * parent) {
 void NavienHotButton::dump_config(){
     ESP_LOGCONFIG(TAG, "Navien Hot Button");
 }
+#endif
   
 }  // namespace navien
 }  // namespace esphome

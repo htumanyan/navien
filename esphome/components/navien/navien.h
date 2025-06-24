@@ -5,10 +5,18 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
+#ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
+#endif
 #include "esphome/components/uart/uart.h"
 
 #include "navien_link.h"
+
+#ifndef USE_SWITCH
+namespace switch_ {
+class Switch;
+}
+#endif
 
 namespace esphome {
 namespace navien {
@@ -133,6 +141,7 @@ public:
   virtual void on_error();
 };
 
+#ifdef USE_SWITCH
 class NavienOnOffSwitch : public switch_::Switch, public Component {
     protected:
       Navien * parent;
@@ -143,7 +152,9 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
       void write_state(bool state) override;
       void dump_config() override;
 };
+#endif
 
+#ifdef USE_BUTTON
 class NavienHotButton : public button::Button, public Component {
     protected:
       Navien * parent;
@@ -155,6 +166,7 @@ class NavienHotButton : public button::Button, public Component {
       void press_action() override;
       void dump_config() override;
 };
+#endif
     
 }  // namespace navien
 }  // namespace esphome

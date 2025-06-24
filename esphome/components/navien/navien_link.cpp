@@ -223,7 +223,7 @@ void NavienLink::receive() {
   }
 }
 
-void NavienLink::send_cmd(const uint8_t * buffer, uint8 len){
+void NavienLink::send_cmd(const uint8_t * buffer, uint8_t len){
   /*  if (buffer && len){
     this->write_array(buffer, len);
     }*/
