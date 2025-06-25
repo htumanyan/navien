@@ -41,11 +41,15 @@ from esphome.const import (
 #)
 
 UNIT_LPM = "l/m"
+UNIT_M3  = "m^3"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
+CONF_GAS_TOTAL          = "gas_total"
+
 CONF_REAL_TIME          = "real_time"
+
 
 
 CONFIG_SCHEMA = cv.All(
@@ -69,6 +73,10 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
+                accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_M3,
                 accuracy_decimals=2,
             ),
             cv.Optional(CONF_REAL_TIME): cv.boolean
@@ -102,5 +110,9 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
         cg.add(var.set_water_flow_sensor(sens))
 
+    if CONF_GAS_TOTAL in config:
+        sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])
+        cg.add(var.set_gas_total_sensor(sens))
+        
     if CONF_REAL_TIME in config:
         cg.add(var.set_real_time(config[CONF_REAL_TIME]))
