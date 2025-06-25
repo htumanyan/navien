@@ -117,9 +117,8 @@ typedef struct {
   uint8_t unknown_14;
   uint8_t unknown_15;
   uint8_t unknown_17;
-  //  uint8_t unknown_17;
+  uint8_t unknown_18;
   uint8_t water_flow;
-  uint8_t unknown_19;
   uint8_t unknown_20;
   uint8_t unknown_21;
   uint8_t unknown_22;
