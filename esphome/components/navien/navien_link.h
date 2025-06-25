@@ -59,7 +59,18 @@ public:
  */
 class NavienLinkVisitorI{
 public:
+  /**
+   * Called then the direction is from Navien to reporting device
+   * and type field is PACKET_TYPE_WATER
+   * @param water - the data payload of the water packet
+   */  
   virtual void on_water(const WATER_DATA & water) = 0;
+
+  /**
+   * Called then the direction is from Navien to reporting device
+   * and type field is PACKET_TYPE_GAS
+   * @param gas - the data payload of the gas packet
+   */  
   virtual void on_gas(const GAS_DATA & gas)   = 0;
   virtual void on_error()     = 0;
 };
@@ -138,15 +149,6 @@ protected:
 
   // Called when we receive a status packet from Navien device 
   void parse_status_packet();
-  
-  // Called then the direction is from Navien to reporting device
-  // and type field is PACKET_TYPE_WATER 
-  void parse_water();
-
-  // Called then the direction is from Navien to reporting device
-  // and the type field is PACKET_TYPE_GAS 
-  void parse_gas();
-
 
 protected:
   void send_cmd(const uint8_t * buffer, uint8_t len);
