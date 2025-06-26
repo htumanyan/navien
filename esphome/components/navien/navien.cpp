@@ -38,7 +38,7 @@ void Navien::on_water(const WATER_DATA & water){
     this->state.water.set_temp    = NavienLink::t2f(water.set_temp);
     this->state.water.outlet_temp = NavienLink::t2f(water.outlet_temp);
     this->state.water.inlet_temp = NavienLink::t2f(water.inlet_temp);
-    this->state.water.flow_lpm = NavienLink::flow2gpm(water.water_flow);
+    this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
 }
   
 void Navien::on_gas(const GAS_DATA & gas){
@@ -108,6 +108,9 @@ void Navien::update() {
 
   if (this->gas_total_sensor != nullptr)
     this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);
+
+  if (this->gas_current_sensor != nullptr)
+    this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
     
 #ifdef USE_SWITCH
   if (this->power_switch != nullptr){

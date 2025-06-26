@@ -58,7 +58,7 @@ public:
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
   void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
-  
+  void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }  
   void set_real_time(bool rt){this->is_rt = rt;}
   
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
@@ -90,6 +90,7 @@ protected:
   sensor::Sensor *inlet_temp_sensor;
   sensor::Sensor *water_flow_sensor;
   sensor::Sensor *gas_total_sensor;
+  sensor::Sensor *gas_current_sensor;
 
   switch_::Switch *power_switch;
   bool is_rt;
