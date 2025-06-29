@@ -90,6 +90,7 @@ protected:
   virtual bool read_array(uint8_t * data, uint8_t len){return uart::UARTDevice::read_array(data, len);}
   virtual void write_array(const uint8_t * data, uint8_t len){uart::UARTDevice::write_array(data, len);}
 
+  
 protected:
   NavienLink navien_link;
 
@@ -135,6 +136,13 @@ protected:
   // Debug helper to print hex buffers
   static void print_buffer(const uint8_t *data, size_t length);
 
+protected:
+  /**
+   * Helper functions to be used for updating sensor states either in real time or
+   * on timer if used in a polling component
+   */
+  virtual void update_water_sensors();
+  virtual void update_gas_sensors();
   
 protected:
   // Data, extracted from gas and water packers and stored

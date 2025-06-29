@@ -9,7 +9,7 @@ namespace esphome {
 namespace navien {
 
 static const char *TAG = "navien.sensor";
-
+  
 void Navien::setup() {
   ESP_LOGCONFIG(TAG, "Setting rs485 into receive mode");
   // Set the rs485 into receive mode
@@ -29,12 +29,21 @@ void Navien::setup() {
 }
 
 void Navien::on_water(const WATER_DATA & water){
-    ESP_LOGV(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X",
+    ESP_LOGI(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
 	   water.set_temp,
 	   water.inlet_temp,
 	   water.outlet_temp,
-	   water.water_flow);
+	   water.water_flow,
+	   water.system_power,
+	   water.system_status,
+	   water.recirculation_enabled);
 
+    if (water.system_power & POWER_STATUS_ON_OFF_MASK){
+      state.power = POWER_ON;
+    }else{
+      state.power = POWER_OFF;
+    }
+        
     // Update the counter that will be used in assessment
     // of whether we're connected to navien or not
     this->received_cnt++;
@@ -83,6 +92,43 @@ void Navien::on_error(){
 
   this->is_connected = false;
 }
+
+void Navien::update_water_sensors(){
+  if (this->water_flow_sensor != nullptr)
+    this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
+
+  if (this->water_utilization_sensor != nullptr)
+    this->water_utilization_sensor->publish_state(this->state.water.utilization);
+
+  #ifdef USE_SWITCH
+  if (this->power_switch != nullptr){
+    switch(this->state.power){
+    case POWER_ON:
+      this->power_switch->publish_state(true);
+      break;
+    default:
+      this->power_switch->publish_state(false);
+    }
+  }
+#endif
+}
+
+void Navien::update_gas_sensors(){
+  if (this->target_temp_sensor != nullptr)
+    this->target_temp_sensor->publish_state(this->state.gas.set_temp);
+  
+  if (this->outlet_temp_sensor != nullptr)
+    this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
+
+  if (this->inlet_temp_sensor != nullptr)
+      this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
+
+  if (this->gas_total_sensor != nullptr)
+    this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);
+
+  if (this->gas_current_sensor != nullptr)
+    this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
+}
   
 void Navien::update() {
   ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
@@ -105,53 +151,9 @@ void Navien::update() {
       
   if (this->conn_status_sensor != nullptr)
     this->conn_status_sensor->publish_state(this->is_connected);
-  
-  if (!this->is_connected){
-    /*    if (this->target_temp_sensor != nullptr)
-      this->target_temp_sensor->publish_state(0);
 
-    if (this->outlet_temp_sensor != nullptr)
-      this->outlet_temp_sensor->publish_state(0);
-
-    if (this->inlet_temp_sensor != nullptr)
-      this->inlet_temp_sensor->publish_state(0);
-
-    if (this->water_flow_sensor != nullptr)
-    this->water_flow_sensor->publish_state(0);*/
-  }
-  
-  if (this->target_temp_sensor != nullptr)
-    this->target_temp_sensor->publish_state(this->state.gas.set_temp);
-  
-  if (this->outlet_temp_sensor != nullptr)
-    this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
-
-  if (this->inlet_temp_sensor != nullptr)
-      this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
-
-  if (this->water_flow_sensor != nullptr)
-    this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
-
-  if (this->water_utilization_sensor != nullptr)
-    this->water_utilization_sensor->publish_state(this->state.water.utilization);
-
-  if (this->gas_total_sensor != nullptr)
-    this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);
-
-  if (this->gas_current_sensor != nullptr)
-    this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
-    
-#ifdef USE_SWITCH
-  if (this->power_switch != nullptr){
-    switch(this->state.power){
-    case POWER_ON:
-      this->power_switch->publish_state(true);
-      break;
-    default:
-      this->power_switch->publish_state(false);
-    }
-  }
-#endif
+  update_water_sensors();
+  update_gas_sensors();
 }
 
   
