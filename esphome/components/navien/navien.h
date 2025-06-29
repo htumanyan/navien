@@ -87,15 +87,17 @@ protected:
   /**
    * Sensor definitions
    */
-  sensor::Sensor *target_temp_sensor;
-  sensor::Sensor *outlet_temp_sensor;
-  sensor::Sensor *inlet_temp_sensor;
-  sensor::Sensor *water_flow_sensor;
-  sensor::Sensor *water_utilization_sensor;
-  sensor::Sensor *gas_total_sensor;
-  sensor::Sensor *gas_current_sensor;
 
-  switch_::Switch *power_switch;
+  sensor::Sensor *target_temp_sensor = nullptr;
+  sensor::Sensor *outlet_temp_sensor = nullptr;
+  sensor::Sensor *inlet_temp_sensor = nullptr;
+  sensor::Sensor *water_flow_sensor = nullptr;
+  sensor::Sensor *water_utilization_sensor = nullptr;
+  sensor::Sensor *gas_total_sensor = nullptr;
+  sensor::Sensor *gas_current_sensor = nullptr;
+
+  switch_::Switch *power_switch = nullptr;
+
   bool is_rt;
 };
 		   
@@ -122,7 +124,7 @@ protected:
 protected:
   // Data, extracted from gas and water packers and stored
   // Once the "update" is called this data gets reported to readers.
-  NAVIEN_STATE state;
+  NAVIEN_STATE state = {};
 
 protected:
   /**
@@ -150,7 +152,7 @@ public:
 #ifdef USE_SWITCH
 class NavienOnOffSwitch : public switch_::Switch, public Component {
     protected:
-      Navien * parent;
+      Navien * parent = nullptr;
     public:
       void setup() override;
 
@@ -163,7 +165,7 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
 #ifdef USE_BUTTON
 class NavienHotButton : public button::Button, public Component {
     protected:
-      Navien * parent;
+      Navien * parent = nullptr;
     public:
       void setup() override;
 
