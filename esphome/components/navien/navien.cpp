@@ -35,6 +35,10 @@ void Navien::on_water(const WATER_DATA & water){
 	   water.outlet_temp,
 	   water.water_flow);
 
+    // Update the counter that will be used in assessment
+    // of whether we're connected to navien or not
+    this->received_cnt++;
+    
     this->state.water.set_temp    = NavienLink::t2f(water.set_temp);
     this->state.water.outlet_temp = NavienLink::t2f(water.outlet_temp);
     this->state.water.inlet_temp = NavienLink::t2f(water.inlet_temp);
@@ -55,6 +59,10 @@ void Navien::on_gas(const GAS_DATA & gas){
 	   gas.current_gas_hi,
 	   gas.current_gas_lo
   );
+
+  // Update the counter that will be used in assessment
+  // of whether we're connected to navien or not
+  this->received_cnt++;
     
   this->state.gas.set_temp    = NavienLink::t2c(gas.set_temp);
   this->state.gas.outlet_temp = NavienLink::t2c(gas.outlet_temp);
@@ -72,10 +80,14 @@ void Navien::on_error(){
   this->outlet_temp_sensor->publish_state(0);
   this->inlet_temp_sensor->publish_state(0);
   this->water_flow_sensor->publish_state(0);
+
+  this->is_connected = false;
 }
   
 void Navien::update() {
-  /* // here we track how many packets were received
+  ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
+    
+  // here we track how many packets were received
   // since the last update
   // if Navien is connected and we receive packets, the
   // received packet count should be greater than the last time
@@ -85,19 +97,32 @@ void Navien::update() {
     this->updated_cnt = this->received_cnt;
     this->is_connected = true;
   }else{
+    // We've been disconnected. Reset counters
     this->is_connected = false;
+    this->received_cnt = 0;
+    this->updated_cnt = 0;
   }
-  */
-  if (!this->navien_link.is_connected()){
-    this->target_temp_sensor->publish_state(0);
-    this->outlet_temp_sensor->publish_state(0);
-    this->inlet_temp_sensor->publish_state(0);
-    this->water_flow_sensor->publish_state(0);
+      
+  if (this->conn_status_sensor != nullptr)
+    this->conn_status_sensor->publish_state(this->is_connected);
+  
+  if (!this->is_connected){
+    /*    if (this->target_temp_sensor != nullptr)
+      this->target_temp_sensor->publish_state(0);
+
+    if (this->outlet_temp_sensor != nullptr)
+      this->outlet_temp_sensor->publish_state(0);
+
+    if (this->inlet_temp_sensor != nullptr)
+      this->inlet_temp_sensor->publish_state(0);
+
+    if (this->water_flow_sensor != nullptr)
+    this->water_flow_sensor->publish_state(0);*/
   }
   
   if (this->target_temp_sensor != nullptr)
     this->target_temp_sensor->publish_state(this->state.gas.set_temp);
-
+  
   if (this->outlet_temp_sensor != nullptr)
     this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
 

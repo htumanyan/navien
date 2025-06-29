@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor, uart
+from esphome.components import sensor, binary_sensor, uart
 from esphome.components import output
 
 
@@ -27,6 +27,8 @@ from esphome.const import (
     CONF_NAME,
     CONF_TARGET_TEMPERATURE,
 
+    DEVICE_CLASS_CONNECTIVITY,
+    
     UNIT_CUBIC_METER,
     UNIT_DEGREES,
     UNIT_CELSIUS,
@@ -52,6 +54,7 @@ CONF_WATER_UTILIZATION  = "water_utilization"
 CONF_GAS_TOTAL          = "gas_total"
 CONF_GAS_CURRENT        = "gas_current"
 
+CONF_CONN_STATUS        = "conn_status"
 CONF_REAL_TIME          = "real_time"
 
 
@@ -90,6 +93,9 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_BTU,
                 accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_CONN_STATUS): binary_sensor.binary_sensor_schema(
+                device_class = DEVICE_CLASS_CONNECTIVITY
             ),
             cv.Optional(CONF_REAL_TIME): cv.boolean
         }
@@ -136,3 +142,7 @@ async def to_code(config):
         
     if CONF_REAL_TIME in config:
         cg.add(var.set_real_time(config[CONF_REAL_TIME]))
+
+    if CONF_CONN_STATUS in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_CONN_STATUS])
+        cg.add(var.set_conn_status_sensor(sens))

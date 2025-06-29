@@ -35,11 +35,9 @@ void NavienLink::parse_status_packet(){
   switch(this->recv_buffer.hdr.packet_type){
   case PACKET_TYPE_WATER:
     this->cb.on_water(recv_buffer.water);
-    //    parse_water();
     break;
   case PACKET_TYPE_GAS:
     this->cb.on_gas(recv_buffer.gas);
-    //parse_gas();
     break;
   }
 }
@@ -59,9 +57,6 @@ void NavienLink::parse_packet(){
       NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
       break;
     }
-    // We've received one packet successfully, means we are connected
-    this->connected = true;
-    this->received_cnt++;
     parse_status_packet();
     break;
   case PACKET_DIRECTION_CONTROL:

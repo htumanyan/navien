@@ -4,9 +4,16 @@
 #include <list>
 
 #include "esphome/core/component.h"
-#include "esphome/components/sensor/sensor.h"
+#ifdef USE_SENSOR
+    #include "esphome/components/sensor/sensor.h"
+#endif
+
+#ifdef USE_BINARY_SENSOR
+    #include "esphome/components/binary_sensor/binary_sensor.h"
+#endif
+
 #ifdef USE_SWITCH
-#include "esphome/components/switch/switch.h"
+    #include "esphome/components/switch/switch.h"
 #endif
 #include "esphome/components/uart/uart.h"
 
@@ -62,6 +69,8 @@ public:
   void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
   void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }  
   void set_real_time(bool rt){this->is_rt = rt;}
+
+  void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }  
   
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
 
@@ -96,6 +105,9 @@ protected:
   sensor::Sensor *gas_total_sensor = nullptr;
   sensor::Sensor *gas_current_sensor = nullptr;
 
+
+  binary_sensor::BinarySensor *conn_status_sensor = nullptr;
+  
   switch_::Switch *power_switch = nullptr;
 
   bool is_rt;
@@ -104,6 +116,9 @@ protected:
 class Navien : public PollingComponent, public NavienBase {
 public:
   Navien() {
+    updated_cnt = 0;
+    received_cnt = 0;
+    is_connected = false;
   }
   
   virtual float get_setup_priority() const { return setup_priority::HARDWARE; }
@@ -133,21 +148,27 @@ protected:
   virtual void on_water(const WATER_DATA & water);
   virtual void on_gas(const GAS_DATA & gas);
   virtual void on_error();
+
+protected:
+  /**
+   * These two variabls keep track of how many updates
+   * have we received from Navien and how many we sent updates
+   * to HA. The former should be > the latter if we keep receiving
+   * statuses from navien since the last update to HA, which means we
+   * are connected.
+   */
+    // How many packets were received
+  uint32_t received_cnt;
+
+  // How many packets were updated
+  uint32_t updated_cnt;
+
+
+  // true if connected to Navien.
+  // otherwie - false.
+  bool is_connected;
 };
 
-class NavienRT : public Component, public NavienBase {
-public:
-  NavienRT(){
-  }
-  
-public:
-  /**
-   * NavienLinkVisitorI interface implementation
-   */
-  virtual void on_water(const WATER_DATA & water);
-  virtual void on_gas(const GAS_DATA & gas);
-  virtual void on_error();
-};
 
 #ifdef USE_SWITCH
 class NavienOnOffSwitch : public switch_::Switch, public Component {

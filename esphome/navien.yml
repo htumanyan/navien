@@ -126,8 +126,12 @@ sensor:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU"
       accuracy_decimals: 1
+    conn_status:
+      name: $friendly_name Navien Connection Status
+      
     real_time: true           
 
+binary_sensor:
 
 switch:
   - platform: navien

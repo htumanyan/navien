@@ -82,11 +82,7 @@ public:
  */
 class NavienLink  {
 public:
-  NavienLink(NavienUartI & u, NavienLinkVisitorI & v) : uart(u), cb(v){
-    updated_cnt = 0;
-    received_cnt = 0;
-    connected = false;
-  }
+  NavienLink(NavienUartI & u, NavienLinkVisitorI & v) : uart(u), cb(v){}
 
   /**
    * Reads whaterver data came through UART and attempts to interpret it as Navien protocol data.
@@ -98,8 +94,9 @@ public:
 
   /**
    * Returns true if connected, otherwise false.
-   */ 
+   *
   bool is_connected(){return this->connected;}
+  */
   
   /**
    * Send commands
@@ -167,18 +164,6 @@ protected:
 
   // Data received off the wire
   RECV_BUFFER  recv_buffer;
-  //uint8_t      recv_ptr;
-  //bool         found_marker;
-
-  // How many packets were received
-  uint32_t received_cnt;
-
-  // How many packets were updated
-  uint32_t updated_cnt;
-  
-  // true if connected to Navien.
-  // otherwie - false.
-  bool connected;
 
   std::list<NAVIEN_CMD> cmd_buffer;
 };
