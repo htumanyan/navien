@@ -117,7 +117,7 @@ typedef struct {
   uint8_t unknown_14;
   uint8_t unknown_15;
   uint8_t unknown_17;
-  uint8_t unknown_18;
+  uint8_t operating_capacity;
   uint8_t water_flow;
   uint8_t unknown_20;
   uint8_t unknown_21;
@@ -130,6 +130,24 @@ typedef struct {
    * 
    */
   uint8_t system_status;
+  /**
+   * Credit to dacarson for figuring out these values
+   */
+  uint8_t unknown_25; 
+  uint8_t unknown_26; 
+  uint8_t unknown_27; 
+  uint8_t unknown_28; // Counter A_lo 
+  uint8_t unknown_29; // Counter A_hi
+  uint8_t unknown_30; // Counter B_lo
+  uint8_t unknown_31; // Counter B_hi
+  uint8_t unknown_32; 
+  uint8_t recirculation_enabled;
+  uint8_t unknown_34; 
+  uint8_t unknown_35; 
+  uint8_t unknown_36; 
+  uint8_t unknown_37; 
+  uint8_t unknown_38; 
+  uint8_t unknown_39; 
 } WATER_DATA;
 
 typedef struct {

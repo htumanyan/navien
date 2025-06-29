@@ -111,6 +111,9 @@ sensor:
       filters:
         - lambda: return x / 3.785;
       unit_of_measurement: "GPM"
+    water_utilization:  
+      name: $friendly_name Water Capacity Utilization
+      unit_of_measurement: "%"
     gas_total:
       name: $friendly_name Accumulated Gas Usage
       filters:
