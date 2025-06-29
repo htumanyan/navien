@@ -163,7 +163,7 @@ protected:
 
   // Keeps track of the state machine and iterates through
   // initialized -> marker found -> header parsed -> data parsed -> initialized
-  READ_STATE   recv_state;
+  READ_STATE   recv_state = INITIAL;
 
   // Data received off the wire
   RECV_BUFFER  recv_buffer;
