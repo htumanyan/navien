@@ -39,6 +39,7 @@ void Navien::on_water(const WATER_DATA & water){
     this->state.water.outlet_temp = NavienLink::t2f(water.outlet_temp);
     this->state.water.inlet_temp = NavienLink::t2f(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
+    this->state.water.utilization = water.operating_capacity * 0.5f;
 }
   
 void Navien::on_gas(const GAS_DATA & gas){
@@ -48,7 +49,7 @@ void Navien::on_gas(const GAS_DATA & gas){
 	   gas.outlet_temp
   );
 
-  ESP_LOGI(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X",
+  ESP_LOGV(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X",
 	   gas.cumulative_gas_hi,
 	   gas.cumulative_gas_lo,
 	   gas.current_gas_hi,
@@ -105,6 +106,9 @@ void Navien::update() {
 
   if (this->water_flow_sensor != nullptr)
     this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
+
+  if (this->water_utilization_sensor != nullptr)
+    this->water_utilization_sensor->publish_state(this->state.water.utilization);
 
   if (this->gas_total_sensor != nullptr)
     this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);

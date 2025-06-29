@@ -27,8 +27,10 @@ from esphome.const import (
     CONF_NAME,
     CONF_TARGET_TEMPERATURE,
 
+    UNIT_CUBIC_METER,
     UNIT_DEGREES,
     UNIT_CELSIUS,
+    UNIT_PERCENT
 )
 
 
@@ -41,12 +43,12 @@ from esphome.const import (
 #)
 
 UNIT_LPM  = "l/m"
-UNIT_M3   = "m^3"
 UNIT_BTU  = "BTU"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
+CONF_WATER_UTILIZATION  = "water_utilization"
 CONF_GAS_TOTAL          = "gas_total"
 CONF_GAS_CURRENT        = "gas_current"
 
@@ -77,8 +79,12 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_LPM,
                 accuracy_decimals=2,
             ),
+            cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
+                unit_of_measurement=UNIT_PERCENT,
+                accuracy_decimals=2,
+            ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_M3,
+                unit_of_measurement=UNIT_CUBIC_METER,
                 accuracy_decimals=2,
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
@@ -116,6 +122,10 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
         cg.add(var.set_water_flow_sensor(sens))
 
+    if CONF_WATER_UTILIZATION in config:
+        sens = await sensor.new_sensor(config[CONF_WATER_UTILIZATION])
+        cg.add(var.set_water_utilization_sensor(sens))
+        
     if CONF_GAS_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])
         cg.add(var.set_gas_total_sensor(sens))

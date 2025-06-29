@@ -33,6 +33,7 @@ typedef struct{
     uint8_t outlet_temp;
     uint8_t inlet_temp;
     float flow_lpm;
+    uint8_t utilization;
   } water;
   struct{
     uint8_t  set_temp;
@@ -57,6 +58,7 @@ public:
   void set_inlet_temp_sensor(sensor::Sensor *sensor) { inlet_temp_sensor = sensor; }
   void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
+  void set_water_utilization_sensor(sensor::Sensor *sensor) { water_utilization_sensor = sensor; }
   void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
   void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }  
   void set_real_time(bool rt){this->is_rt = rt;}
@@ -89,6 +91,7 @@ protected:
   sensor::Sensor *outlet_temp_sensor;
   sensor::Sensor *inlet_temp_sensor;
   sensor::Sensor *water_flow_sensor;
+  sensor::Sensor *water_utilization_sensor;
   sensor::Sensor *gas_total_sensor;
   sensor::Sensor *gas_current_sensor;
 
