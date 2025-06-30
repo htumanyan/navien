@@ -73,7 +73,22 @@ const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
 
 
-const uint8_t POWER_STATUS_ON_OFF_MASK = 0x05;
+const uint8_t POWER_STATUS_ON_OFF_MASK     = 0x05;
+const uint8_t RECIRCULATION_ON_OFF_MASK    = 0x20;
+
+
+/**
+ * Bitmask values for the sustem status byte in the water packet (WATER_DATA.system_status field)
+ */
+// If this bit is 1, then the display units are Celsius, otherwise - Farenheit
+// On Navien 240A Celsius is set by turning DIP Switch 4 ON (upper position) on the front panel
+// Note: this does not affect the values reported by Navien unit. Those are always reported in metric.
+// This flag just tells us what unit does the Navien unit itself use for display on the front panel
+const uint8_t SYS_STATUS_FLAG_UNITS      = 0x08;
+
+// If this bit is 1, then recirculation is enabled.
+// On Navien 240A Celsius is set by turning DIP Switch 2 ON (upper position) on the front panel
+const uint8_t SYS_STATUS_FLAG_RECIRC     = 0x02;
   
 /**                                                                                        
  * Hardcoded command packets. Some commands have no uses data. Therefore rather than assemblying a packet
@@ -108,6 +123,10 @@ typedef struct {
    * Observed values (binary)
    * 00100101 - turned on
    * 00100000 - turned off
+   *
+   * HT added:
+   * when the hot button is not present it is 0x25 and 0x05 depending on on/off status of the unit.
+   * with the hot button present that bit flips to zero, leaving 0x05 (power on) and 0x00 (power off)
    */
   uint8_t system_power; 
   uint8_t unknown_10;
@@ -123,6 +142,7 @@ typedef struct {
   uint8_t unknown_21;
   uint8_t unknown_22;
   uint8_t unknown_23;
+  uint8_t unknown_24;
   /**
    * Kudos and credits to individuals below for this byte
    * tsquared at https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567
@@ -167,8 +187,8 @@ typedef struct {
   uint8_t  unknown_16;
   uint8_t  unknown_17;
   uint8_t  unknown_18;
-  uint8_t  unknown_19;
-  uint8_t  unknown_20;
+  uint8_t  unknown_19; /// decreasing counter when hot water is running
+  uint8_t  unknown_20; /// 0x05 always so far
   uint8_t  current_gas_lo;
   uint8_t  current_gas_hi;
   uint8_t  cumulative_gas_lo;

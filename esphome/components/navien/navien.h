@@ -33,6 +33,17 @@ typedef enum _DEVICE_POWER_STATE{
   POWER_OFF,
   POWER_ON
 } DEVICE_POWER_STATE;
+
+
+typedef enum _DEVICE_RECIRC_STATE{
+  RECIRCULATION_OFF,
+  RECIRCULATION_ON
+} DEVICE_RECIRC_STATE;
+
+typedef enum _DEVICE_UNITS{
+  CELSIUS,
+  FARENHEIT
+} DEVICE_UNITS;
   
 typedef struct{
   struct{
@@ -52,7 +63,9 @@ typedef struct{
 
   uint16_t           controller_version;
   uint16_t           panel_version;
-  DEVICE_POWER_STATE power;
+  DEVICE_POWER_STATE  power;
+  DEVICE_RECIRC_STATE recirculation;
+  DEVICE_UNITS        units;
 } NAVIEN_STATE;
   
 
@@ -70,7 +83,8 @@ public:
   void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }  
   void set_real_time(bool rt){this->is_rt = rt;}
 
-  void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }  
+  void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
+  void set_recirc_status_sensor(binary_sensor::BinarySensor *sensor) { recirc_status_sensor = sensor; }  
   
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
 
@@ -108,6 +122,7 @@ protected:
 
 
   binary_sensor::BinarySensor *conn_status_sensor = nullptr;
+  binary_sensor::BinarySensor *recirc_status_sensor = nullptr;
   
   switch_::Switch *power_switch = nullptr;
 

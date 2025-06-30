@@ -34,6 +34,11 @@ void NavienLink::parse_control_packet(){
 void NavienLink::parse_status_packet(){
   switch(this->recv_buffer.hdr.packet_type){
   case PACKET_TYPE_WATER:
+    //NavienLink::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
+    ESP_LOGV(TAG, "B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
+	     this->recv_buffer.water.unknown_06,
+	     this->recv_buffer.water.unknown_32,
+	     this->recv_buffer.water.recirculation_enabled);
     this->cb.on_water(recv_buffer.water);
     break;
   case PACKET_TYPE_GAS:
@@ -46,7 +51,7 @@ void NavienLink::parse_packet(){
   uint8_t crc_c = 0x00;
   uint8_t crc_r = 0x00;
 
-  NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
+  //NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
   crc_r = this->recv_buffer.raw_data[HDR_SIZE + this->recv_buffer.hdr.len];
   
   switch(this->recv_buffer.hdr.direction){
@@ -214,13 +219,13 @@ void NavienLink::print_buffer(const uint8_t *data, size_t length) {
    for (size_t i = 0; i < length; i++) {
      snprintf(&hex_buffer[3 * (i % 32)], sizeof(hex_buffer), "%02X ", data[i]);
      if (i % 32 == 31) {
-       ESP_LOGD(TAG, "   %s", hex_buffer);
+       ESP_LOGI(TAG, "   %s", hex_buffer);
      }
    }
    if (length % 32) {
      // null terminate if incomplete line
      hex_buffer[3 * (length % 32) + 2] = 0;
-     ESP_LOGD(TAG, "   %s", hex_buffer);
+     ESP_LOGI(TAG, "   %s", hex_buffer);
    }
  }
 

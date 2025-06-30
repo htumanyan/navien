@@ -5,7 +5,7 @@ from esphome.components import output
 
 
 
-print ("Hello compojnents navien")
+#print ("Hello compojnents navien")
 
 #import CONFIG_NAVIEN_ID
 #import navien_ns
@@ -16,7 +16,7 @@ NAVIEN_CONFIG_ID = "navien"
 navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
 Navien = navien_ns.class_("Navien", cg.PollingComponent, uart.UARTDevice)
-print ("Hello compojnents navien - imported")
+#print ("Hello compojnents navien - imported")
 
 
 from esphome.const import (
@@ -56,6 +56,8 @@ CONF_GAS_CURRENT        = "gas_current"
 
 CONF_CONN_STATUS        = "conn_status"
 CONF_REAL_TIME          = "real_time"
+
+CONF_RECIRC_STATUS      = "recirc_status"
 
 
 
@@ -97,6 +99,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_CONN_STATUS): binary_sensor.binary_sensor_schema(
                 device_class = DEVICE_CLASS_CONNECTIVITY
             ),
+            cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
             cv.Optional(CONF_REAL_TIME): cv.boolean
         }
     )
@@ -107,7 +110,6 @@ CONFIG_SCHEMA = cv.All(
 
 
 async def to_code(config):
-#    var = await sensor.new_sensor(config)
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
@@ -146,3 +148,8 @@ async def to_code(config):
     if CONF_CONN_STATUS in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_CONN_STATUS])
         cg.add(var.set_conn_status_sensor(sens))
+        
+    if CONF_RECIRC_STATUS in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_RECIRC_STATUS])
+        cg.add(var.set_recirc_status_sensor(sens))
+        

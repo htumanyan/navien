@@ -128,7 +128,8 @@ sensor:
       accuracy_decimals: 1
     conn_status:
       name: $friendly_name Navien Connection Status
-      
+    recirc_status:
+      name: $friendly_name Navien Recirculation Status      
     real_time: true           
 
 binary_sensor:
@@ -162,14 +163,14 @@ switch:
 button:
   - platform: restart
     name: "Restart"
-#  - platform: navien
-#    name: NavienHotButton
-#    id: NavienHotButton
+  - platform: navien
+    name: NavienHotButton
+    id: NavienHotButton
   - platform: template
     name: "Wired Hot Button"
     on_press:
     - switch.turn_off: hot_button
-    - delay: 500ms
+    - delay: 1000ms
     - switch.turn_on: hot_button
 
 

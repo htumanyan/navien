@@ -29,7 +29,7 @@ void Navien::setup() {
 }
 
 void Navien::on_water(const WATER_DATA & water){
-    ESP_LOGI(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+  ESP_LOGV(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
 	   water.set_temp,
 	   water.inlet_temp,
 	   water.outlet_temp,
@@ -42,6 +42,19 @@ void Navien::on_water(const WATER_DATA & water){
       state.power = POWER_ON;
     }else{
       state.power = POWER_OFF;
+    }
+
+    if (water.system_status & SYS_STATUS_FLAG_RECIRC){
+      state.recirculation = RECIRCULATION_ON;
+    }else{
+      state.recirculation = RECIRCULATION_OFF;
+    }
+
+
+    if (water.system_status & SYS_STATUS_FLAG_UNITS){
+      state.units = CELSIUS;
+    }else{
+      state.units = FARENHEIT;
     }
         
     // Update the counter that will be used in assessment
@@ -62,11 +75,12 @@ void Navien::on_gas(const GAS_DATA & gas){
 	   gas.outlet_temp
   );
 
-  ESP_LOGV(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X",
+  ESP_LOGV(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Unk_19: 0x%02X",
 	   gas.cumulative_gas_hi,
 	   gas.cumulative_gas_lo,
 	   gas.current_gas_hi,
-	   gas.current_gas_lo
+	   gas.current_gas_lo,
+	   gas.unknown_19
   );
 
   // Update the counter that will be used in assessment
@@ -100,7 +114,16 @@ void Navien::update_water_sensors(){
   if (this->water_utilization_sensor != nullptr)
     this->water_utilization_sensor->publish_state(this->state.water.utilization);
 
-  #ifdef USE_SWITCH
+  if (this->recirc_status_sensor != nullptr){
+    switch(this->state.recirculation){
+    case RECIRCULATION_ON:
+      this->recirc_status_sensor->publish_state(true);
+      break;
+    default:
+      this->recirc_status_sensor->publish_state(false);
+    }
+  }
+#ifdef USE_SWITCH
   if (this->power_switch != nullptr){
     switch(this->state.power){
     case POWER_ON:
