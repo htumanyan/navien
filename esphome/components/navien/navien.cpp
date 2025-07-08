@@ -11,20 +11,6 @@ namespace navien {
 static const char *TAG = "navien.sensor";
   
 void Navien::setup() {
-  ESP_LOGCONFIG(TAG, "Setting rs485 into receive mode");
-  // Set the rs485 into receive mode
-  //pinMode(D5, OUTPUT);
-  //digitalWrite(D5, LOW);
-
-  // Set the driver into regular mode (from undefined startup)
-  ESP_LOGCONFIG(TAG, "Activating TTL/CMOS buffer");
-  //  pinMode(D6, OUTPUT);
-  //digitalWrite(D6, HIGH);
-
-
-  // pinMode(D2, OUTPUT);
-  // digitalWrite(D2, HIGH);
-
   this->state.power = POWER_OFF;
 }
 
@@ -66,6 +52,9 @@ void Navien::on_water(const WATER_DATA & water){
     this->state.water.inlet_temp = NavienLink::t2f(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
     this->state.water.utilization = water.operating_capacity * 0.5f;
+
+    if (this->is_rt)
+      this->update_water_sensors();
 }
   
 void Navien::on_gas(const GAS_DATA & gas){
@@ -96,6 +85,9 @@ void Navien::on_gas(const GAS_DATA & gas){
 
   this->state.controller_version = gas.controller_version_hi << 8 | gas.controller_version_lo;
   this->state.panel_version = gas.panel_version_hi << 8 | gas.panel_version_lo;
+
+  if (this->is_rt)
+    this->update_gas_sensors();
 }
   
 void Navien::on_error(){
