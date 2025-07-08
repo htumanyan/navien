@@ -3,6 +3,9 @@
 #include <cinttypes>
 #include <list>
 
+#include "esphome/core/helpers.h"
+
+
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
 #ifdef USE_SWITCH
@@ -34,9 +37,12 @@ typedef union{
 } RECV_BUFFER;
   
 typedef struct _NAVIEN_CMD{
-  const uint8_t * buffer;
+  uint8_t   buffer[64];
   uint8_t   len;
-  _NAVIEN_CMD(const uint8_t * b, uint8_t l): buffer(b), len(l) {}
+  _NAVIEN_CMD(const uint8_t * b, uint8_t l) {
+    len = std::min(l, static_cast<uint8_t>(sizeof(buffer)));
+    memcpy(buffer, b, len);
+  }
 } NAVIEN_CMD;
 
 
@@ -148,6 +154,12 @@ protected:
   void parse_status_packet();
 
 protected:
+  /**
+   * Send command to Navien unit.
+   *
+   * @param buffer - command to be sent.
+   * @param len - the length of buffer
+   */
   void send_cmd(const uint8_t * buffer, uint8_t len);
   
 protected:
@@ -165,6 +177,8 @@ protected:
   // Data received off the wire
   RECV_BUFFER  recv_buffer;
 
+  // Buffer for queued commands.
+  // TODO: add thread safety - cmd_buffer is used in different thread contexts
   std::list<NAVIEN_CMD> cmd_buffer;
 };
 
