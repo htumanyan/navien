@@ -1,0 +1,33 @@
+# Basic Config
+
+substitutions:
+  #   # https://esphome.io/guides/configuration-types.html#substitutions
+  #device_name: navien-heater # hostname & entity_id
+  #friendly_name: "Navien Gas Heater" # Displayed in HA frontend
+
+packages:
+  navien: !include navien-wrd-hb.yml
+
+switch:
+  - platform: gpio
+    id: hb1
+    pin: D1
+    name: "D1"
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    id: hb4
+    pin: D4
+    name: "D4"
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    id: hb3
+    pin: D3
+    name: "D3"
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    id: hb2
+    pin: D2
+    name: "D2"
+    restore_mode: RESTORE_DEFAULT_OFF
+
+

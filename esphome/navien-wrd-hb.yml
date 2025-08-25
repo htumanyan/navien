@@ -1,0 +1,26 @@
+# Basic Config
+
+substitutions:
+  #   # https://esphome.io/guides/configuration-types.html#substitutions
+  #device_name: navien-heater # hostname & entity_id
+  #friendly_name: "Navien Gas Heater" # Displayed in HA frontend
+
+packages:
+  navien: !include navien-base.yml
+
+switch:
+  - platform: gpio
+    id: hot_button
+    pin: D5
+    name: "Navien Enable Hot Button"
+    restore_mode: RESTORE_DEFAULT_ON
+
+
+button:
+  - platform: template
+    name: "Navien Hot Button"
+    on_press:
+    - switch.turn_off: hot_button
+    - delay: 1000ms
+    - switch.turn_on: hot_button
+

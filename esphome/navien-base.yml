@@ -3,13 +3,18 @@
 substitutions:
   #   # https://esphome.io/guides/configuration-types.html#substitutions
   device_name: navien-heater # hostname & entity_id
-  friendly_name: "Navien Gas Heater" # Displayed in HA frontend
+  friendly_name: "Navien" # Displayed in HA frontend
+  device_description: "Navien Gas Water Heater"
+  tx_pin: GPIO15
+  rx_pin: GPIO13
+  platform: ESP8266
+  board: d1_mini
 
 esphome:
   # https://esphome.io/components/esphome
   name: ${device_name}
-  platform: ESP8266
-  board: d1_mini
+  platform: ${platform}
+  board: ${board}
 
 external_components:
   - source: 
@@ -36,7 +41,8 @@ web_server:
 
 logger:
 #  level: VERBOSE #makes uart stream available in esphome logstream
-  baud_rate: 0 #disable logging over uart
+  baud_rate: 0 #disable logging over uart to avoid interference
+               # with sending/receiving over the UART port on ESP8266
 
   hardware_uart: UART1 # redirect logs to UART1 GPIO2 to avoid conflicts
                        # with the MCU communication through the main hardware UART
@@ -50,15 +56,10 @@ api:
 ota:
 
 
-output:
-  - platform: gpio
-    pin: GPIO4  # D2 on esp8266
-    id: uart_esp8266_d2
-
 uart:
-  tx_pin: GPIO15
+  tx_pin: ${tx_pin}
   rx_pin:
-    number: GPIO13
+    number: ${rx_pin}
     mode:
       input: true
       pullup: false
@@ -89,7 +90,7 @@ sensor:
   - platform: wifi_signal
     name: $friendly_name wifi signal
   - platform: navien
-    name: $friendly_name Test sensor
+    name: $friendly_name Metrics
     uart_id: main_hw_uart
     target_temperature:
       name: $friendly_name Target Temp
@@ -130,52 +131,18 @@ sensor:
       name: $friendly_name Navien Connection Status
     recirc_status:
       name: $friendly_name Navien Recirculation Status      
-#    real_time: true           
+#    real_time: true 
 
 binary_sensor:
 
 switch:
   - platform: navien
-    name: NavienOnOff
-  - platform: gpio
-    id: hot_button
-    pin: D5
-    name: "Enable Hot Button"
-    restore_mode: RESTORE_DEFAULT_ON
-  - platform: gpio
-    id: hb1
-    pin: D1
-    name: "D1"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
-    id: hb4
-    pin: D4
-    name: "D4"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
-    id: hb3
-    pin: D3
-    name: "D3"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
-    id: hb2
-    pin: D2
-    name: "D2"
-    restore_mode: RESTORE_DEFAULT_OFF
+    name: ${friendly_name} Power On/Off
 
 
 button:
   - platform: restart
     name: "Restart"
-  - platform: navien
-    name: NavienHotButton
-    id: NavienHotButton
-  - platform: template
-    name: "Wired Hot Button"
-    on_press:
-    - switch.turn_off: hot_button
-    - delay: 1000ms
-    - switch.turn_on: hot_button
 
 
 #output:
