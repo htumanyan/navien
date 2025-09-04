@@ -7,13 +7,14 @@ substitutions:
   device_description: "Navien Gas Water Heater"
   tx_pin: GPIO15
   rx_pin: GPIO13
-  platform: ESP8266
+  platform: esp8266
   board: d1_mini
 
 esphome:
   # https://esphome.io/components/esphome
   name: ${device_name}
-  platform: ${platform}
+
+${platform}: 
   board: ${board}
 
 external_components:
@@ -54,7 +55,7 @@ logger:
 api:
 
 ota:
-
+  platform: esphome
 
 uart:
   tx_pin: ${tx_pin}
