@@ -10,8 +10,9 @@ Navien supports several types of remote control devices. The older generation, s
 
 ## Protocols
 ### [RS485 Connection](rs485.md)
-### [2-Wire Connection](/doc/2-wire.md)
 
+ <!-- ### [2-Wire Connection](/doc/2-wire.md)-->
+ 
 
 ## Hardware/Firmware Exploration
 ## [Navien Wifi Link Lite](navien_wifi_debug.md)
