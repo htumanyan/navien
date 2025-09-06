@@ -8,8 +8,6 @@ substitutions:
 esphome:
   # https://esphome.io/components/esphome
   name: ${device_name}
-  platform: ESP8266
-  board: d1_mini
 
 external_components:
   - source: 
@@ -17,7 +15,8 @@ external_components:
       path: components
     components: [navien]
 
-
+esp8266: 
+  board: d1_mini
   
 wifi:
   ssid: !secret wifi_ssid
