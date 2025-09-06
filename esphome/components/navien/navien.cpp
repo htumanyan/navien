@@ -47,12 +47,12 @@ void Navien::on_water(const WATER_DATA & water){
     // of whether we're connected to navien or not
     this->received_cnt++;
     
-    this->state.water.set_temp    = NavienLink::t2f(water.set_temp);
-    this->state.water.outlet_temp = NavienLink::t2f(water.outlet_temp);
-    this->state.water.inlet_temp = NavienLink::t2f(water.inlet_temp);
+    this->state.water.set_temp    = NavienLink::t2c(water.set_temp);
+    this->state.water.outlet_temp = NavienLink::t2c(water.outlet_temp);
+    this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
     this->state.water.utilization = water.operating_capacity * 0.5f;
-
+    
     if (this->is_rt)
       this->update_water_sensors();
 }
@@ -105,6 +105,13 @@ void Navien::update_water_sensors(){
 
   if (this->water_utilization_sensor != nullptr)
     this->water_utilization_sensor->publish_state(this->state.water.utilization);
+
+  // Update the climate control with the current target temperature
+  if (this->climate != nullptr){
+    this->climate->current_temperature = this->state.water.outlet_temp;
+    this->climate->target_temperature = this->state.water.set_temp;
+    this->climate->publish_state();
+  }
   
   if (this->recirc_status_sensor != nullptr){
     switch(this->state.recirculation){
@@ -115,7 +122,25 @@ void Navien::update_water_sensors(){
       this->recirc_status_sensor->publish_state(false);
     }
   }
-#ifdef USE_SWITCH
+
+  switch(this->state.power){
+  case POWER_ON:
+    if (this->power_switch != nullptr)
+      this->power_switch->publish_state(true);
+    if (this->climate != nullptr){
+      this->climate->mode = climate::ClimateMode::CLIMATE_MODE_HEAT;
+      this->climate->publish_state();
+    }
+    break;
+  default:
+    if (this->power_switch != nullptr)
+      this->power_switch->publish_state(false);
+    if (this->climate != nullptr){
+      this->climate->mode = climate::ClimateMode::CLIMATE_MODE_OFF;
+      this->climate->publish_state();
+    }
+  }
+  
   if (this->power_switch != nullptr){
     switch(this->state.power){
     case POWER_ON:
@@ -125,7 +150,7 @@ void Navien::update_water_sensors(){
       this->power_switch->publish_state(false);
     }
   }
-#endif
+
 }
 
 void Navien::update_gas_sensors(){
@@ -134,8 +159,8 @@ void Navien::update_gas_sensors(){
 
     // Update the climate control with the current target temperature
   if (this->climate != nullptr){
-    this->climate->current_temperature = this->state.gas.outlet_temp * 9.f / 5.f + 32.f;
-    this->climate->target_temperature = this->state.gas.set_temp * 9.f / 5.f + 32.f;
+    //    this->climate->current_temperature = this->state.gas.outlet_temp * 9.f / 5.f + 32.f;
+    //this->climate->target_temperature = this->state.gas.set_temp * 9.f / 5.f + 32.f;
     this->climate->publish_state();
   }
   
