@@ -1,20 +1,95 @@
-# Navien Tankless Heather Protocol
+# Navien ESPHome Integration 🚀🔥
 
-This repository captures reverse engineered description of the low level details on communication between Navien tankless water heaters and the Navilink WiFi lite device.
+Take control of your **Navien gas water heater** directly from Home
+Assistant with this ESPHome module!
 
-## High Level Details
+No more proprietary lock-ins - this project lets you seamlessly
+integrate your Navien system into your smart home setup, giving you
+automation superpowers like:
 
-Navien supports several types of remote control devices. The older generation, such as NR-21DU and similar connect with two wires that are used to provide power to the remote device and also for the data exchange. Newer and more complex NaviLink devices (NaviLink and NaviLink Lite) connect over RS-485 connector. The documentation refers to power provided over separate pins/wires but my heater did not. I had to connect a separate 12V power supply to the NaviLink lite that was used to capture the traces, analyzed here.
+-   📱 Remote start/stop from Home Assistant
+-   🔔 "Hot Button" entity that can be triggered from automation
+-   ⚡ Climate control for setting the target temperature
+-   🛠️ Easy to build, flash, and configure with YAML
 
-![image](doc/Navien.png)
+This project grew out of my work on reverse engineering the native Navien communication protocol to automate my Navien 240a, which it is tested with thoroughly (and works in my home every day).
 
-## Protocols
-### [RS485 Connection](/doc/rs485.md)
-### [2-Wire Connection](/doc/2-wire.md)
+👉 GitHub Repo: [htumanyan/navien](https://github.com/htumanyan/navien)
 
-## Sources
+------------------------------------------------------------------------
 
-### [ESPHome Module](/esphome/README.md)
+## Getting Started 🛠️
 
-## Hardware/Firmware Exploration
-## [Navien Wifi Link Lite](doc/navien_wifi_debug.md)
+Follow these steps to build and run your own Navien ESPHome integration.
+
+### 1. Clone the Repository
+
+```
+git clone https://github.com/htumanyan/navien.git cd navien
+```
+
+### 2. Install ESPHome
+
+If you don't already have ESPHome installed:
+
+```
+pip install esphome
+```
+
+For detailed installation instructions, see the [ESPHome Getting Started
+guide](https://esphome.io/guides/getting_started_command_line.html).
+
+### 3. Choose Your Configuration
+
+There are two ready-to-use YAML configurations in this repo:
+
+-   **navien-wrd-hb.yml** → Most people should use this one.
+-   **navien-ht-device.yml** → This is for custom esp device that I've designed and plan to open source soon
+
+### 4. Compile and Upload
+
+Compile your firmware:
+
+```
+bash esphome compile navien-wrd-hb.yml 
+```
+
+Flash it to your ESP32:
+
+```
+bash esphome run navien-wrd-hb.yml
+```
+
+------------------------------------------------------------------------
+
+## [Protocol Details](./doc/README.md) 🔬
+
+If you're interested in how this integration works under the hood, check
+out the [\`proto\`](./doc/README.md) subfolder.
+It contains the **reverse-engineered details of the Navien
+protocol**---including message formats, field definitions, and notes
+from packet captures.
+
+This section is for developers and contributors who want to:
+- Understand the low-level communication between the ESP32 and Navien
+heater
+- Contribute improvements to the protocol implementation
+- Extend support for additional Navien models or features
+
+If you just want to use the integration, you don't need to worry about
+this --- but if you love digging into protocols, that's where the magic
+happens.
+
+------------------------------------------------------------------------
+
+## Next Steps 🌟
+
+-   Add your device to **Home Assistant** using ESPHome integration.
+-   Create **automations and dashboards** to trigger hot water
+    recirculation with a tap, schedule, or voice assistant.
+-   Share your setup and feedback with the community!
+
+------------------------------------------------------------------------
+
+💡 This project is community-driven. Contributions, pull requests, and
+feature ideas are always welcome!
