@@ -54,7 +54,14 @@ There are two ready-to-use YAML configurations in this repo:
 -   **navien-wrd-hb.yml** → Most people should use this one.
 -   **navien-ht-device.yml** → This is for custom esp device that I've designed and plan to open source soon
 
-### 4. Compile and Upload
+### 5. Configure Wi-Fi
+
+```
+cp secrets.yaml.sample secrets.yaml
+```
+Edit secrets.yaml - change XXXX to your Wi-Fi network/password and AP SSID network/password in case if it fails to acquire Wi-Fi connection
+
+### 5. Compile and Upload
 
 Compile your firmware:
 
