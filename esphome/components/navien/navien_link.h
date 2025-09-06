@@ -110,7 +110,7 @@ public:
   void send_turn_on_cmd();
   void send_turn_off_cmd();
   void send_hot_button_cmd();
-  void send_set_temp_cmd();
+  void send_set_temp_cmd(float temp);
 
   
 public:

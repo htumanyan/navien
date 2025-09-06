@@ -146,6 +146,14 @@ button:
     name: "Restart"
 
 
+climate:
+  - platform: navien
+    id: navien_climate
+    visual:
+      min_temperature: 98
+      max_temperature: 110
+      temperature_step: 1
+    name: Target Temperature
 #output:
 #  - platform: slow_pwm
 ##    pin: GPIO14

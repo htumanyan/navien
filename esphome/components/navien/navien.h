@@ -4,18 +4,19 @@
 #include <list>
 
 #include "esphome/core/component.h"
-#ifdef USE_SENSOR
+//#ifdef USE_SENSOR
     #include "esphome/components/sensor/sensor.h"
-#endif
+//#endif
 
-#ifdef USE_BINARY_SENSOR
+//#ifdef USE_BINARY_SENSOR
     #include "esphome/components/binary_sensor/binary_sensor.h"
-#endif
+//#endif
 
-#ifdef USE_SWITCH
+//#ifdef USE_SWITCH
     #include "esphome/components/switch/switch.h"
-#endif
+//#endif
 #include "esphome/components/uart/uart.h"
+#include "esphome/components/climate/climate.h"
 
 #include "navien_link.h"
 
@@ -85,14 +86,26 @@ public:
 
   void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
   void set_recirc_status_sensor(binary_sensor::BinarySensor *sensor) { recirc_status_sensor = sensor; }  
-  
+
+  /**
+   * Sets the power switch component that will be notified of power
+   * state changes, i.e. if the unit goes off, Navien will updte the switch to reflect that
+   */
   void set_power_switch(switch_::Switch * ps){power_switch = ps;}
+
+
+  void set_climate(climate::Climate * c){climate = c;}
+
+  /**
+   * Sets the climate component that will be receiving temperature updates
+   */
+  //void set_climate(switch_::Switch * ps){power_switch = ps;}
 
 
   void send_turn_on_cmd(){this->navien_link.send_turn_on_cmd();}
   void send_turn_off_cmd(){this->navien_link.send_turn_off_cmd();}
   void send_hot_button_cmd(){this->navien_link.send_hot_button_cmd();}
-  void send_set_temp_cmd(){this->navien_link.send_set_temp_cmd();}
+  void send_set_temp_cmd(float temp){this->navien_link.send_set_temp_cmd(temp);}
   
 protected:
   /**
@@ -125,6 +138,7 @@ protected:
   binary_sensor::BinarySensor *recirc_status_sensor = nullptr;
   
   switch_::Switch *power_switch = nullptr;
+  climate::Climate *climate = nullptr;
 
   bool is_rt;
 };

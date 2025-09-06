@@ -105,7 +105,7 @@ void Navien::update_water_sensors(){
 
   if (this->water_utilization_sensor != nullptr)
     this->water_utilization_sensor->publish_state(this->state.water.utilization);
-
+  
   if (this->recirc_status_sensor != nullptr){
     switch(this->state.recirculation){
     case RECIRCULATION_ON:
@@ -131,6 +131,13 @@ void Navien::update_water_sensors(){
 void Navien::update_gas_sensors(){
   if (this->target_temp_sensor != nullptr)
     this->target_temp_sensor->publish_state(this->state.gas.set_temp);
+
+    // Update the climate control with the current target temperature
+  if (this->climate != nullptr){
+    this->climate->current_temperature = this->state.gas.outlet_temp * 9.f / 5.f + 32.f;
+    this->climate->target_temperature = this->state.gas.set_temp * 9.f / 5.f + 32.f;
+    this->climate->publish_state();
+  }
   
   if (this->outlet_temp_sensor != nullptr)
     this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
