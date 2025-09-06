@@ -12,6 +12,13 @@ automation superpowers like:
 -   ⚡ Climate control for setting the target temperature
 -   🛠️ Easy to build, flash, and configure with YAML
 
+## Screenshots 🖼️
+
+Here are some examples of how the integration looks in Home Assistant:
+
+![image](doc/ha_screenshot.png)
+![image](doc/esphome.png)
+
 This project grew out of my work on reverse engineering the native Navien communication protocol to automate my Navien 240a, which it is tested with thoroughly (and works in my home every day).
 
 👉 GitHub Repo: [htumanyan/navien](https://github.com/htumanyan/navien)
@@ -25,7 +32,8 @@ Follow these steps to build and run your own Navien ESPHome integration.
 ### 1. Clone the Repository
 
 ```
-git clone https://github.com/htumanyan/navien.git cd navien
+git clone https://github.com/htumanyan/navien.git 
+cd navien
 ```
 
 ### 2. Install ESPHome
@@ -65,7 +73,7 @@ bash esphome run navien-wrd-hb.yml
 ## [Protocol Details](./doc/README.md) 🔬
 
 If you're interested in how this integration works under the hood, check
-out the [\`proto\`](./doc/README.md) subfolder.
+out the [doc](./doc/README.md) subfolder.
 It contains the **reverse-engineered details of the Navien
 protocol**---including message formats, field definitions, and notes
 from packet captures.
