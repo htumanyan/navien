@@ -47,6 +47,7 @@ logger:
 api:
 
 ota:
+  platform: esphome
 
 
 output:
@@ -136,31 +137,6 @@ binary_sensor:
 switch:
   - platform: navien
     name: NavienOnOff
-  - platform: gpio
-    id: hot_button
-    pin: D5
-    name: "Enable Hot Button"
-    restore_mode: RESTORE_DEFAULT_ON
-  - platform: gpio
-    id: hb1
-    pin: D1
-    name: "D1"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
-    id: hb4
-    pin: D4
-    name: "D4"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
-    id: hb3
-    pin: D3
-    name: "D3"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
-    id: hb2
-    pin: D2
-    name: "D2"
-    restore_mode: RESTORE_DEFAULT_OFF
 
 
 button:
@@ -169,13 +145,16 @@ button:
   - platform: navien
     name: NavienHotButton
     id: NavienHotButton
-  - platform: template
-    name: "Wired Hot Button"
-    on_press:
-    - switch.turn_off: hot_button
-    - delay: 1000ms
-    - switch.turn_on: hot_button
 
+
+climate:
+  - platform: navien
+    id: navien_climate
+    visual:
+      min_temperature: 98F
+      max_temperature: 110F
+      temperature_step: '1°F'
+    name: Target Temperature
 
 #output:
 #  - platform: slow_pwm
