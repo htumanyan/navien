@@ -15,11 +15,6 @@ switch:
     name: "D1"
     restore_mode: RESTORE_DEFAULT_OFF
   - platform: gpio
-    id: hb4
-    pin: D4
-    name: "D4"
-    restore_mode: RESTORE_DEFAULT_OFF
-  - platform: gpio
     id: hb3
     pin: D3
     name: "D3"
@@ -29,5 +24,14 @@ switch:
     pin: D2
     name: "D2"
     restore_mode: RESTORE_DEFAULT_OFF
-
+  - platform: gpio
+    id: hb0
+    pin: D0
+    name: "D0"
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    id: hb6
+    pin: D6
+    name: "D6"
+    restore_mode: RESTORE_DEFAULT_OFF
 
