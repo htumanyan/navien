@@ -38,7 +38,7 @@ void NavienClimate::control(const climate::ClimateCall &call){
   //    std::string mode_id;
   if (call.get_mode().has_value()) {
     climate::ClimateMode mode = call.get_mode().value();
-    ESP_LOGE(TAG, "Setting mode to %s", climate::climate_mode_to_string(mode));
+    ESP_LOGD(TAG, "Setting mode to %s", climate::climate_mode_to_string(mode));
     switch(mode){
     case climate::ClimateMode::CLIMATE_MODE_OFF:
       parent->send_turn_off_cmd();
