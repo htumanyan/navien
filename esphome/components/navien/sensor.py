@@ -29,7 +29,10 @@ from esphome.const import (
     CONF_TARGET_TEMPERATURE,
 
     DEVICE_CLASS_CONNECTIVITY,
-    
+    DEVICE_CLASS_GAS,
+
+    STATE_CLASS_TOTAL_INCREASING,
+
     UNIT_CUBIC_METER,
     UNIT_DEGREES,
     UNIT_CELSIUS,
@@ -92,6 +95,8 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_GAS,
+                state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_BTU,
@@ -142,7 +147,6 @@ async def to_code(config):
         
     if CONF_GAS_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])
-        cg.add(sens.set_icon(config[CONF_GAS_TOTAL].get(CONF_ICON, "mdi:meter-gas")))
         cg.add(var.set_gas_total_sensor(sens))
 
     if CONF_GAS_CURRENT in config:
