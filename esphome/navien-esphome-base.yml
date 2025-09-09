@@ -86,10 +86,6 @@ sensor:
       unit_of_measurement: "%"
     gas_total:
       name: Accumulated Gas Usage
-      filters:
-        - lambda: return x * 9131.0 / 25193.0 / 10.0;
-      unit_of_measurement: "Therms"
-      accuracy_decimals: 1
     gas_current:
       name: Current Gas Usage
       filters:
