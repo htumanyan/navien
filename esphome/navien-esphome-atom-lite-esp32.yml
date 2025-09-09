@@ -1,0 +1,43 @@
+substitutions:
+  tx_pin: 19
+  rx_pin: 22
+
+esphome:
+  name: ${name}
+  friendly_name: Navien
+  comment: Navien ATOM Lite ESP32
+  name_add_mac_suffix: true
+  platformio_options:
+    board_build.flash_mode: dio
+  project:
+    name: "Navien.ATOM-Lite-ESP32"
+    version: "${version}"
+
+esp32:
+  board: m5stack-atom
+  framework:
+    type: arduino
+
+dashboard_import:
+  package_import_url: github://htumanyan/navien/esphome/navien-esphome-atom-lite-esp32.yml
+  import_full_config: false
+
+ota:
+  - platform: esphome
+    id: ota_default
+
+wifi:
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Navien ATOM Lite ESP32 Hotspot"
+
+light:
+  - platform: fastled_clockless
+    chipset: SK6812
+    pin: 27
+    num_leds: 1
+    rgb_order: GRB
+    name: "FastLED Light"
+
+packages:
+  core: !include navien-esphome-base.yml

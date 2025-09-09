@@ -1,0 +1,116 @@
+substitutions:
+  name: navien-heater
+  device_description: "Navien Gas Water Heater"
+  version:  "0.0.0.1"
+
+logger:
+  level: INFO
+  baud_rate: 0 #disable logging over uart
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/htumanyan/navien
+      path: esphome/components
+    refresh: 1h
+    components: [navien]
+
+captive_portal:
+
+web_server:
+  port: 80
+  version: 3
+
+api:
+
+uart:
+  tx_pin: ${tx_pin}
+  rx_pin:
+    number: ${rx_pin}
+    mode:
+      input: true
+      pullup: false
+  baud_rate: 19200
+  stop_bits: 1
+  parity: none
+  rx_buffer_size: 8192
+  id: main_hw_uart
+
+binary_sensor:
+
+button:
+  - platform: restart
+    name: "Restart"
+  - platform: navien
+    name: Hot Button
+
+climate:
+  - platform: navien
+    id: navien_climate
+    name: Target Temperature
+    visual:
+      min_temperature: 97F
+      max_temperature: 120.5F
+      temperature_step: '0.5'
+
+sensor:
+  - platform: uptime
+    name: Uptime Sensor
+  - platform: wifi_signal
+    name: WiFi Signal
+  - platform: navien
+    name: Metrics
+    uart_id: main_hw_uart
+    target_temperature:
+      name: Target Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    inlet_temperature:
+      name: Inlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    outlet_temperature:
+      name: Outlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    water_flow:
+      name: Water Flow
+      filters:
+        - lambda: return x / 3.785;
+      unit_of_measurement: "GPM"
+    water_utilization:
+      name: Water Capacity Utilization
+      unit_of_measurement: "%"
+    gas_total:
+      name: Accumulated Gas Usage
+    gas_current:
+      name: Current Gas Usage
+      filters:
+        - lambda: return x * 3.9680;
+      unit_of_measurement: "BTU"
+      accuracy_decimals: 1
+    conn_status:
+      name: Connection Status
+    recirc_status:
+      name: Recirculation Status
+    # real_time: true
+
+switch:
+  - platform: navien
+    name: Power On/Off
+
+text_sensor:
+  - platform: version
+    name: ESPHome Version
+    id: esphome_version
+    hide_timestamp: True
+  - platform: wifi_info
+    ip_address:
+      id: ip_address
+      name: IP Address
+    mac_address:
+      name: Mac
+      id: mac_address
