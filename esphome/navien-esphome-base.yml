@@ -42,7 +42,7 @@ button:
   - platform: restart
     name: "Restart"
   - platform: navien
-    name: NavienHotButton
+    name: Hot Button
 
 climate:
   - platform: navien
