@@ -57,11 +57,7 @@ output:
 
 uart:
   tx_pin: GPIO15
-  rx_pin:
-    number: GPIO13
-    mode:
-      input: true
-      pullup: false
+  rx_pin: GPIO13
       
   baud_rate: 19200
   stop_bits: 1
