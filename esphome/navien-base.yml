@@ -13,6 +13,10 @@ substitutions:
 esphome:
   # https://esphome.io/components/esphome
   name: ${device_name}
+  friendly_name: ${friendly_name}
+  project:
+    name: "${project_name}"
+    version: "${project_version}"
 
 ${platform}: 
   board: ${board}
@@ -22,8 +26,6 @@ external_components:
       type: local
       path: components
     components: [navien]
-
-
   
 wifi:
   ssid: !secret wifi_ssid
@@ -39,18 +41,6 @@ captive_portal:
 web_server:
   port: 80
   # https://esphome.io/components/web_server.html
-
-logger:
-#  level: VERBOSE #makes uart stream available in esphome logstream
-  baud_rate: 0 #disable logging over uart to avoid interference
-               # with sending/receiving over the UART port on ESP8266
-
-  hardware_uart: UART1 # redirect logs to UART1 GPIO2 to avoid conflicts
-                       # with the MCU communication through the main hardware UART
-
-  # https://esphome.io/components/logger
-  level: INFO
-  esp8266_store_log_strings_in_flash: false
 
 api:
 
@@ -136,7 +126,6 @@ switch:
   - platform: navien
     name: ${friendly_name} Power On/Off
 
-
 button:
   - platform: restart
     name: "Restart"
@@ -146,13 +135,7 @@ climate:
   - platform: navien
     id: navien_climate
     visual:
-#      unit_of_measurement: '°F'
       min_temperature: 98F
-      max_temperature: 110F
+      max_temperature: 120F
       temperature_step: '1°F'
     name: Target Temperature
-#output:
-#  - platform: slow_pwm
-##    pin: GPIO14
-#    id: my_slow_pwm
-#    period: 1s

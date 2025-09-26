@@ -1,0 +1,32 @@
+substitutions:
+  tx_pin: 19
+  rx_pin: 22
+  platform: esp32
+  board: m5stack-atom
+  friendly_name: Navien
+  project_name: Navien.ATOM-Lite-ESP32
+  project_version: "0.0.0.1"
+
+packages:
+  navien: !include navien-base.yml
+
+
+logger:
+  level: INFO
+  baud_rate: 0 #disable logging over uart
+  
+dashboard_import:
+  package_import_url: github://htumanyan/navien/esphome/navien-esphome-atom-lite-esp32.yml
+  import_full_config: false
+
+button:
+  - platform: navien
+    name: NavienHotButton
+    
+light:
+  - platform: fastled_clockless
+    chipset: SK6812
+    pin: 27
+    num_leds: 1
+    rgb_order: GRB
+    name: "FastLED Light"
