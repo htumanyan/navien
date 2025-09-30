@@ -51,7 +51,9 @@ guide](https://esphome.io/guides/getting_started_command_line.html).
 
 There are two ready-to-use YAML configurations in this repo:
 
--   **navien-wrd-hb.yml** → Most people should use this one.
+-   **navien-d1-mini.yml** → If you use the D1 Mini board
+-   **navien-wrd-hb.yml** → Version for D1 Mini with a hardwired hot button simulator
+-   **navien-esphome-atom-lite-esp32.yml** → If you use esp32 Atom Lite board
 -   **navien-ht-device.yml** → This is for custom esp device that I've designed and plan to open source soon
 
 ### 5. Configure Wi-Fi
