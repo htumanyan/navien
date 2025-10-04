@@ -7,13 +7,17 @@
 substitutions:
   device_name: navien-heater # hostname & entity_id
   friendly_name: "Navien" # Displayed in HA frontend
-  external_component_source: https://github.com/htumanyan/navien
+  git_home: https://github.com/htumanyan/navien
+  external_component_source: ${git_home}
 
 packages:
   navien:
-    url: https://github.com/htumanyan/navien
+    url: ${git_home}
     ref: main    # optional
     files:
 #      - path: esphome/navien-d1-mini.yml
       - path: esphome/navien-esphome-atom-lite-esp32.yml
-    
+
+dashboard_import:
+  package_import_url: ${git_home}
+  import_full_config: true
