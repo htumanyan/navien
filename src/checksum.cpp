@@ -108,11 +108,9 @@ int main(int argc, char * argv[]){
 
 
 
+/*
 
-
-int __fastcall likely_crc_calc(unsigned __int8 *a1, unsigned int len, unsigned __int16 seed_val)
-
-{
+int __fastcall likely_crc_calc(unsigned __int8 *a1, unsigned int len, unsigned __int16 seed_val){
 
   if ( (int)len < 2 )
 
@@ -152,9 +150,4 @@ int __fastcall likely_crc_calc(unsigned __int8 *a1, unsigned int len, unsigned _
 
   return byte_200117C4[576];
 
-}
-
-
-
 */
-
