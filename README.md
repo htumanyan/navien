@@ -63,7 +63,7 @@ cp secrets.yaml.sample secrets.yaml
 ```
 Edit secrets.yaml - change XXXX to your Wi-Fi network/password and AP SSID network/password in case if it fails to acquire Wi-Fi connection
 
-### 5. Compile and Upload
+### 6. Compile and Upload
 
 Compile your firmware:
 
@@ -76,6 +76,10 @@ Flash it to your ESP32:
 ```
 bash esphome run navien-wrd-hb.yml
 ```
+
+### 7. Hardware
+
+#### [Connecting to Navien-240A](./doc/240-a.md)
 
 ------------------------------------------------------------------------
 
