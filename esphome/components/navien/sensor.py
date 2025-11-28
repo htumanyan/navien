@@ -56,6 +56,7 @@ CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
 CONF_WATER_UTILIZATION  = "water_utilization"
 CONF_GAS_TOTAL          = "gas_total"
+CONF_GAS_TOTAL_CUBIC_FEET = "gas_total_cuft"
 CONF_GAS_CURRENT        = "gas_current"
 
 CONF_CONN_STATUS        = "conn_status"
@@ -94,6 +95,12 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
+                accuracy_decimals=2,
+                device_class=DEVICE_CLASS_GAS,
+                state_class=STATE_CLASS_TOTAL_INCREASING,
+            ),
+            cv.Optional(CONF_GAS_TOTAL_CUBIC_FEET): sensor.sensor_schema(
+                unit_of_measurement="ft³",
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_GAS,
                 state_class=STATE_CLASS_TOTAL_INCREASING,
@@ -148,6 +155,10 @@ async def to_code(config):
     if CONF_GAS_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])
         cg.add(var.set_gas_total_sensor(sens))
+
+    if CONF_GAS_TOTAL_CUBIC_FEET in config:
+        sens = await sensor.new_sensor(config[CONF_GAS_TOTAL_CUBIC_FEET])
+        cg.add(var.set_gas_total_cuft_sensor(sens))
 
     if CONF_GAS_CURRENT in config:
         sens = await sensor.new_sensor(config[CONF_GAS_CURRENT])

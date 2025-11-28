@@ -81,6 +81,8 @@ void Navien::on_gas(const GAS_DATA & gas){
   this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
   
   this->state.gas.accumulated_gas_usage = gas.cumulative_gas_hi << 8 | gas.cumulative_gas_lo;
+  this->state.gas.accumulated_gas_usage_cuft =
+      static_cast<float>(this->state.gas.accumulated_gas_usage) * 3.53146667f;
   this->state.gas.current_gas_usage = gas.current_gas_hi << 8 | gas.current_gas_lo;
 
   this->state.controller_version = gas.controller_version_hi << 8 | gas.controller_version_lo;
@@ -172,6 +174,9 @@ void Navien::update_gas_sensors(){
 
   if (this->gas_total_sensor != nullptr)
     this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);
+
+  if (this->gas_total_cuft_sensor != nullptr)
+    this->gas_total_cuft_sensor->publish_state(this->state.gas.accumulated_gas_usage_cuft);
 
   if (this->gas_current_sensor != nullptr)
     this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
