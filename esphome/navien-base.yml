@@ -99,8 +99,8 @@ sensor:
       name: $friendly_name Water Flow
       filters:
         - lambda: return x / 3.785;
-      unit_of_measurement: "GPM"
-    water_utilization:  
+      unit_of_measurement: "gal/min"
+    water_utilization:
       name: $friendly_name Water Capacity Utilization
       unit_of_measurement: "%"
     gas_total:
@@ -109,17 +109,21 @@ sensor:
         - lambda: return x * 9131.0 / 25193.0 / 10.0;
       unit_of_measurement: "Therms"
       accuracy_decimals: 1
+    gas_total_cuft:
+      name: $friendly_name Accumulated Gas Usage (ft³)
+      unit_of_measurement: "ft³"
+      accuracy_decimals: 2
     gas_current:
       name: $friendly_name Current Gas Usage
       filters:
         - lambda: return x * 3.9680;
-      unit_of_measurement: "BTU"
+      unit_of_measurement: "BTU/h"
       accuracy_decimals: 1
     conn_status:
       name: $friendly_name Navien Connection Status
     recirc_status:
-      name: $friendly_name Navien Recirculation Status      
-#    real_time: true 
+      name: $friendly_name Navien Recirculation Status
+    real_time: true
 
 binary_sensor:
 

@@ -13,8 +13,11 @@ Compile and upload as usual but don't forget to put AP names and passwords in se
  cd <project_dir>/navien
 
  cp secrets.yaml.sample secrets.yaml
- 
+
  esphome compile navien.yml
 
  esphome run navien.yml
 ```
+
+### Real-time updates
+Set `real_time: true` under the `navien` sensor in your YAML (enabled in the sample configs) to publish sensor updates as soon as packets arrive instead of waiting for the polling interval.
