@@ -124,7 +124,7 @@ sensor:
       name: $friendly_name Current Gas Usage
       filters:
         - lambda: return x * 3.9680;
-      unit_of_measurement: "BTU"
+      unit_of_measurement: "BTU/h"
       accuracy_decimals: 1
     conn_status:
       name: $friendly_name Navien Connection Status

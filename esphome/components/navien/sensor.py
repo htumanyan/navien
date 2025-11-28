@@ -53,7 +53,7 @@ from esphome.const import (
 #)
 
 UNIT_LPM  = "l/m"
-UNIT_BTU  = "BTU"
+UNIT_BTU_PER_HOUR = "BTU/h"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
@@ -119,7 +119,7 @@ CONFIG_SCHEMA = cv.All(
                 state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
-                unit_of_measurement=UNIT_BTU,
+                unit_of_measurement=UNIT_BTU_PER_HOUR,
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_POWER,
                 state_class=STATE_CLASS_MEASUREMENT,
