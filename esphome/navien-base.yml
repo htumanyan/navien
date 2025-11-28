@@ -99,8 +99,8 @@ sensor:
       name: $friendly_name Water Flow
       filters:
         - lambda: return x / 3.785;
-      unit_of_measurement: "GPM"
-    water_utilization:  
+      unit_of_measurement: "gal/min"
+    water_utilization:
       name: $friendly_name Water Capacity Utilization
       unit_of_measurement: "%"
     gas_total:
@@ -109,6 +109,10 @@ sensor:
         - lambda: return x * 9131.0 / 25193.0 / 10.0;
       unit_of_measurement: "Therms"
       accuracy_decimals: 1
+    gas_total_cuft:
+      name: $friendly_name Accumulated Gas Usage (ft³)
+      unit_of_measurement: "ft³"
+      accuracy_decimals: 2
     gas_current:
       name: $friendly_name Current Gas Usage
       filters:
