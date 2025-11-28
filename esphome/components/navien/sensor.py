@@ -29,8 +29,12 @@ from esphome.const import (
     CONF_TARGET_TEMPERATURE,
 
     DEVICE_CLASS_CONNECTIVITY,
+    DEVICE_CLASS_POWER,
+    DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_WATER,
     DEVICE_CLASS_GAS,
 
+    STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
 
     UNIT_CUBIC_METER,
@@ -49,7 +53,7 @@ from esphome.const import (
 #)
 
 UNIT_LPM  = "l/m"
-UNIT_BTU  = "BTU"
+UNIT_BTU_PER_HOUR = "BTU/h"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
@@ -76,22 +80,31 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_TARGET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_TEMPERATURE,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_INLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_TEMPERATURE,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_OUTLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_TEMPERATURE,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_WATER,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
                 accuracy_decimals=2,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
@@ -106,8 +119,10 @@ CONFIG_SCHEMA = cv.All(
                 state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
-                unit_of_measurement=UNIT_BTU,
+                unit_of_measurement=UNIT_BTU_PER_HOUR,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_CONN_STATUS): binary_sensor.binary_sensor_schema(
                 device_class = DEVICE_CLASS_CONNECTIVITY
