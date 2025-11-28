@@ -29,8 +29,12 @@ from esphome.const import (
     CONF_TARGET_TEMPERATURE,
 
     DEVICE_CLASS_CONNECTIVITY,
+    DEVICE_CLASS_POWER,
+    DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_WATER,
     DEVICE_CLASS_GAS,
 
+    STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
 
     UNIT_CUBIC_METER,
@@ -56,6 +60,7 @@ CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
 CONF_WATER_UTILIZATION  = "water_utilization"
 CONF_GAS_TOTAL          = "gas_total"
+CONF_GAS_TOTAL_CUBIC_FEET = "gas_total_cuft"
 CONF_GAS_CURRENT        = "gas_current"
 
 CONF_CONN_STATUS        = "conn_status"
@@ -75,22 +80,31 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_TARGET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_TEMPERATURE,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_INLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_TEMPERATURE,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_OUTLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_TEMPERATURE,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_WATER,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
                 accuracy_decimals=2,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
@@ -98,9 +112,17 @@ CONFIG_SCHEMA = cv.All(
                 device_class=DEVICE_CLASS_GAS,
                 state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
+            cv.Optional(CONF_GAS_TOTAL_CUBIC_FEET): sensor.sensor_schema(
+                unit_of_measurement="ft³",
+                accuracy_decimals=2,
+                device_class=DEVICE_CLASS_GAS,
+                state_class=STATE_CLASS_TOTAL_INCREASING,
+            ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_BTU,
                 accuracy_decimals=2,
+                device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_CONN_STATUS): binary_sensor.binary_sensor_schema(
                 device_class = DEVICE_CLASS_CONNECTIVITY
@@ -148,6 +170,10 @@ async def to_code(config):
     if CONF_GAS_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])
         cg.add(var.set_gas_total_sensor(sens))
+
+    if CONF_GAS_TOTAL_CUBIC_FEET in config:
+        sens = await sensor.new_sensor(config[CONF_GAS_TOTAL_CUBIC_FEET])
+        cg.add(var.set_gas_total_cuft_sensor(sens))
 
     if CONF_GAS_CURRENT in config:
         sens = await sensor.new_sensor(config[CONF_GAS_CURRENT])
