@@ -74,9 +74,9 @@ text_sensor:
 
 sensor:
   - platform: uptime
-    name: $friendly_name Uptime Sensor
+    name: $friendly_name Uptime
   - platform: wifi_signal
-    name: $friendly_name wifi signal
+    name: $friendly_name WiFi Signal Strength
   - platform: navien
     name: $friendly_name Metrics
     uart_id: main_hw_uart
