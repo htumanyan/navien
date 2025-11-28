@@ -59,6 +59,7 @@ typedef struct{
     uint8_t  outlet_temp;
     uint8_t  inlet_temp;
     uint16_t accumulated_gas_usage;
+    float    accumulated_gas_usage_cuft;
     uint16_t current_gas_usage;
   } gas;
 
@@ -81,7 +82,8 @@ public:
   void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
   void set_water_utilization_sensor(sensor::Sensor *sensor) { water_utilization_sensor = sensor; }
   void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
-  void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }  
+  void set_gas_total_cuft_sensor(sensor::Sensor *sensor) { gas_total_cuft_sensor = sensor; }
+  void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }
   void set_real_time(bool rt){this->is_rt = rt;}
 
   void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
@@ -131,6 +133,7 @@ protected:
   sensor::Sensor *water_flow_sensor = nullptr;
   sensor::Sensor *water_utilization_sensor = nullptr;
   sensor::Sensor *gas_total_sensor = nullptr;
+  sensor::Sensor *gas_total_cuft_sensor = nullptr;
   sensor::Sensor *gas_current_sensor = nullptr;
 
 
