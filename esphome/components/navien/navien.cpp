@@ -53,8 +53,9 @@ void Navien::on_water(const WATER_DATA & water){
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
     this->state.water.utilization = water.operating_capacity * 0.5f;
     
-    if (this->is_rt)
+    if (this->is_rt) {
       this->update_water_sensors();
+    }
 }
   
 void Navien::on_gas(const GAS_DATA & gas){
@@ -88,8 +89,9 @@ void Navien::on_gas(const GAS_DATA & gas){
   this->state.controller_version = gas.controller_version_hi << 8 | gas.controller_version_lo;
   this->state.panel_version = gas.panel_version_hi << 8 | gas.panel_version_lo;
 
-  if (this->is_rt)
+  if (this->is_rt) {
     this->update_gas_sensors();
+  }
 }
   
 void Navien::on_error(){
@@ -102,6 +104,15 @@ void Navien::on_error(){
 }
 
 void Navien::update_water_sensors(){
+  if (this->target_temp_sensor != nullptr)
+    this->target_temp_sensor->publish_state(this->state.water.set_temp);
+
+  if (this->outlet_temp_sensor != nullptr)
+    this->outlet_temp_sensor->publish_state(this->state.water.outlet_temp);
+
+  if (this->inlet_temp_sensor != nullptr)
+    this->inlet_temp_sensor->publish_state(this->state.water.inlet_temp);
+
   if (this->water_flow_sensor != nullptr)
     this->water_flow_sensor->publish_state(this->state.water.flow_lpm);
 

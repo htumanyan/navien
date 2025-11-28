@@ -129,8 +129,8 @@ sensor:
     conn_status:
       name: $friendly_name Navien Connection Status
     recirc_status:
-      name: $friendly_name Navien Recirculation Status      
-#    real_time: true           
+      name: $friendly_name Navien Recirculation Status
+    real_time: true
 
 binary_sensor:
 
