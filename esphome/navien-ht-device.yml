@@ -10,28 +10,61 @@ packages:
 
 switch:
   - platform: gpio
-    id: hb1
+    id: lblue_status
     pin: D1
-    name: "D1"
+    name: "Left Blue"
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
   - platform: gpio
-    id: hb3
+    id: lred_status
     pin: D3
-    name: "D3"
+    name: "Left Red"
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
   - platform: gpio
-    id: hb2
+    id: lgreen_status
     pin: D2
-    name: "D2"
+    name: "Left Green"
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
   - platform: gpio
-    id: hb0
+    id: rgreen_status
     pin: D0
-    name: "D0"
+    name: "Right Green"
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
   - platform: gpio
-    id: hb6
+    id: rred_status
     pin: D6
-    name: "D6"
+    name: "Right Red"
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
 
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: conn_status
+          then:
+            - switch.turn_on: rgreen_status
+            - switch.turn_off:  rred_status
+          else:
+            - switch.turn_off: rgreen_status
+            - switch.turn_on:  rred_status
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - switch.turn_on: lblue_status
+          else:
+            if:
+              condition:
+                lambda: "return id(navien_portal).is_active();"
+              then:
+                - switch.turn_on:  lred_status
+                - switch.turn_on:  lblue_status
+              else:
+                - switch.turn_on: lblue_status
+                - delay: 500ms
+                - switch.turn_off: lblue_status
