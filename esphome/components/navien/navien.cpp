@@ -81,8 +81,9 @@ void Navien::on_gas(const GAS_DATA & gas){
   this->state.gas.set_temp    = NavienLink::t2c(gas.set_temp);
   this->state.gas.outlet_temp = NavienLink::t2c(gas.outlet_temp);
   this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
-  this->state.gas.ht_supply_temp = gas.ht_supply_temp_raw / 2.0f;
-  this->state.gas.ht_return_temp = gas.ht_return_temp_raw / 2.0f;
+  this->state.gas.ht_supply_temp = NavienLink::t2c(gas.ht_supply_temp);
+  this->state.gas.ht_return_temp = NavienLink::t2c(gas.ht_return_temp);
+
   
   this->state.gas.accumulated_gas_usage = gas.cumulative_gas_hi << 8 | gas.cumulative_gas_lo;
   this->state.gas.accumulated_gas_usage_cuft =
