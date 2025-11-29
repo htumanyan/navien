@@ -123,9 +123,13 @@ sensor:
       accuracy_decimals: 1
     ht_supply_temp:
       name: $friendly_name Heating Supply Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     ht_return_temp:
       name: $friendly_name Heating Return Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     conn_status:
       name: $friendly_name Connection Status
