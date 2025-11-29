@@ -62,8 +62,9 @@ typedef struct{
     uint16_t accumulated_gas_usage;
     float    accumulated_gas_usage_cuft;
     uint16_t current_gas_usage;
-    float    ht_supply_temp;
-    float    ht_return_temp;
+	uint8_t ht_supply_temp;
+	uint8_t ht_return_temp;
+
   } gas;
 
   uint16_t           controller_version;
