@@ -150,6 +150,9 @@ CONFIG_SCHEMA = cv.All(
                 device_class=DEVICE_CLASS_CONNECTIVITY
             ),
             cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
+            cv.Optional(CONF_REAL_TIME): cv.boolean
+        },
+        extra=cv.ALLOW_EXTRA,
             cv.Optional(CONF_REAL_TIME): cv.boolean,
         }
     )
