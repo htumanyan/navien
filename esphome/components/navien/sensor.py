@@ -150,18 +150,13 @@ CONFIG_SCHEMA = cv.All(
                 device_class=DEVICE_CLASS_CONNECTIVITY
             ),
             cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
-            cv.Optional(CONF_REAL_TIME): cv.boolean
+            cv.Optional(CONF_REAL_TIME): cv.boolean,
         },
         extra=cv.ALLOW_EXTRA,
-            cv.Optional(CONF_REAL_TIME): cv.boolean,
-        }
     )
     .extend(cv.polling_component_schema("5s"))
     .extend(uart.UART_DEVICE_SCHEMA)
 )
-
-
-
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
