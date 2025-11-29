@@ -53,7 +53,7 @@ from esphome.const import (
 #)
 
 UNIT_LPM  = "l/m"
-UNIT_BTU_PER_HOUR = "BTU/h"
+UNIT_BTU_PER_HOUR = "BTU"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
