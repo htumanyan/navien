@@ -6,9 +6,11 @@ substitutions:
   friendly_name: Navien
   project_name: Navien.ATOM-Lite-ESP32
   project_version: "0.0.0.1"
-
+  # NEW – tell navien-base.yml where to load the custom component from
+  external_component_source: "github://chintito4ever/Navien@main"
 packages:
   navien: !include navien-base.yml
+
 
 
 logger:
@@ -16,7 +18,7 @@ logger:
   baud_rate: 0 #disable logging over uart
   
 dashboard_import:
-  package_import_url: github://htumanyan/navien/esphome/navien-esphome-atom-lite-esp32.yml
+  package_import_url: github://chintito4ever/Navien/esphome/navien-esphome-atom-lite-esp32.yml@main
   import_full_config: false
 
 button:
