@@ -52,6 +52,7 @@ void Navien::on_water(const WATER_DATA & water){
     this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
     this->state.water.utilization = water.operating_capacity * 0.5f;
+    this->state.water.sys_status = water.sys_status;
     
     if (this->is_rt) {
       this->update_water_sensors();
@@ -80,6 +81,8 @@ void Navien::on_gas(const GAS_DATA & gas){
   this->state.gas.set_temp    = NavienLink::t2c(gas.set_temp);
   this->state.gas.outlet_temp = NavienLink::t2c(gas.outlet_temp);
   this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
+  this->state.gas.ht_supply_temp = gas.ht_supply_temp_raw / 2.0f;
+  this->state.gas.ht_return_temp = gas.ht_return_temp_raw / 2.0f;
   
   this->state.gas.accumulated_gas_usage = gas.cumulative_gas_hi << 8 | gas.cumulative_gas_lo;
   this->state.gas.accumulated_gas_usage_cuft =
@@ -118,6 +121,9 @@ void Navien::update_water_sensors(){
 
   if (this->water_utilization_sensor != nullptr)
     this->water_utilization_sensor->publish_state(this->state.water.utilization);
+
+  if (this->sys_status_sensor != nullptr)
+    this->sys_status_sensor->publish_state(this->state.water.sys_status);
 
   // Update the climate control with the current target temperature
   if (this->climate != nullptr){
@@ -191,6 +197,12 @@ void Navien::update_gas_sensors(){
 
   if (this->gas_current_sensor != nullptr)
     this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
+
+  if (this->ht_supply_temp_sensor != nullptr)
+    this->ht_supply_temp_sensor->publish_state(this->state.gas.ht_supply_temp);
+
+  if (this->ht_return_temp_sensor != nullptr)
+    this->ht_return_temp_sensor->publish_state(this->state.gas.ht_return_temp);
 }
   
 void Navien::update() {

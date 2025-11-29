@@ -110,6 +110,9 @@ sensor:
     water_utilization:
       name: $friendly_name Water Capacity Utilization
       unit_of_measurement: "%"
+    sys_status:
+      name: $friendly_name System Status
+      icon: "mdi:information-outline"
     gas_total:
       name: $friendly_name Accumulated Gas Usage
       filters:
@@ -126,6 +129,12 @@ sensor:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU/h"
       accuracy_decimals: 1
+    ht_supply_temp:
+      name: $friendly_name Heating Supply Temp
+      unit_of_measurement: "°F"
+    ht_return_temp:
+      name: $friendly_name Heating Return Temp
+      unit_of_measurement: "°F"
     conn_status:
       name: $friendly_name Navien Connection Status
     recirc_status:
