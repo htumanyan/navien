@@ -74,9 +74,9 @@ text_sensor:
 
 sensor:
   - platform: uptime
-    name: $friendly_name Uptime Sensor
+    name: $friendly_name Uptime
   - platform: wifi_signal
-    name: $friendly_name wifi signal
+    name: $friendly_name WiFi Signal Strength
   - platform: navien
     name: $friendly_name Metrics
     uart_id: main_hw_uart
@@ -120,7 +120,7 @@ sensor:
       name: $friendly_name Current Gas Usage
       filters:
         - lambda: return x * 3.9680;
-      unit_of_measurement: "BTU"
+      unit_of_measurement: "BTU/h"
       accuracy_decimals: 1
     ht_supply_temp:
       name: $friendly_name Heating Supply Temp
