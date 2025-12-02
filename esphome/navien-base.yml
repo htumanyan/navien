@@ -40,6 +40,7 @@ wifi:
     password: !secret ap_password
 
 captive_portal:
+  id: navien_portal
 
 web_server:
   port: 80
@@ -132,8 +133,10 @@ sensor:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     conn_status:
+      id: conn_status
       name: $friendly_name Connection Status
     recirc_status:
+      id: recirc_status
       name: $friendly_name Recirculation Status
     real_time: true
 
