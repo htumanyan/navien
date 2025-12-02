@@ -189,6 +189,8 @@ typedef struct {
   uint8_t  outlet_temp;
   uint8_t  inlet_temp;
   uint8_t  unknown_16;
+  uint8_t  unknown_17;
+  uint8_t  unknown_18;
   uint8_t  unknown_19; /// decreasing counter when hot water is running
   uint8_t  unknown_20; /// 0x05 always so far
   uint8_t  current_gas_lo;
