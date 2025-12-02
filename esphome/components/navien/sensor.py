@@ -31,7 +31,7 @@ from esphome.const import (
     DEVICE_CLASS_CONNECTIVITY,
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_TEMPERATURE,
-    DEVICE_CLASS_WATER,
+    DEVICE_CLASS_VOLUME_FLOW_RATE,
     DEVICE_CLASS_GAS,
 
     STATE_CLASS_MEASUREMENT,
@@ -98,7 +98,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
                 accuracy_decimals=2,
-                device_class=DEVICE_CLASS_WATER,
+                device_class=DEVICE_CLASS_VOLUME_FLOW_RATE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
