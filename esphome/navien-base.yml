@@ -9,7 +9,7 @@ substitutions:
   rx_pin: GPIO13
   platform: esp8266
   board: d1_mini
-  external_component_source: github://chintito4ever/Navien@main
+  external_component_source: github://chintito4ever/Navien@npe
 
 # NEW: load the custom `navien` component from your fork
 external_components:
