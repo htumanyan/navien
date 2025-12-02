@@ -53,7 +53,7 @@ from esphome.const import (
 #)
 
 UNIT_LPM  = "l/m"
-UNIT_BTU_PER_HOUR = "BTU"
+UNIT_BTU = "BTU"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
@@ -125,7 +125,7 @@ CONFIG_SCHEMA = cv.All(
                 state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
-                unit_of_measurement=UNIT_BTU_PER_HOUR,
+                unit_of_measurement=UNIT_BTU,
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_POWER,
                 state_class=STATE_CLASS_MEASUREMENT,
@@ -164,7 +164,7 @@ async def to_code(config):
 
     if CONF_WATER_FLOW in config:
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
-        cg.add(sens.set_icon(config[CONF_WATER_FLOW].get(CONF_ICON, "mdi:gauge")))
+        cg.add(sens.set_icon(config[CONF_WATER_FLOW].get(CONF_ICON, "mdi:waves-arrow-right")))
         cg.add(var.set_water_flow_sensor(sens))
 
     if CONF_WATER_UTILIZATION in config:
