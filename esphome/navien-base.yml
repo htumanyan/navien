@@ -124,7 +124,7 @@ sensor:
       accuracy_decimals: 1
     conn_status:
       id: conn_status
-      name:Connection Status
+      name: Connection Status
     recirc_status:
       id: recirc_status
       name: Recirculation Status
