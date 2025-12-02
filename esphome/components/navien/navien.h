@@ -62,8 +62,6 @@ typedef struct{
     uint16_t accumulated_gas_usage;
     float    accumulated_gas_usage_cuft;
     uint16_t current_gas_usage;
-	uint8_t ht_supply_temp;
-	uint8_t ht_return_temp;
 
   } gas;
 
@@ -89,8 +87,6 @@ public:
   void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
   void set_gas_total_cuft_sensor(sensor::Sensor *sensor) { gas_total_cuft_sensor = sensor; }
   void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }
-  void set_ht_supply_temp_sensor(sensor::Sensor *sensor) { ht_supply_temp_sensor = sensor; }
-  void set_ht_return_temp_sensor(sensor::Sensor *sensor) { ht_return_temp_sensor = sensor; }
   void set_real_time(bool rt){this->is_rt = rt;}
 
   void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
@@ -143,8 +139,6 @@ protected:
   sensor::Sensor *gas_total_sensor = nullptr;
   sensor::Sensor *gas_total_cuft_sensor = nullptr;
   sensor::Sensor *gas_current_sensor = nullptr;
-  sensor::Sensor *ht_supply_temp_sensor = nullptr;
-  sensor::Sensor *ht_return_temp_sensor = nullptr;
 
 
   binary_sensor::BinarySensor *conn_status_sensor = nullptr;

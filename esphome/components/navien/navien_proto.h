@@ -189,8 +189,6 @@ typedef struct {
   uint8_t  outlet_temp;
   uint8_t  inlet_temp;
   uint8_t  unknown_16;
-  uint8_t  ht_supply_temp_raw;  // 0x0F packet: serialBuffer[17], value/2.0 = °F
-  uint8_t  ht_return_temp_raw;  // 0x0F packet: serialBuffer[18], value/2.0 = °F
   uint8_t  unknown_19; /// decreasing counter when hot water is running
   uint8_t  unknown_20; /// 0x05 always so far
   uint8_t  current_gas_lo;

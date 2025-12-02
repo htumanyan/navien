@@ -63,8 +63,6 @@ CONF_SYS_STATUS         = "sys_status"
 CONF_GAS_TOTAL          = "gas_total"
 CONF_GAS_TOTAL_CUBIC_FEET = "gas_total_cuft"
 CONF_GAS_CURRENT        = "gas_current"
-CONF_HT_SUPPLY_TEMP     = "ht_supply_temp"
-CONF_HT_RETURN_TEMP     = "ht_return_temp"
 
 CONF_CONN_STATUS        = "conn_status"
 CONF_REAL_TIME          = "real_time"
@@ -132,20 +130,6 @@ CONFIG_SCHEMA = cv.All(
                 device_class=DEVICE_CLASS_POWER,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
-            cv.Optional(CONF_HT_SUPPLY_TEMP): sensor.sensor_schema(
-                unit_of_measurement="°F",
-                icon="mdi:thermometer",
-                accuracy_decimals=1,
-                device_class=DEVICE_CLASS_TEMPERATURE,
-                state_class=STATE_CLASS_MEASUREMENT,
-            ),
-            cv.Optional(CONF_HT_RETURN_TEMP): sensor.sensor_schema(
-                unit_of_measurement="°F",
-                icon="mdi:thermometer",
-                accuracy_decimals=1,
-                device_class=DEVICE_CLASS_TEMPERATURE,
-                state_class=STATE_CLASS_MEASUREMENT,
-            ),
             cv.Optional(CONF_CONN_STATUS): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_CONNECTIVITY
             ),
@@ -204,14 +188,6 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_GAS_CURRENT])
         cg.add(sens.set_icon(config[CONF_GAS_CURRENT].get(CONF_ICON, "mdi:gas-burner")))
         cg.add(var.set_gas_current_sensor(sens))
-
-    if CONF_HT_SUPPLY_TEMP in config:
-        sens = await sensor.new_sensor(config[CONF_HT_SUPPLY_TEMP])
-        cg.add(var.set_ht_supply_temp_sensor(sens))
-
-    if CONF_HT_RETURN_TEMP in config:
-        sens = await sensor.new_sensor(config[CONF_HT_RETURN_TEMP])
-        cg.add(var.set_ht_return_temp_sensor(sens))
 
     if CONF_REAL_TIME in config:
         cg.add(var.set_real_time(config[CONF_REAL_TIME]))

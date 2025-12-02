@@ -129,12 +129,6 @@ sensor:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU/h"
       accuracy_decimals: 1
-    ht_supply_temp:
-      name: $friendly_name Heating Supply Temp
-      unit_of_measurement: "°F"
-    ht_return_temp:
-      name: $friendly_name Heating Return Temp
-      unit_of_measurement: "°F"
     conn_status:
       name: $friendly_name Navien Connection Status
     recirc_status:
