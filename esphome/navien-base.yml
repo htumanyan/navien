@@ -117,7 +117,7 @@ sensor:
       unit_of_measurement: "ft³"
       accuracy_decimals: 2
     gas_current:
-      name: $friendly_name Current Gas Usage
+      name: Current Gas Usage
       filters:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU"
