@@ -122,16 +122,6 @@ sensor:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU"
       accuracy_decimals: 1
-    ht_supply_temp:
-      name: Heating Supply Temp
-      filters:
-        - lambda: return x * (9.0/5.0) + 32.0;
-      unit_of_measurement: "°F"
-    ht_return_temp:
-      name: Heating Return Temp
-      filters:
-        - lambda: return x * (9.0/5.0) + 32.0;
-      unit_of_measurement: "°F"
     conn_status:
       id: conn_status
       name:Connection Status
