@@ -72,6 +72,11 @@ void Navien::on_gas(const GAS_DATA & gas){
 	   gas.unknown_19
   );
 
+  ESP_LOGV(TAG, "Received Heating: Supply: 0x%02X Return: 0x%02X",
+	   gas.heating_supply_temp,
+     gas.heating_return_temp
+  );
+
   // Update the counter that will be used in assessment
   // of whether we're connected to navien or not
   this->received_cnt++;
@@ -79,7 +84,10 @@ void Navien::on_gas(const GAS_DATA & gas){
   this->state.gas.set_temp    = NavienLink::t2c(gas.set_temp);
   this->state.gas.outlet_temp = NavienLink::t2c(gas.outlet_temp);
   this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
-  
+
+  this->state.gas.heating_supply_temp = NavienLink::t2c(gas.heating_supply_temp);
+  this->state.gas.heating_return_temp = NavienLink::t2c(gas.heating_return_temp);
+
   this->state.gas.accumulated_gas_usage = gas.cumulative_gas_hi << 8 | gas.cumulative_gas_lo;
   this->state.gas.current_gas_usage = gas.current_gas_hi << 8 | gas.current_gas_lo;
 
@@ -175,6 +183,13 @@ void Navien::update_gas_sensors(){
 
   if (this->gas_current_sensor != nullptr)
     this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
+
+  if (this->heating_supply_temp_sensor != nullptr)
+    this->heating_supply_temp_sensor->publish_state(this->state.gas.heating_supply_temp);
+    
+  if (this->heating_return_temp_sensor != nullptr)
+    this->heating_return_temp_sensor->publish_state(this->state.gas.heating_return_temp);
+
 }
   
 void Navien::update() {

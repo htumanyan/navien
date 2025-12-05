@@ -34,7 +34,7 @@ void NavienLink::parse_control_packet(){
 void NavienLink::parse_status_packet(){
   switch(this->recv_buffer.hdr.packet_type){
   case PACKET_TYPE_WATER:
-    //NavienLink::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
+    NavienLink::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
     ESP_LOGV(TAG, "B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
 	     this->recv_buffer.water.unknown_06,
 	     this->recv_buffer.water.unknown_32,
