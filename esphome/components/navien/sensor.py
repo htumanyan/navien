@@ -53,6 +53,8 @@ UNIT_BTU  = "BTU"
 
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
+CONF_HEATING_SUPPLY_TEMPERATURE = "heating_supply_temp"
+CONF_HEATING_RETURN_TEMPERATURE = "heating_return_temp"
 CONF_WATER_FLOW         = "water_flow"
 CONF_WATER_UTILIZATION  = "water_utilization"
 CONF_GAS_TOTAL          = "gas_total"
@@ -81,6 +83,14 @@ CONFIG_SCHEMA = cv.All(
                 accuracy_decimals=2,
             ),
             cv.Optional(CONF_OUTLET_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_HEATING_SUPPLY_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_HEATING_RETURN_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
             ),
