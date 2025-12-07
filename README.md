@@ -71,6 +71,9 @@ Compile your firmware:
 bash esphome compile navien-wrd-hb.yml 
 ```
 
+**IMPORTANT: ensure that you are running the latest version of esphome, 2025.11.4 or later. Esphome introduced incompatible changes after the version 2025.7.4 that this repo was based off of. Hence it is critical to ensure the latest version of esphome is applied.**
+
+
 Flash it to your ESP32:
 
 ```
