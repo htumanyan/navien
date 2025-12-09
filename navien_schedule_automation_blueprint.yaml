@@ -1,0 +1,207 @@
+blueprint:
+  name: Navien Scheduled Recirculation 
+  description: >
+    Automates turning on Navien water heater recirculation based on a schedule and other triggers. 
+    
+    This automation only works if your Navien water heater is configured to use scheduled ("Always On", "Intelligent",
+    or "Weekly") recirculation. It will not work if the water heater is configured for "HotButton" recirculation.
+
+    Version: 1.0.1
+  domain: automation
+  input:
+    recirculation_schedule:
+      name: Navien Water Recirculation Schedule
+      description: >
+        Set this to a schedule entity to monitor for when recirculation should be active. A schedule can be created
+        using the [Schedule](https://www.home-assistant.io/integrations/schedule/) integration.
+      selector:
+        entity:
+          domain: schedule
+    navien_recirculation_switch:
+      name: Navien Allow Recirculation
+      description: >
+        Set this to the "Allow Recirculation" switch from your Navien device. This controls whether the Navien is
+        allowed to recirculate water right now.
+      selector:
+        entity:
+          filter:
+            - domain: switch
+              integration: esphome
+    navien_circulating:
+      name: Navien Scheduled Recirculation
+      description: >
+        Set this to the "Scheduled Recirculation" sensor from your Navien device. This indicates if the Navien is 
+        actively recirculating water.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+              integration: esphome
+    navien_mode:
+      name: Navien Recirculation Mode
+      description: >
+        Set this to the "Recirculation Mode" sensor entity from your Navien device. This is used to ensure that your
+        Navien is properly configured for this automation; if it is not, you will get a notification of the issue when
+        the automation tries to enable recirculation.
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              integration: esphome
+    navien_hotbutton:
+      name: Navien HotButton
+      description: >
+        Set this to a button or helper toggle. If you have multiple physical buttons that you'd like to use as 
+        triggers, you can set this to a button group helper containing all of them. If your Navien device in exposes
+        a "HotButton" button entity, you can use that as well, since it doesn't do anything otherwise if your Navien
+        is set to scheduled recirculation mode.
+
+        Pressing this button will trigger an immediate water recirculation cycle, regardless of the schedule or 
+        alternate triggers.
+      selector:
+        entity:
+          filter:
+            - domain: button
+              integration: esphome
+    alternate_recirculation_switch:
+      name: Alternate Recirculation Trigger
+      description: >
+        _(Optional)_ A switch that, when turned on, will also enable recirculation. Recirculation will be enabled when
+        either this switch is "on" or the schedule is in an "on" period.
+
+        Suggestions: 
+          * Set this to a "on when any member is on" helper group to allow light switches to enable recirculation
+            when certain bathroom lights are on.
+          * Set this to an toggle helper that is controlled by another automation to enable recirculation on demand 
+            when certain conditions are met (e.g. motion detected in bathroom, washing machine is on, etc). Just make
+            sure that automation is designed to only set the toggle to "off" when none of the conditions are present.
+      selector:
+        entity:
+          domain: 
+            - switch
+            - input_boolean
+      default: ""
+trigger_variables:
+  schedule_entity: !input recirculation_schedule
+  alternate_entity: !input alternate_recirculation_switch
+variables:
+  schedule_and_alternate_are_off: >
+    {{ is_state(schedule_entity, 'off') and (alternate_entity == "" or is_state(alternate_entity, 'off')) }}
+  navien_mode: !input navien_mode
+  other_navilink_present: >
+     {{ device_entities(device_id(schedule_entity)) | select('search', 'navilink') | first | default('') }}
+triggers:
+  - trigger: state
+    id: schedule_on
+    entity_id: !input recirculation_schedule
+    to: "on"
+  - trigger: state
+    id: schedule_off
+    entity_id: !input recirculation_schedule
+    to: "off"
+  - trigger: template
+    value_template: >-
+      {{ is_state(alternate_entity, 'on') }}
+    id: alternate_on
+  - trigger: template
+    value_template: >-
+      {{ is_state(alternate_entity, 'off') }}
+    id: alternate_off
+  - trigger: state
+    id: hotbutton
+    entity_id: !input navien_hotbutton
+actions:
+  # Complain if the Navien is in the wrong mode. But keep going, because the Navien will remember the state
+  # of "Allow Recirculation" even if it's in the wrong mode, and recirculation will start if the user fixes it.
+  - if:
+      - condition: template
+        value_template: >-
+          {{ not is_state(navien_mode, 'Scheduled') }}
+    then:
+      - service: persistent_notification.create
+        data:
+          title: "Navien Scheduled Recirculation Automation Issue"
+          message: >
+            The Navien Scheduled Recirculation Automation attempted to enable recirculation, but the Navien
+            water heater is not configured for scheduled recirculation mode. Please set the water heater's
+            recirculation mode to "Always On", "Intelligent", or "Weekly" in order for this automation to work.
+          notification_id: navien_scheduled_recirculation_error
+  # Complain if another NaviLink is present, as it will likely block our attempts to control the schedule
+  - if:
+      - condition: template
+        value_template: >-
+          {{ is_state(other_navilink_present, 'on') }}
+    then:
+      - service: persistent_notification.create
+        data:
+          title: "Navien Scheduled Recirculation Automation Issue"
+          message: >
+            The Navien Scheduled Recirculation Automation attempted to enable recirculation, but another NaviLink
+            appears to be connected. True NaviLink devices will insist on controlling the recirculation schedule 
+            and will thwart any attempts by this automation to do the same. Please disconnect the other NaviLink
+            and reset your ESPHome device in order to use this automation.
+          notification_id: navien_scheduled_recirculation_error
+
+  - choose:
+      # Simulate the hot button by turning on recirculation and letting it run a complete cycle.
+      - conditions:
+          - condition: trigger
+            id: hotbutton
+        sequence:
+          # If scheduled recirculation is enabled, disable it first. Disabling and re-enabling it will trigger a 
+          # recirculation cycle.
+          - if:
+              - condition: state
+                entity_id: !input navien_recirculation_switch
+                state: "on"
+            then:
+              - action: switch.turn_off
+                target:
+                  entity_id: !input navien_recirculation_switch
+              - delay:
+                  hours: 0
+                  minutes: 0
+                  seconds: 5
+                  milliseconds: 0
+          # Enable recirculation. The water heater will immediately start a recirculation cycle.
+          - action: switch.turn_on
+            target:
+              entity_id: !input navien_recirculation_switch
+            data: {}
+          # Wait for the recirculation cycle to finish.
+          - wait_for_trigger:
+              - trigger: state
+                entity_id: !input navien_circulating
+                from: "on"
+                to: "off"
+          # Stop here if recirculation is supposed to be on right now, leaving it on.
+          - condition: template
+            value_template: "{{ schedule_and_alternate_are_off }}"
+          - action: switch.turn_off
+            target:
+              entity_id: !input navien_recirculation_switch
+      # Enable recirculation when either the schedule or alternate trigger turns on.
+      - conditions:
+          - condition: trigger
+            id:
+              - schedule_on
+              - alternate_on
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: !input navien_recirculation_switch
+      # Disable recirculation when both the schedule and alternate trigger are off.
+      - conditions:
+          - condition: and
+            conditions:
+              - condition: trigger
+                id:
+                  - schedule_off
+                  - alternate_off
+              - condition: template
+                value_template: "{{ schedule_and_alternate_are_off }}"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: !input navien_recirculation_switch
+mode: single

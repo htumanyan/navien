@@ -139,6 +139,12 @@ sensor:
       name: "${friendly_name} Heat Capacity"
       unit_of_measurement: "%"
       accuracy_decimals: 1
+    hotbutton_recirc_running:
+      id: hotbutton_recirc_running
+      name: ${friendly_name} Hot Button Recirculation
+    scheduled_recirc_running:
+      id: scheduled_recirc_running
+      name: ${friendly_name} Scheduled Recirculation
     gas_total:
       name: "${friendly_name} Accumulated Gas Usage"
       filters:
@@ -171,12 +177,16 @@ sensor:
     conn_status:
       id: conn_status
       name: "${friendly_name} Connection Status"
-    recirc_status:
-      id: recirc_status
-      name: "${friendly_name} Recirculation Status"   
+    recirc_mode:
+      id: recirc_mode
+      name: "${friendly_name} Recirculation Mode"
     boiler_active:
       id: boiler_active
       name: "${friendly_name} Boiler Active"   
+    # this will be true if another NaviLink device is also connected to the RS485 bus
+    other_navilink_installed:
+      id: other_navilink_installed
+      name: "${friendly_name} Other NaviLink Installed"  
 #    real_time: true 
     
 
@@ -184,8 +194,12 @@ binary_sensor:
 
 switch:
   - platform: navien
+    type: power
     name: ${friendly_name} Power On/Off
-
+  # "Allow Recirculation" turns on recirculation when the water heater is not in HotButton mode
+  - platform: navien
+    type: allow_scheduled_recirc
+    name: ${friendly_name} Allow Recirculation
 button:
   - platform: restart
     name: "${friendly_name} Restart"
