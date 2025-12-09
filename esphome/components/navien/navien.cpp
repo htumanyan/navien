@@ -44,6 +44,18 @@ namespace navien {
     }
   }
 
+  void NavienBase::send_scheduled_recirculation_on_cmd() {
+    if (this->link_ != nullptr) {
+      this->link_->send_scheduled_recirculation_on_cmd();
+    }
+  }
+
+  void NavienBase::send_scheduled_recirculation_off_cmd() {
+    if (this->link_ != nullptr) {
+      this->link_->send_scheduled_recirculation_off_cmd();
+    }
+  }
+
   // Navien implementation
   void Navien::setup() {
     this->state.power = POWER_OFF;
@@ -67,9 +79,9 @@ namespace navien {
     }
 
     if (water.system_status & SYS_STATUS_FLAG_RECIRC){
-      state.recirculation = RECIRCULATION_ON;
+      state.recirculation = SCHEDULED;
     }else{
-      state.recirculation = RECIRCULATION_OFF;
+      state.recirculation = HOTBUTTON;
     }
 
     
@@ -90,6 +102,10 @@ namespace navien {
     this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
     this->state.water.utilization = water.operating_capacity * 0.5f;
+    this->state.water.scheduled_recirc_running = water.heating_mode & HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING;
+    this->state.water.hotbutton_recirc_running = water.recirculation_enabled & RECIRC_STATUS_FLAG_HOTBUTTON_ON;
+    this->state.water.scheduled_recirc_allowed = water.recirculation_enabled & RECIRC_STATUS_FLAG_SCHEDULED_ON;
+
     if (this->is_rt)
       this->update_water_sensors();
   }
@@ -174,6 +190,13 @@ namespace navien {
     if (this->boiler_active_sensor != nullptr){
       this->boiler_active_sensor->publish_state(this->state.water.boiler_active);
     }
+    if (this->scheduled_recirc_running_sensor != nullptr){
+      this->scheduled_recirc_running_sensor->publish_state(this->state.water.scheduled_recirc_running);
+    }
+    if (this->hotbutton_recirc_running_sensor != nullptr){
+      this->hotbutton_recirc_running_sensor->publish_state(this->state.water.hotbutton_recirc_running);
+    }
+
     // Update the climate control with the current target temperature
     if (this->climate != nullptr){
       this->climate->current_temperature = this->state.water.outlet_temp;
@@ -181,14 +204,8 @@ namespace navien {
       this->climate->publish_state();
     }
 
-    if (this->recirc_status_sensor != nullptr){
-      switch(this->state.recirculation){
-      case RECIRCULATION_ON:
-        this->recirc_status_sensor->publish_state(true);
-        break;
-      default:
-        this->recirc_status_sensor->publish_state(false);
-      }
+    if (this->recirc_mode_sensor != nullptr) {
+      this->recirc_mode_sensor->publish_state(device_recirc_mode_to_str(this->state.recirculation));
     }
 
     switch(this->state.power){
@@ -217,6 +234,10 @@ namespace navien {
       default:
         this->power_switch->publish_state(false);
       }
+    }
+
+    if (this->allow_recirc_switch != nullptr){
+      this->allow_recirc_switch->publish_state(this->state.water.scheduled_recirc_allowed);
     }
 
     if (this->target_temp_sensor != nullptr)
@@ -302,6 +323,9 @@ namespace navien {
 
     if (this->conn_status_sensor != nullptr)
       this->conn_status_sensor->publish_state(this->is_connected);
+
+    if (this->other_navilink_installed_sensor != nullptr)
+      this->other_navilink_installed_sensor->publish_state(this->link_->is_other_navilink_installed());
 
     update_water_sensors();
     update_gas_sensors();
@@ -411,6 +435,17 @@ namespace navien {
     }
   }
 
+  std::string Navien::device_recirc_mode_to_str(DEVICE_RECIRC_MODE state) {
+    switch(state){
+      case HOTBUTTON:
+        return "HotButton";
+      case SCHEDULED:
+        return "Scheduled";
+      default:
+        return "Unknown";
+    }
+  }
+
   void Navien::print_buffer(const uint8_t *data, size_t length) {
     char hex_buffer[100];
     hex_buffer[(3 * 32) + 1] = 0;
@@ -461,6 +496,39 @@ void NavienOnOffSwitch::set_parent(Navien * parent) {
 
 void NavienOnOffSwitch::dump_config(){
   ESP_LOGCONFIG(TAG, "Empty custom switch");
+}
+
+void NavienAllowScheduledRecircSwitch::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up Allow Recirculation Switch '%s'...", this->name_.c_str());
+
+  bool initial_state = false;
+
+  // write state before setup
+  if (initial_state) {
+    this->turn_on();
+  } else {
+    this->turn_off();
+  }
+}
+
+void NavienAllowScheduledRecircSwitch::write_state(bool state) {
+  if (state){
+    ESP_LOGD(TAG, "Turning on Scheduled Recirculation");
+    this->parent->send_scheduled_recirculation_on_cmd();
+  }else{
+    ESP_LOGD(TAG, "Turning off Scheduled Recirculation");
+    this->parent->send_scheduled_recirculation_off_cmd();
+  }
+  this->publish_state(state);
+}
+
+void NavienAllowScheduledRecircSwitch::set_parent(Navien * parent) {
+  this->parent = parent;
+  parent->set_allow_recirc_switch(this);
+}
+
+void NavienAllowScheduledRecircSwitch::dump_config(){
+    ESP_LOGCONFIG(TAG, "Navien Allow Scheduled Recirculation Switch");
 }
 #endif
 

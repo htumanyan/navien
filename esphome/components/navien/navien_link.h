@@ -107,11 +107,18 @@ public:
   */
   
   /**
+   * Returns true if we're sharing the RS485 bus with another NaviLink-like device, otherwise false.
+   */
+  bool is_other_navilink_installed(){return this->other_navilink_installed;}
+  
+  /**
    * Send commands
    */
   void send_turn_on_cmd();
   void send_turn_off_cmd();
   void send_hot_button_cmd();
+  void send_scheduled_recirculation_on_cmd();
+  void send_scheduled_recirculation_off_cmd();
   void send_set_temp_cmd(float temp);
 
   
@@ -161,8 +168,9 @@ protected:
    *
    * @param buffer - command to be sent.
    * @param len - the length of buffer
+   * @param tries - number of times to send the command
    */
-  void send_cmd(const uint8_t * buffer, uint8_t len);
+  void send_cmd(const uint8_t * buffer, uint8_t len, uint8_t tries = 2);
   
 protected:
   // Uart Send/Receive facility
@@ -178,6 +186,9 @@ protected:
 
   // Data received off the wire
   RECV_BUFFER  recv_buffer;
+
+  // Flag indicating if we've seen control packets that we didn't send, which means an actual NaviLink is also present
+  bool other_navilink_installed = false;
 
   // Buffer for queued commands.
   // TODO: add thread safety - cmd_buffer is used in different thread contexts

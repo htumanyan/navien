@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor, binary_sensor, uart
+from esphome.components import sensor, binary_sensor, text_sensor, uart
 from esphome.components import output
 from esphome.core import ID  
 
@@ -24,6 +24,9 @@ from esphome.const import (
     
     DEVICE_CLASS_CONNECTIVITY,
     DEVICE_CLASS_GAS,
+    DEVICE_CLASS_RUNNING,
+    
+    ENTITY_CATEGORY_DIAGNOSTIC,
     
     STATE_CLASS_TOTAL_INCREASING,
     
@@ -46,10 +49,13 @@ CONF_GAS_TOTAL          = "gas_total"
 CONF_GAS_CURRENT        = "gas_current"
 CONF_SH_OUTLET_TEMPERATURE = "sh_outlet_temperature"
 CONF_SH_RETURN_TEMPERATURE = "sh_return_temperature"
+CONF_SCHEDULED_RECIRC_RUNNING = "scheduled_recirc_running"
+CONF_HOTBUTTON_RECIRC_RUNNING = "hotbutton_recirc_running"
+
 CONF_CONN_STATUS        = "conn_status"
 CONF_REAL_TIME          = "real_time"
 CONF_HEAT_CAPACITY      = "heat_capacity"
-CONF_RECIRC_STATUS      = "recirc_status"
+CONF_RECIRC_MODE        = "recirc_mode"
 CONF_TOTAL_DHW_USAGE    = "total_dhw_usage"
 CONF_TOTAL_OPERATING_TIME       = "total_operating_time"
 CONF_BOILER_ACTIVE              = "boiler_active"
@@ -57,6 +63,7 @@ CONF_CUMULATIVE_DWH_USAGE_HOURS = "total_dhw_usage_hours"
 CONF_CUMULATIVE_SH_USAGE_HOURS  = "total_sh_usage_hours"
 CONF_DAYS_SINCE_INSTALL         = "days_since_install"
 CONF_SRC                        = "src"
+CONF_OTHER_NAVILINK_INSTALLED   = "other_navilink_installed"
 
 
 CONFIG_SCHEMA = cv.All(
@@ -86,6 +93,12 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
                 accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_SCHEDULED_RECIRC_RUNNING): binary_sensor.binary_sensor_schema(
+                device_class = DEVICE_CLASS_RUNNING
+            ),
+            cv.Optional(CONF_HOTBUTTON_RECIRC_RUNNING): binary_sensor.binary_sensor_schema(
+                device_class = DEVICE_CLASS_RUNNING
             ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
@@ -134,7 +147,11 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_CONN_STATUS): binary_sensor.binary_sensor_schema(
                 device_class = DEVICE_CLASS_CONNECTIVITY
             ),
-            cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
+            cv.Optional(CONF_RECIRC_MODE): text_sensor.text_sensor_schema(),
+            cv.Optional(CONF_OTHER_NAVILINK_INSTALLED): binary_sensor.binary_sensor_schema(
+                device_class = DEVICE_CLASS_CONNECTIVITY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC
+            ),
             cv.Optional(CONF_REAL_TIME): cv.boolean,
             cv.Optional(CONF_SRC): cv.int_range(min=0, max=15)
         }
@@ -199,6 +216,16 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_WATER_UTILIZATION])
         cg.add(sens.set_icon(config[CONF_WATER_UTILIZATION].get(CONF_ICON, "mdi:water-percent")))
         cg.add(var.set_water_utilization_sensor(sens))
+
+    if CONF_SCHEDULED_RECIRC_RUNNING in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_SCHEDULED_RECIRC_RUNNING])
+        cg.add(sens.set_icon(config[CONF_SCHEDULED_RECIRC_RUNNING].get(CONF_ICON, "mdi:water-sync")))
+        cg.add(var.set_scheduled_recirc_running_sensor(sens))
+
+    if CONF_HOTBUTTON_RECIRC_RUNNING in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_HOTBUTTON_RECIRC_RUNNING])
+        cg.add(sens.set_icon(config[CONF_HOTBUTTON_RECIRC_RUNNING].get(CONF_ICON, "mdi:water-sync")))
+        cg.add(var.set_hotbutton_recirc_running_sensor(sens))
         
     if CONF_GAS_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])
@@ -216,9 +243,9 @@ async def to_code(config):
         sens = await binary_sensor.new_binary_sensor(config[CONF_CONN_STATUS])
         cg.add(var.set_conn_status_sensor(sens))
         
-    if CONF_RECIRC_STATUS in config:
-        sens = await binary_sensor.new_binary_sensor(config[CONF_RECIRC_STATUS])
-        cg.add(var.set_recirc_status_sensor(sens))
+    if CONF_RECIRC_MODE in config:
+        sens = await text_sensor.new_text_sensor(config[CONF_RECIRC_MODE])
+        cg.add(var.set_recirc_mode_sensor(sens))
     
     if CONF_BOILER_ACTIVE in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_BOILER_ACTIVE])
@@ -264,3 +291,6 @@ async def to_code(config):
         cg.add(sens.set_icon(config[CONF_DAYS_SINCE_INSTALL].get(CONF_ICON, "mdi:calendar-clock")))
         cg.add(var.set_days_since_install_sensor(sens))
  
+    if CONF_OTHER_NAVILINK_INSTALLED in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_OTHER_NAVILINK_INSTALLED])
+        cg.add(var.set_other_navilink_installed_sensor(sens))

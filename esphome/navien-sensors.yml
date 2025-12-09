@@ -104,9 +104,19 @@ sensor:
     conn_status:
       id: conn_status
       name: "${friendly_name} Connection Status${sensor_suffix}"
-    recirc_status:
-      id: recirc_status
-      name: "${friendly_name} Recirculation Status${sensor_suffix}"   
+    recirc_mode:
+      id: recirc_mode
+      name: "${friendly_name} Recirculation Mode${sensor_suffix}"
     boiler_active:
       id: boiler_active
       name: "${friendly_name} Boiler Active${sensor_suffix}"
+    hotbutton_recirc_running:
+      id: hotbutton_recirc_running
+      name: "${friendly_name} Hot Button Recirculation${sensor_suffix}"
+    scheduled_recirc_running:
+      id: scheduled_recirc_running
+      name: "${friendly_name} Scheduled Recirculation${sensor_suffix}"
+    # this will be true if another NaviLink device is also connected
+    other_navilink_installed:
+      id: other_navilink_installed
+      name: "${friendly_name} Other NaviLink Installed${sensor_suffix}"  

@@ -91,8 +91,20 @@ const uint8_t RECIRCULATION_ON_OFF_MASK    = 0x20;
 const uint8_t SYS_STATUS_FLAG_UNITS      = 0x08;
 
 // If this bit is 1, then recirculation is enabled.
-// On Navien 240A Celsius is set by turning DIP Switch 2 ON (upper position) on the front panel
+// On a Navien 240-A2, if this bit is 0 then recirculation is configured for "HotButton", otherwise 
+// it's in one of the other three modes, all of which cede control of recirculation scheduling to a 
+// NaviLink-like device (e.g. this ESPHome device) if one is present.
 const uint8_t SYS_STATUS_FLAG_RECIRC     = 0x02;
+
+/**
+ * Bitmask values for the recirculation_enabled byte (WATER_DATA.recirculation_enabled field)
+ */
+// In HotButton mode: If this bit is 1, hot button recirculation has been triggered and is active
+const uint8_t RECIRC_STATUS_FLAG_HOTBUTTON_ON = 0x01;
+// In Scheduled mode: If this bit is 1, recirculation is enabled. Note that this can still be 
+// changed when in HotButton mode, but the unit doesn't actually do anything in response until you 
+// switch the unit back to Scheduled mode.
+const uint8_t RECIRC_STATUS_FLAG_SCHEDULED_ON = 0x02;
 
 /**
  * Hardcoded command packets. Some commands have no uses data. Therefore rather than assemblying a packet
@@ -110,6 +122,17 @@ const uint8_t HOT_BUTTON_RELSE_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 
 
 const uint8_t RECIRC_ON_CMD[]        =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x08, 0xD9, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0};
 //  F7,05,0F,50,10,0C,4F,00,00,00,00,08,D9,00,00,00,00,00,D0
+
+// When in scheduled recirculation mode, this enables recirculation. NaviLink sends this either when you disable a schedule (since that's equivalent to telling the 
+// machine to always recirculate), or when the scheduled time block starts. It seems that when using a NaviLink, the schedule itself is kept either in the cloud or 
+// on the NaviLink itself, and it just tells the water heater when to enable/disable recirculation.
+// Once turned on, the unit will immediately run a recirculation cycle, and then continue to do so based on its internal logic until it receives the 
+// SCHEDULED_RECIRC_OFF_CMD command.
+// NOTE: if you send one of these commands while a real NaviLink is also connected, the NaviLink will immediately send its own command to reset the unit to whatever
+// state it thinks it should be in!
+const uint8_t SCHEDULED_RECIRC_ON_CMD[]  =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xEE};
+// When in scheduled recirculation mode, this turns off recirculation. NaviLink sends this either when you enable a schedule, or when the scheduled time block ends.
+const uint8_t SCHEDULED_RECIRC_OFF_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0};
 
 //                                                                                                           temp
 const uint8_t SET_TEMP_CMD_TEMPLATE[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -129,6 +152,9 @@ typedef struct {
    * 0x08 - DHW Recirculating
    * 0x10 - Space Heating
    * 0x20 - Domestic Hot Water Demand
+   * At least on an NPE-240A2 (maybe others), 0x08 only appears when the unit is in scheduled 
+   * (not HotButton) recirculation mode and is actively recirculating. In HotButton mode, when 
+   * a HotButton is pressed it shows as 0x20 here, but with recirculation_enabled=0x01 also set.
    */
 
   /**

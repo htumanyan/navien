@@ -43,6 +43,9 @@ public:
   void send_turn_off_cmd() { this->navien_link.send_turn_off_cmd(); }
   void send_hot_button_cmd() { this->navien_link.send_hot_button_cmd(); }
   void send_set_temp_cmd(float temp) { this->navien_link.send_set_temp_cmd(temp); }
+  void send_scheduled_recirculation_on_cmd() { this->navien_link.send_scheduled_recirculation_on_cmd(); }
+  void send_scheduled_recirculation_off_cmd() { this->navien_link.send_scheduled_recirculation_off_cmd(); }
+  bool is_other_navilink_installed() { return this->navien_link.is_other_navilink_installed(); }
 
   /**
    * Component interface - called in the main loop
