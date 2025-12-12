@@ -19,7 +19,7 @@ Here are some examples of how the integration looks in Home Assistant:
 ![image](doc/ha_screenshot.png)
 ![image](doc/esphome.png)
 
-This project grew out of my work on reverse engineering the native Navien communication protocol to automate my Navien 240a, which it is tested with thoroughly (and works in my home every day). It also incorporates the knowledge from work done by amazing folks in Home Assistant community: [tsquared](https://github.com/tsquared96), [https://github.com/Suva](https://github.com/Suva), [evanjarrett] (https://github.com/evanjarrett), David Carson, smurf12345 and many others who contributed in the [community thread] (https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567/118)
+This project grew out of my work on reverse engineering the native Navien communication protocol to automate my Navien 240a, which it is tested with thoroughly (and works in my home every day). It also incorporates the knowledge from work done by amazing folks in Home Assistant community: [tsquared](https://github.com/tsquared96), [https://github.com/Suva](https://github.com/Suva), [evanjarrett](https://github.com/evanjarrett), David Carson, smurf12345 and many others who contributed in the [community thread](https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567/118)
 
 👉 GitHub Repo: [htumanyan/navien](https://github.com/htumanyan/navien)
 
