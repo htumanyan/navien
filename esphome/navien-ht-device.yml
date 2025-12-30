@@ -40,6 +40,11 @@ switch:
     restore_mode: RESTORE_DEFAULT_OFF
     internal: true
 
+button:
+  - platform: navien
+    id: NavienSoftHotButton
+    name: NavienHotSoftButton
+
 interval:
   - interval: 1s
     then:
