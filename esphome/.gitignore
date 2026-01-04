@@ -4,3 +4,6 @@
 /.esphome/
 /secrets.yaml
 *~
+*/__pycache__/
+*.pyc
+tmp/*
