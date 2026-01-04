@@ -6,13 +6,14 @@ substitutions:
   friendly_name: Navien
   project_name: Navien.ATOM-Lite-ESP32
   project_version: "0.0.0.1"
+  external_component_source: github://htumanyan/navien/esphome/navien-esphome-atom-lite-esp32.yml
 
 packages:
   navien: !include navien-base.yml
 
 
 logger:
-  level: INFO
+  level: VERBOSE 
   baud_rate: 0 #disable logging over uart
   
 dashboard_import:

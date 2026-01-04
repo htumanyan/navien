@@ -112,11 +112,17 @@ const uint8_t SET_TEMP_CMD_TEMPLATE[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10,
                                         //F7              05    0F    50    10    0C    4F    00      00       5E    00    00    00    00    00    00    00    00  84 
   
 const uint8_t NAVILINK_PRESENT[]     =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x03, 0x4a, 0x00, 0x01, 0x55};
-  
+
+
+//Combi mode bit masks
+const uint8_t COMBI_MODE_IDLE_MASK            = 0x00;
+const uint8_t COMBI_MODE_SPACE_HEATING_MASK   = 0x10;
+const uint8_t COMBI_MODE_DOMESTIC_HOT_WATER_MASK = 0x20;
+
 typedef struct {
   uint8_t unknown_06;
   uint8_t unknown_07;
-  uint8_t unknown_08;
+  uint8_t combi_mode; 
   /**
    * Kudos and credits to individuals below for this byte
    * tsquared at https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567
@@ -188,8 +194,8 @@ typedef struct {
   uint8_t  set_temp;
   uint8_t  outlet_temp;
   uint8_t  inlet_temp;
-  uint8_t  unknown_16;
-  uint8_t  unknown_17;
+  uint8_t  sh_outlet_temp; //combi (and space heat?) models
+  uint8_t  sh_return_temp; //combi (and space heat?) models
   uint8_t  unknown_18;
   uint8_t  unknown_19; /// decreasing counter when hot water is running
   uint8_t  unknown_20; /// 0x05 always so far

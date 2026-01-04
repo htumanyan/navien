@@ -92,6 +92,21 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+    gas_target_temperature:
+      name: $friendly_name Gas Target Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    gas_inlet_temperature:
+      name: $friendly_name Gas Inlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    gas_outlet_temperature:
+      name: $friendly_name Gas Outlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
     inlet_temperature:
       name: $friendly_name Inlet Temp
       filters:
@@ -102,6 +117,18 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+    sh_outlet_temperature:
+      name: $friendly_name SH Outlet Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    sh_return_temperature:
+      name: $friendly_name SH Return Temp
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    combi_mode:
+      name: $friendly_name Combi Mode
     water_flow:
       name: $friendly_name Water Flow
       filters:
