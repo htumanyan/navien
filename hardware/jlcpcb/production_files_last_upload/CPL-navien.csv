@@ -1,7 +1,7 @@
 Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
-C1,0.1 uf,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,41.8,32.6316,180.0,top
-C2,47uf,CP_EIA-3216-18_Kemet-A_Pad1.58x1.35mm_HandSolder,41.2,29.6316,180.0,top
-C3,47uf,CP_EIA-3216-18_Kemet-A_Pad1.58x1.35mm_HandSolder,54.0512,4.3688,90.0,top
+C1,0.1 uf,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,18.288,26.1405,-90.0,top
+C2,47uf,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,15.6464,26.119,-90.0,top
+C3,47uf,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,54.0512,4.3688,90.0,top
 C4,0.1 uf,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,46.204648,25.4508,0.0,top
 D1,LED_RKGB,LED-ARRAY-SMD_4P-L1.6-W1.5-BL-FD-WITH-PIPE-2,5.2,23.0316,0.0,top
 D3,PSM712-LF-T7,SOT-23,50.907548,19.9898,0.0,top
@@ -9,19 +9,19 @@ D5,LED_RKGB,LED-ARRAY-SMD_4P-L1.6-W1.5-BL-FD-WITH-PIPE-1,5.3,8.5316,180.0,top
 J3,S6B-XH-SM4-TB,CONN_S6B-XH-SM4-TB_JST,59.350298,18.869751,90.0,top
 Q1,2n7002,SOT-23,49.3776,31.75,-90.0,top
 R1,10k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,42.3164,25.4508,180.0,top
-R10,120,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,46.2,31.8316,90.0,top
-R11,3K,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.2,27.2316,0.0,top
-R12,3K,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.2,29.4316,0.0,top
+R10,120,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,45.5836,30.7848,180.0,top
+R11,25,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.2,27.2316,0.0,top
+R12,100,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.2,29.4316,0.0,top
 R2,10k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,37.842548,25.9588,-90.0,top
 R3,120,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,47.199148,19.9644,90.0,top
 R4,10,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,46.183148,16.9164,180.0,top
 R5,10,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,46.199148,23.0124,180.0,top
-R6,3k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.5,18.9208,0.0,top
-R7,3k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.484,16.4316,0.0,top
-R8,2k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.5,14.1708,0.0,top
+R6,100,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.5,18.9208,0.0,top
+R7,25,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.484,16.4316,0.0,top
+R8,25,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,4.5,14.1708,0.0,top
 R9,10k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,53.4924,34.4424,0.0,top
 REF1,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,3.003148,32.8316,0.0,top
-REF2,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,60.9,32.8316,0.0,top
-REF3,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,60.85,4.0316,0.0,top
-REF4,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,3.003148,3.9316,0.0,top
+REF2,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,61.5,32.8316,0.0,top
+REF3,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,61.524748,3.0988,0.0,top
+REF4,MountingHole_2.2mm_M2,MountingHole_2.2mm_M2,3.003148,3.0988,0.0,top
 U2,THVD1406DR,SOIC_D0008A_TEX,40.509548,20.1168,0.0,top

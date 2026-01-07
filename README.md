@@ -82,7 +82,7 @@ bash esphome run navien-wrd-hb.yml
 
 ### 7. Hardware
 
-#### [Connecting to Navien-240A](./doc/240-a.md)
+#### [Connecting to Navien-240](./doc/240.md)
 
 ------------------------------------------------------------------------
 

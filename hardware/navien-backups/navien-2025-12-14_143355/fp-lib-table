@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "Library")(type "KiCad")(uri "/Users/h0t00fe/Documents/Projects/navien_git/hardware/libraries/BIVAR_PIPE/Library.pretty")(options "")(descr ""))
+)

@@ -1,0 +1,6 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "THVD1406")(type "KiCad")(uri "${KIPRJMOD}/libraries/THVD1406DR/footprints.pretty")(options "")(descr ""))
+  (lib (name "S6B_XH_SM4_TB")(type "KiCad")(uri "${KIPRJMOD}/libraries/S6B_XH_SM4_TB/footprints.pretty")(options "")(descr ""))
+  (lib (name "BIVAR_PIPE")(type "KiCad")(uri "${KIPRJMOD}/libraries/BIVAR_PIPE/footprints.pretty")(options "")(descr ""))
+)
