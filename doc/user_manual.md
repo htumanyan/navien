@@ -45,13 +45,7 @@ Used for:
 - **Powering the controller**, if your Navien unit does not provide power (see **Powering the Unit**)
 
 ### B) 6-pin connector (Navien cable)
-This connector receives the cable that connects the controller to the Navien unit.
-
-Steps:
-1. Unpackage the controller and cable.
-2. Plug the cable into the controller’s **6-pin jack**.
-3. The connector is **keyed** and fits **only one orientation**.
-4. **Do not force it.** If insertion feels wrong, remove it, flip the connector orientation, and try again.
+This connector receives the cable that connects the controller to the Navien unit. 
 
 ---
 
@@ -86,6 +80,23 @@ To power the controller from a Navien 240 model:
 
 
 ---
+
+## Installation and Wiring
+
+Steps:
+1. Unpackage the controller and cable.
+2. Plug the cable into the controller’s **6-pin jack**.
+3. The connector is **keyed** and fits **only one orientation**.
+4. **Do not force it.** If insertion feels wrong, remove it, flip the connector orientation, and try again.
+5. Turn off the Navien unit - unplug the power cable from receptacle.
+6. Remove the front panel of the Navien unit - it is usually attached by two screws at the top and two at the bottom.
+7. Connect the main 5-pin connector (it has multiple wires going in it, as opposed to the second 5-pin connector that has just one red wire) to the 5-pin slot on the front display.
+8. If your Navien unit is 240A and you don't have the Navien hot button kit installed, then insert the 13-pin connector into the empty 13-pin slot in the main board of the unit. This is to enable hot button functionality without the actual hot button device. If you have the Navien hot button device, then install it per Navien instructions and ignore this step.
+9. Remove the front panel of the Navien unit - it is usually attached by two screws at the top and two at the bottom.
+10. Plug in the power receptacle and turn on the Navien unit.
+
+![Navien 240A and 240A2 wiring diagram](Navien_240_wiring.png)
+**Navien 240A and 240A2 wiring diagram** 
 
 ## LED Indicators
 
@@ -126,6 +137,8 @@ This LED can flash **green** or **red** and indicates connectivity to the Navien
    - The right LED should change to **solid blue** once connected to your Wi-Fi
 
 ---
+
+## Wiring Diagram
 
 ## Troubleshooting
 
