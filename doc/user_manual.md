@@ -79,17 +79,11 @@ To power the controller from a Navien 240 model:
 5. Plug the Navien unit back in and power it on.
 
 
-<div style="display: flex; gap: 24px; align-items: flex-start;">
-   <div style="text-align: center; background: #fff; padding: 8px; border-radius: 6px;">
-      <img src="240a_panel.png" alt="Navien 240A front panel" width="300"/><br/>
-      <b>Navien 240A front panel</b>
-   </div>
-   <div style="width:2px; background:#ccc; height: 240px; margin: 0 12px;"></div>
-   <div style="text-align: center;">
-      <img src="240a2_panel.png" alt="Navien 240A2 front panel" width="300"/><br/>
-      <b>Navien 240A2 front panel</b>
-   </div>
-</div>
+
+| ![Navien 240A front panel](240a_panel.png) | ![Navien 240A2 front panel](240a2_panel.png) |
+|:-----------------------------------------:|:-------------------------------------------:|
+| **Navien 240A front panel**                | **Navien 240A2 front panel**                |
+
 
 ---
 
