@@ -51,12 +51,57 @@ namespace esphome
       FARENHEIT
     } DEVICE_UNITS;
 
-    typedef enum _DEVICE_COMBI_MODE
+    typedef enum _DEVICE_HEATING_MODE
     {
-      COMBI_MODE_IDLE,
-      COMBI_MODE_SPACE_HEATING,
-      COMBI_MODE_DOMESTIC_HOT_WATER
-    } DEVICE_COMBI_MODE;
+      HEATING_MODE_IDLE = 0x00,
+      HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING = 0x08,
+      HEATING_MODE_SPACE_HEATING = 0x10,
+      HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND = 0x20
+    } DEVICE_HEATING_MODE;
+
+
+//https://github.com/rudybrian/PyNavienSmartController
+    typedef enum _DEVICE_TYPE
+    {
+      NO_DEVICE,
+      NPE,
+      NCB,
+      NHB,
+      CAS_NPE,
+      CAS_NHB,
+      NFB,
+      CAS_NFB,
+      NFC,
+      NPN,
+      CAS_NPN,
+      NPE2,
+      CAS_NPE2,
+      NCB_H,
+      NVW,
+      CAS_NVW
+    } DEVICE_TYPE;
+
+
+//https://github.com/ificator/navien_ha
+    typedef enum _OPERATING_STATE
+    {
+      STANDBY = 0x14,
+      DEMAND = 0x15,
+      STARTUP = 0x20, 
+      PRE_PURGE_1 = 0x28,
+      PRE_PURGE_2 = 0x29,
+      PRE_IGNITION = 0x2A,
+      IGNITION = 0x2B,
+      FLAME_ON = 0x2C,
+      RAMP_UP = 0x2D,
+      ACTIVE_COMBUSTION = 0x33,
+      WATER_ADJUSTMENT_VALVE_OPERATION = 0x34,
+      FLAME_OFF = 0x3C,
+      POST_PURGE_1 = 0x46,
+      POST_PURGE_2 = 0x47,
+      DHW_WAIT = 0x49 //DHW Wait / Set Point Match depending on model
+    } OPERATING_STATE;
+
     typedef struct
     {
       struct
@@ -66,6 +111,8 @@ namespace esphome
         uint8_t inlet_temp;
         float flow_lpm;
         uint8_t utilization;
+        bool boiler_active;
+
       } water;
       struct
       {
@@ -74,8 +121,15 @@ namespace esphome
         uint8_t inlet_temp;
         uint16_t accumulated_gas_usage;
         uint16_t current_gas_usage;
-        uint8_t sh_outlet_temp; //combi (and space heat?) models
-        uint8_t sh_return_temp; //combi (and space heat?) models
+        uint8_t sh_outlet_temp; // combi (and space heat?) models
+        uint8_t sh_return_temp; // combi (and space heat?) models
+        uint8_t heat_capacity;
+        uint16_t total_dhw_usage;
+        uint16_t total_operating_time;
+        uint16_t cumulative_dwh_usage_hours;
+        uint16_t cumulative_sh_usage_hours;
+        uint16_t cumulative_domestic_usage_cnt;
+        uint16_t days_since_install;
       } gas;
       struct
       {
@@ -92,11 +146,10 @@ namespace esphome
         uint8_t unknown_24;
         uint8_t unknown_25;
         uint8_t unknown_26;
-        uint8_t unknown_27;
-        uint8_t unknown_28; // Counter A_lo
-        uint8_t unknown_29; // Counter A_hi
-        uint8_t unknown_30; // Counter B_lo
-        uint8_t unknown_31; // Counter B_hi
+        uint8_t unknown_28;
+        uint8_t unknown_29;
+        uint8_t unknown_30;
+        uint8_t unknown_31;
         uint8_t unknown_32;
         uint8_t unknown_34;
         uint8_t unknown_35;
@@ -110,16 +163,30 @@ namespace esphome
       {
         uint8_t unknown_00;
         uint8_t unknown_01;
-        uint8_t unknown_02;
         uint8_t unknown_03;
         uint8_t unknown_18;
-        uint8_t unknown_19; /// decreasing counter when hot water is running
         uint8_t unknown_20; /// 0x05 always so far
+        uint8_t unknown_26;
+        uint8_t unknown_27;
+        uint8_t unknown_32;
+        uint8_t unknown_33;
+        uint8_t unknown_34;
+        uint8_t unknown_35;
+        uint8_t unknown_42;
+        uint8_t unknown_43;
+        uint8_t unknown_44;
+        uint8_t unknown_45;
+        uint8_t unknown_46;
+        uint8_t unknown_47;
       } gas_unknowns;
 
-      uint16_t controller_version;
-      uint16_t panel_version;
-      DEVICE_COMBI_MODE combi_mode;
+      u_int16_t cumulative_domestic_usage_cnt;
+      uint16_t days_since_install;
+      std::string controller_version;
+      std::string panel_version;
+      OPERATING_STATE operating_state;
+      DEVICE_HEATING_MODE heating_mode;
+      DEVICE_TYPE device_type;
       DEVICE_POWER_STATE power;
       DEVICE_RECIRC_STATE recirculation;
       DEVICE_UNITS units;
@@ -141,15 +208,20 @@ namespace esphome
       void set_water_utilization_sensor(sensor::Sensor *sensor) { water_utilization_sensor = sensor; }
       void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
       void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }
+      void set_device_type_sensor(text_sensor::TextSensor *sensor) { device_type_sensor = sensor; }
+      void set_operating_state_sensor(text_sensor::TextSensor *sensor) { operating_state_sensor = sensor; }
       void set_real_time(bool rt) { this->is_rt = rt; }
-      void set_combi_mode_sensor(text_sensor::TextSensor *sensor) { combi_mode_sensor = sensor; }
+      void set_heating_mode_sensor(text_sensor::TextSensor *sensor) { heating_mode_sensor = sensor; }
       void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
       void set_recirc_status_sensor(binary_sensor::BinarySensor *sensor) { recirc_status_sensor = sensor; }
       void set_sh_outlet_temp_sensor(sensor::Sensor *sensor) { sh_outlet_temp_sensor = sensor; }
       void set_sh_return_temp_sensor(sensor::Sensor *sensor) { sh_return_temp_sensor = sensor; }
+      void set_heat_capacity_sensor(sensor::Sensor *sensor) { heat_capacity_sensor = sensor; } 
+      void set_boiler_active_sensor(binary_sensor::BinarySensor *sensor) { boiler_active_sensor = sensor; } 
+      void set_days_since_install_sensor(sensor::Sensor *sensor) { days_since_install_sensor = sensor; }
+
       void set_unk_sensor_w06(sensor::Sensor *sensor) { unk_sensor_w06 = sensor; }
       void set_unk_sensor_w07(sensor::Sensor *sensor) { unk_sensor_w07 = sensor; }
-      void set_unk_sensor_w10(sensor::Sensor *sensor) { unk_sensor_w10 = sensor; }
       void set_unk_sensor_w14(sensor::Sensor *sensor) { unk_sensor_w14 = sensor; }
       void set_unk_sensor_w15(sensor::Sensor *sensor) { unk_sensor_w15 = sensor; }
       void set_unk_sensor_w17(sensor::Sensor *sensor) { unk_sensor_w17 = sensor; }
@@ -160,7 +232,6 @@ namespace esphome
       void set_unk_sensor_w24(sensor::Sensor *sensor) { unk_sensor_w24 = sensor; }
       void set_unk_sensor_w25(sensor::Sensor *sensor) { unk_sensor_w25 = sensor; }
       void set_unk_sensor_w26(sensor::Sensor *sensor) { unk_sensor_w26 = sensor; }
-      void set_unk_sensor_w27(sensor::Sensor *sensor) { unk_sensor_w27 = sensor; }
       void set_unk_sensor_w28(sensor::Sensor *sensor) { unk_sensor_w28 = sensor; }
       void set_unk_sensor_w29(sensor::Sensor *sensor) { unk_sensor_w29 = sensor; }
       void set_unk_sensor_w30(sensor::Sensor *sensor) { unk_sensor_w30 = sensor; }
@@ -174,12 +245,28 @@ namespace esphome
       void set_unk_sensor_w39(sensor::Sensor *sensor) { unk_sensor_w39 = sensor; }
       void set_unk_sensor_g00(sensor::Sensor *sensor) { unk_sensor_g00 = sensor; }
       void set_unk_sensor_g01(sensor::Sensor *sensor) { unk_sensor_g01 = sensor; }
-      void set_unk_sensor_g02(sensor::Sensor *sensor) { unk_sensor_g02 = sensor; }
       void set_unk_sensor_g03(sensor::Sensor *sensor) { unk_sensor_g03 = sensor; }
       void set_unk_sensor_g18(sensor::Sensor *sensor) { unk_sensor_g18 = sensor; }
-      void set_unk_sensor_g19(sensor::Sensor *sensor) { unk_sensor_g19 = sensor; }
-      void set_unk_sensor_g20(sensor::Sensor *sensor) { unk_sensor_g20 = sensor; }  
-
+      void set_unk_sensor_g20(sensor::Sensor *sensor) { unk_sensor_g20 = sensor; }
+      void set_unk_sensor_g26(sensor::Sensor *sensor) { unk_sensor_g26 = sensor; }
+      void set_unk_sensor_g27(sensor::Sensor *sensor) { unk_sensor_g27 = sensor; }
+      void set_unk_sensor_g32(sensor::Sensor *sensor) { unk_sensor_g32 = sensor; }
+      void set_unk_sensor_g33(sensor::Sensor *sensor) { unk_sensor_g33 = sensor; }
+      void set_unk_sensor_g34(sensor::Sensor *sensor) { unk_sensor_g34 = sensor; }
+      void set_unk_sensor_g35(sensor::Sensor *sensor) { unk_sensor_g35 = sensor; }
+      void set_unk_sensor_g42(sensor::Sensor *sensor) { unk_sensor_g42 = sensor; }
+      void set_unk_sensor_g43(sensor::Sensor *sensor) { unk_sensor_g43 = sensor; }
+      void set_unk_sensor_g44(sensor::Sensor *sensor) { unk_sensor_g44 = sensor; }
+      void set_unk_sensor_g45(sensor::Sensor *sensor) { unk_sensor_g45 = sensor; }
+      void set_unk_sensor_g46(sensor::Sensor *sensor) { unk_sensor_g46 = sensor; }
+      void set_unk_sensor_g47(sensor::Sensor *sensor) { unk_sensor_g47 = sensor; }
+      void set_total_dhw_usage_sensor(sensor::Sensor *sensor) { total_dhw_usage_sensor = sensor; }
+      void set_total_operating_time_sensor(sensor::Sensor *sensor) { total_operating_time_sensor = sensor; }
+      void set_controller_version_sensor(text_sensor::TextSensor *sensor) { controller_version_sensor = sensor; }
+      void set_panel_version_sensor(text_sensor::TextSensor *sensor) { panel_version_sensor = sensor; }
+      void set_cumulative_dwh_usage_hours_sensor(sensor::Sensor *sensor) { cumulative_dwh_usage_hours_sensor = sensor; }
+      void set_cumulative_sh_usage_hours_sensor(sensor::Sensor *sensor) { cumulative_sh_usage_hours_sensor = sensor; }
+      void set_cumulative_domestic_usage_cnt_sensor(sensor::Sensor *sensor) { cumulative_domestic_usage_cnt_sensor = sensor; }
       /**
        * Sets the power switch component that will be notified of power
        * state changes, i.e. if the unit goes off, Navien will updte the switch to reflect that
@@ -225,13 +312,23 @@ namespace esphome
       sensor::Sensor *water_utilization_sensor = nullptr;
       sensor::Sensor *gas_total_sensor = nullptr;
       sensor::Sensor *gas_current_sensor = nullptr;
-      text_sensor::TextSensor *combi_mode_sensor = nullptr;
+      text_sensor::TextSensor *heating_mode_sensor = nullptr;
+      text_sensor::TextSensor *device_type_sensor = nullptr;
+      text_sensor::TextSensor *operating_state_sensor = nullptr;
       sensor::Sensor *sh_outlet_temp_sensor = nullptr;
       sensor::Sensor *sh_return_temp_sensor = nullptr;
-      //dev unk sensors
+      sensor::Sensor *heat_capacity_sensor = nullptr;
+      sensor::Sensor *total_dhw_usage_sensor = nullptr;
+      sensor::Sensor *total_operating_time_sensor = nullptr;
+      sensor::Sensor *cumulative_dwh_usage_hours_sensor = nullptr;
+      sensor::Sensor *cumulative_sh_usage_hours_sensor = nullptr;
+      sensor::Sensor *cumulative_domestic_usage_cnt_sensor = nullptr;
+      sensor::Sensor *days_since_install_sensor = nullptr;
+      text_sensor::TextSensor *controller_version_sensor = nullptr;
+      text_sensor::TextSensor *panel_version_sensor = nullptr;
+      // dev unk sensors
       sensor::Sensor *unk_sensor_w06 = nullptr;
       sensor::Sensor *unk_sensor_w07 = nullptr;
-      sensor::Sensor *unk_sensor_w10 = nullptr;
       sensor::Sensor *unk_sensor_w14 = nullptr;
       sensor::Sensor *unk_sensor_w15 = nullptr;
       sensor::Sensor *unk_sensor_w17 = nullptr;
@@ -242,7 +339,6 @@ namespace esphome
       sensor::Sensor *unk_sensor_w24 = nullptr;
       sensor::Sensor *unk_sensor_w25 = nullptr;
       sensor::Sensor *unk_sensor_w26 = nullptr;
-      sensor::Sensor *unk_sensor_w27 = nullptr;
       sensor::Sensor *unk_sensor_w28 = nullptr;
       sensor::Sensor *unk_sensor_w29 = nullptr;
       sensor::Sensor *unk_sensor_w30 = nullptr;
@@ -254,16 +350,26 @@ namespace esphome
       sensor::Sensor *unk_sensor_w37 = nullptr;
       sensor::Sensor *unk_sensor_w38 = nullptr;
       sensor::Sensor *unk_sensor_w39 = nullptr;
-    
+
       sensor::Sensor *unk_sensor_g00 = nullptr;
       sensor::Sensor *unk_sensor_g01 = nullptr;
-      sensor::Sensor *unk_sensor_g02 = nullptr;
       sensor::Sensor *unk_sensor_g03 = nullptr;
       sensor::Sensor *unk_sensor_g18 = nullptr;
-      sensor::Sensor *unk_sensor_g19 = nullptr;
       sensor::Sensor *unk_sensor_g20 = nullptr;
+      sensor::Sensor *unk_sensor_g26 = nullptr;
+      sensor::Sensor *unk_sensor_g27 = nullptr;
+      sensor::Sensor *unk_sensor_g32 = nullptr;
+      sensor::Sensor *unk_sensor_g33 = nullptr;
+      sensor::Sensor *unk_sensor_g34 = nullptr;
+      sensor::Sensor *unk_sensor_g35 = nullptr;
+      sensor::Sensor *unk_sensor_g42 = nullptr;
+      sensor::Sensor *unk_sensor_g43 = nullptr;
+      sensor::Sensor *unk_sensor_g44 = nullptr;
+      sensor::Sensor *unk_sensor_g45 = nullptr;
+      sensor::Sensor *unk_sensor_g46 = nullptr;
+      sensor::Sensor *unk_sensor_g47 = nullptr;
 
-
+      binary_sensor::BinarySensor *boiler_active_sensor = nullptr;
       binary_sensor::BinarySensor *conn_status_sensor = nullptr;
       binary_sensor::BinarySensor *recirc_status_sensor = nullptr;
 

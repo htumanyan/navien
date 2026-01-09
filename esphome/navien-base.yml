@@ -60,7 +60,7 @@ uart:
   id: main_hw_uart
 
 logger:
-  level: DEBUG
+  level: INFO
 
 text_sensor:
   - platform: version
@@ -75,8 +75,25 @@ text_sensor:
       name: Mac
       id: mac_address
   - platform: navien
-    name: Combi Mode
-
+    name: Heating Mode
+    id: heating_mode
+    heating_mode: true
+  - platform: navien
+    name: Device Type
+    id: device_type
+    device_type: true
+  - platform: navien
+    name: Operating State
+    id: operating_state
+    operating_state: true
+  - platform: navien
+    name: Controller Version
+    id: controller_version
+    controller_version: true
+  - platform: navien
+    name: Panel Version
+    id: panel_version 
+    panel_version: true
 sensor:
   - platform: uptime
     name: Uptime Sensor
@@ -87,21 +104,6 @@ sensor:
     uart_id: main_hw_uart
     target_temperature:
       name: Target Temp
-      filters:
-        - lambda: return x * (9.0/5.0) + 32.0;
-      unit_of_measurement: "°F"
-    gas_target_temperature:
-      name: Gas Target Temp
-      filters:
-        - lambda: return x * (9.0/5.0) + 32.0;
-      unit_of_measurement: "°F"
-    gas_inlet_temperature:
-      name: Gas Inlet Temp
-      filters:
-        - lambda: return x * (9.0/5.0) + 32.0;
-      unit_of_measurement: "°F"
-    gas_outlet_temperature:
-      name: Gas Outlet Temp
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
@@ -125,7 +127,6 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
-
     water_flow:
       name: Water Flow
       filters:
@@ -134,6 +135,10 @@ sensor:
     water_utilization:  
       name: Water Capacity Utilization
       unit_of_measurement: "%"
+    heat_capacity:
+      name: Heat Capacity
+      unit_of_measurement: "%"
+      accuracy_decimals: 1
     gas_total:
       name: Accumulated Gas Usage
       filters:
@@ -145,110 +150,154 @@ sensor:
       filters:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU"
+      device_class: power
+      state_class: measurement
       accuracy_decimals: 1
+    total_dhw_usage:
+      name: Total DHW Uses
+      accuracy_decimals: 0
+    total_operating_time:
+      name: Total Operating Time
+      unit_of_measurement: "H"
+    total_dhw_usage_hours:
+      name: Total DHW Operating Time
+      unit_of_measurement: "H"
+    total_sh_usage_hours:
+      name: Total SH Operating Time
+      unit_of_measurement: "H"
+    days_since_install:
+      name: Days Since Install
+      accuracy_decimals: 0
     conn_status:
       id: conn_status
-      name: Navien Connection Status
+      name: Connection Status
     recirc_status:
       id: recirc_status
-      name: Navien Recirculation Status      
+      name: Recirculation Status   
+    boiler_active:
+      id: boiler_active
+      name: Boiler Active   
     real_time: true 
     unk_w06:
-      name: Unknown W06 Metric
-      unit_of_measurement: "Units"
+      name: W06
+      disabled_by_default: true
     unk_w07:
-      name: Unknown W07 Metric
-      unit_of_measurement: "Units"
-    unk_w10:
-      name: Unknown W10 Metric
-      unit_of_measurement: "Units"
+      name: W07
+      disabled_by_default: true
     unk_w14:
-      name: Unknown W14 Metric
-      unit_of_measurement: "Units"
+      name: W14
+      disabled_by_default: true
     unk_w15:
-      name: Unknown W15 Metric
-      unit_of_measurement: "Units"
+      name: W15
+      disabled_by_default: true
     unk_w17:
-      name: Unknown W17 Metric
-      unit_of_measurement: "Units"
+      name: W17
+      disabled_by_default: true
     unk_w20:
-      name: Unknown W20 Metric
-      unit_of_measurement: "Units" 
+      name: W20
+      disabled_by_default: true
     unk_w21:
-      name: Unknown W21 Metric
-      unit_of_measurement: "Units"
+      name: W21
+      disabled_by_default: true
     unk_w22:
-      name: Unknown W22 Metric
-      unit_of_measurement: "Units"
+      name: W22
+      disabled_by_default: true
     unk_w23:
-      name: Unknown W23 Metric
-      unit_of_measurement: "Units"
+      name: W23
+      disabled_by_default: true
     unk_w24:
-      name: Unknown W24 Metric
-      unit_of_measurement: "Units"
+      name: W24
+      disabled_by_default: true
     unk_w25:
-      name: Unknown W25 Metric
-      unit_of_measurement: "Units"
+      name: W25
+      disabled_by_default: true
     unk_w26:
-      name: Unknown W26 Metric
-      unit_of_measurement: "Units"
-    unk_w27:
-      name: Unknown W27 Metric
-      unit_of_measurement: "Units"
+      name: W26
+      disabled_by_default: true
     unk_w28:
-      name: Unknown W28 Metric
-      unit_of_measurement: "Units"
+      name: W28
+      disabled_by_default: true
     unk_w29:
-      name: Unknown W29 Metric
-      unit_of_measurement: "Units"
+      name: W29
+      disabled_by_default: true
     unk_w30:
-      name: Unknown W30 Metric
-      unit_of_measurement: "Units"
+      name: W30
+      disabled_by_default: true
     unk_w31:
-      name: Unknown W31 Metric
-      unit_of_measurement: "Units"
+      name: W31
+      disabled_by_default: true
     unk_w32:
-      name: Unknown W32 Metric
-      unit_of_measurement: "Units"
+      name: W32
+      disabled_by_default: true
     unk_w34:
-      name: Unknown W34 Metric
-      unit_of_measurement: "Units"
+      name: W34
+      disabled_by_default: true
     unk_w35:
-      name: Unknown W35 Metric
-      unit_of_measurement: "Units"
+      name: W35
+      disabled_by_default: true
     unk_w36:
-      name: Unknown W36 Metric
-      unit_of_measurement: "Units"
+      name: W36
+      disabled_by_default: true
     unk_w37:
-      name: Unknown W37 Metric
-      unit_of_measurement: "Units"
+      name: W37
+      disabled_by_default: true
     unk_w38:
-      name: Unknown W38 Metric
-      unit_of_measurement: "Units"
+      name: W38
+      disabled_by_default: true
     unk_w39:
-      name: Unknown W39 Metric
-      unit_of_measurement: "Units"
+      name: W39
+      disabled_by_default: true
     unk_g00:
-      name: Unknown G00 Metric
-      unit_of_measurement: "Units"
+      name: G00
+      disabled_by_default: true
     unk_g01:
-      name: Unknown G01 Metric
-      unit_of_measurement: "Units"
-    unk_g02:
-      name: Unknown G02 Metric
-      unit_of_measurement: "Units"
+      name: G01
+      disabled_by_default: true
     unk_g03:
-      name: Unknown G03 Metric
-      unit_of_measurement: "Units"
+      name: G03
+      disabled_by_default: true
     unk_g18:
-      name: Unknown G18 Metric
-      unit_of_measurement: "Units"
-    unk_g19:
-      name: Unknown G19 Metric
-      unit_of_measurement: "Units"
+      name: G18
+      disabled_by_default: true
     unk_g20:
-      name: Unknown G20 Metric
-      unit_of_measurement: "Units"
+      name: G20
+      disabled_by_default: true
+    unk_g26:
+      name: G26
+      disabled_by_default: true
+    unk_g27:
+      name: G27
+      disabled_by_default: true
+    unk_g32:
+      name: G32
+      disabled_by_default: true
+    unk_g33:
+      name: G33
+      disabled_by_default: true
+    unk_g34:
+      name: G34
+      disabled_by_default: true
+    unk_g35:
+      name: G35
+      disabled_by_default: true
+    unk_g42:
+      name: G42
+      disabled_by_default: true
+    unk_g43:
+      name: G43
+      disabled_by_default: true
+    unk_g44:
+      name: G44
+      disabled_by_default: true
+    unk_g45:
+      name: G45
+      disabled_by_default: true
+    unk_g46:
+      name: G46
+      disabled_by_default: true
+    unk_g47:
+      name: G47
+      disabled_by_default: true
 
 binary_sensor:
 

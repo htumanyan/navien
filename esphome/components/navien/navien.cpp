@@ -27,10 +27,10 @@ namespace esphome
                water.system_power,
                water.system_status,
                water.recirculation_enabled);
-      ESP_LOGV(TAG, "Received WATER: unk_06: 0x%02X, unk_07: 0x%02X, unk_10: 0x%02X, unk_14: 0x%02X, unk_15: 0x%02X, unk_17: 0x%02X, unk_20: 0x%02X, unk_21: 0x%02X, unk_22: 0x%02X, unk_23: 0x%02X, unk_24: 0x%02X, unk_25: 0x%02X, unk_26: 0x%02X, unk_27: 0x%02X, unk_28: 0x%02X, unk_29: 0x%02X, unk_30: 0x%02X, unk_31: 0x%02X, unk_32: 0x%02X, unk_34: 0x%02X, unk_35: 0x%02X, unk_36: 0x%02X, unk_37: 0x%02X, unk_38: 0x%02X, unk_39: 0x%02X",
-               water.unknown_06, water.unknown_07, water.unknown_10, water.unknown_14,
+      ESP_LOGV(TAG, "Received WATER: unk_06: 0x%02X, unk_07: 0x%02X, unk_14: 0x%02X, unk_15: 0x%02X, unk_17: 0x%02X, unk_20: 0x%02X, unk_21: 0x%02X, unk_22: 0x%02X, unk_23: 0x%02X, unk_24: 0x%02X, unk_25: 0x%02X, unk_26: 0x%02X, unk_28: 0x%02X, unk_29: 0x%02X, unk_30: 0x%02X, unk_31: 0x%02X, unk_32: 0x%02X, unk_34: 0x%02X, unk_35: 0x%02X, unk_36: 0x%02X, unk_37: 0x%02X, unk_38: 0x%02X, unk_39: 0x%02X",
+               water.unknown_06, water.unknown_07, water.unknown_14,
                water.unknown_15, water.unknown_17, water.unknown_20, water.unknown_21, water.unknown_22,
-               water.unknown_23, water.unknown_24, water.unknown_25, water.unknown_26, water.unknown_27,
+               water.unknown_23, water.unknown_24, water.unknown_25, water.unknown_26,
                water.unknown_28, water.unknown_29, water.unknown_30, water.unknown_31, water.unknown_32,
                water.unknown_34, water.unknown_35, water.unknown_36, water.unknown_37, water.unknown_38, water.unknown_39);
 
@@ -60,24 +60,13 @@ namespace esphome
       {
         state.units = FARENHEIT;
       }
+      state.heating_mode = static_cast<DEVICE_HEATING_MODE>(water.heating_mode);
 
-      if (water.combi_mode & COMBI_MODE_SPACE_HEATING_MASK)
-      {
-        state.combi_mode = COMBI_MODE_SPACE_HEATING;
-      }
-      else if (water.combi_mode & COMBI_MODE_DOMESTIC_HOT_WATER_MASK)
-      {
-        state.combi_mode = COMBI_MODE_DOMESTIC_HOT_WATER;
-      }
-      else
-      {
-        state.combi_mode = COMBI_MODE_IDLE;
-      }
-
+      state.operating_state = static_cast<OPERATING_STATE>(water.operating_state);
       // Update the counter that will be used in assessment
       // of whether we're connected to navien or not
       this->received_cnt++;
-
+      this->state.water.boiler_active = static_cast<bool>(water.boiler_active);
       this->state.water.set_temp = NavienLink::t2c(water.set_temp);
       this->state.water.outlet_temp = NavienLink::t2c(water.outlet_temp);
       this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
@@ -85,7 +74,6 @@ namespace esphome
       this->state.water.utilization = water.operating_capacity * 0.5f;
       this->state.water_unknowns.unknown_06 = water.unknown_06;
       this->state.water_unknowns.unknown_07 = water.unknown_07;
-      this->state.water_unknowns.unknown_10 = water.unknown_10;
       this->state.water_unknowns.unknown_14 = water.unknown_14;
       this->state.water_unknowns.unknown_15 = water.unknown_15;
       this->state.water_unknowns.unknown_17 = water.unknown_17;
@@ -96,11 +84,6 @@ namespace esphome
       this->state.water_unknowns.unknown_24 = water.unknown_24;
       this->state.water_unknowns.unknown_25 = water.unknown_25;
       this->state.water_unknowns.unknown_26 = water.unknown_26;
-      this->state.water_unknowns.unknown_27 = water.unknown_27;
-      this->state.water_unknowns.unknown_28 = water.unknown_28;
-      this->state.water_unknowns.unknown_29 = water.unknown_29;
-      this->state.water_unknowns.unknown_30 = water.unknown_30;
-      this->state.water_unknowns.unknown_31 = water.unknown_31;
       this->state.water_unknowns.unknown_32 = water.unknown_32;
       this->state.water_unknowns.unknown_34 = water.unknown_34;
       this->state.water_unknowns.unknown_35 = water.unknown_35;
@@ -119,15 +102,13 @@ namespace esphome
                gas.inlet_temp,
                gas.outlet_temp);
 
-      ESP_LOGV(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Unk_19: 0x%02X",
+      ESP_LOGV(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
                gas.cumulative_gas_hi,
                gas.cumulative_gas_lo,
                gas.current_gas_hi,
                gas.current_gas_lo,
-               gas.unknown_19);
-      ESP_LOGV(TAG, "Received GAS: unk_00: 0x%02X, unk_01: 0x%02X, unk_02: 0x%02X, unk_03: 0x%02X, unk_18: 0x%02X, unk_19: 0x%02X, unk_20: 0x%02X",
-               gas.unknown_00, gas.unknown_01, gas.unknown_02, gas.unknown_03,
-               gas.unknown_18, gas.unknown_19, gas.unknown_20);
+               gas.heat_capacity);
+  
       // Update the counter that will be used in assessment
       // of whether we're connected to navien or not
       this->received_cnt++;
@@ -137,19 +118,52 @@ namespace esphome
       this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
       this->state.gas.sh_outlet_temp = NavienLink::t2c(gas.sh_outlet_temp);
       this->state.gas.sh_return_temp = NavienLink::t2c(gas.sh_return_temp);
+      this->state.device_type = static_cast<DEVICE_TYPE>(gas.device_type);
+      this->state.gas.heat_capacity = gas.heat_capacity * 0.5f;
       this->state.gas_unknowns.unknown_00 = gas.unknown_00;
       this->state.gas_unknowns.unknown_01 = gas.unknown_01;
-      this->state.gas_unknowns.unknown_02 = gas.unknown_02;
       this->state.gas_unknowns.unknown_03 = gas.unknown_03;
       this->state.gas_unknowns.unknown_18 = gas.unknown_18;
-      this->state.gas_unknowns.unknown_19 = gas.unknown_19;
       this->state.gas_unknowns.unknown_20 = gas.unknown_20;
-
+      this->state.gas_unknowns.unknown_26 = gas.unknown_26;
+      this->state.gas_unknowns.unknown_27 = gas.unknown_27;
+      this->state.gas_unknowns.unknown_32 = gas.unknown_32;
+      this->state.gas_unknowns.unknown_33 = gas.unknown_33;
+      this->state.gas_unknowns.unknown_34 = gas.unknown_34;
+      this->state.gas_unknowns.unknown_35 = gas.unknown_35;
+      this->state.gas_unknowns.unknown_42 = gas.unknown_42;
+      this->state.gas_unknowns.unknown_43 = gas.unknown_43;
+      this->state.gas_unknowns.unknown_44 = gas.unknown_44;
+      this->state.gas_unknowns.unknown_45 = gas.unknown_45;
+      this->state.gas_unknowns.unknown_46 = gas.unknown_46;
+      this->state.gas_unknowns.unknown_47 = gas.unknown_47;
+      this->state.gas.total_dhw_usage = gas.cumulative_domestic_usage_cnt_hi << 8 | gas.cumulative_domestic_usage_cnt_lo;
+      this->state.gas.total_operating_time = gas.total_operating_time_hi << 8 | gas.total_operating_time_lo;
       this->state.gas.accumulated_gas_usage = gas.cumulative_gas_hi << 8 | gas.cumulative_gas_lo;
       this->state.gas.current_gas_usage = gas.current_gas_hi << 8 | gas.current_gas_lo;
+      this->state.gas.cumulative_dwh_usage_hours = gas.cumulative_dwh_usage_hours_hi << 8 | gas.cumulative_dwh_usage_hours_lo;
+      this->state.gas.cumulative_sh_usage_hours = gas.cumulative_sh_usage_hours_hi << 8 | gas.cumulative_sh_usage_hours_lo;
 
-      this->state.controller_version = gas.controller_version_hi << 8 | gas.controller_version_lo;
-      this->state.panel_version = gas.panel_version_hi << 8 | gas.panel_version_lo;
+      std::string contVers = std::to_string(gas.controller_version_lo);
+
+      if (contVers.length() < 2)
+      {
+        contVers.insert(0, 2 - contVers.length(), '0');
+      }
+
+      this->state.controller_version = contVers.substr(0, 1) + "." + contVers.substr(1, 1);
+
+      std::string panVers = std::to_string(gas.panel_version_lo);
+
+      if (panVers.length() < 2)
+      {
+        panVers.insert(0, 2 - panVers.length(), '0');
+      }
+
+      this->state.panel_version = panVers.substr(0, 1) + "." + panVers.substr(1, 1);
+
+      this->state.days_since_install = gas.days_since_install_hi << 8 | gas.days_since_install_lo;
+      this->state.cumulative_domestic_usage_cnt = gas.cumulative_domestic_usage_cnt_hi << 8 | gas.cumulative_domestic_usage_cnt_lo;
 
       if (this->is_rt)
         this->update_gas_sensors();
@@ -163,6 +177,7 @@ namespace esphome
       this->water_flow_sensor->publish_state(0);
       this->sh_outlet_temp_sensor->publish_state(0);
       this->sh_return_temp_sensor->publish_state(0);
+      this->heat_capacity_sensor->publish_state(0);
       this->is_connected = false;
     }
 
@@ -173,27 +188,33 @@ namespace esphome
 
       if (this->water_utilization_sensor != nullptr)
         this->water_utilization_sensor->publish_state(this->state.water.utilization);
-      if (this->combi_mode_sensor != nullptr) {
-        std::string combi_mode_str;
-        switch (this->state.combi_mode) {
-          case COMBI_MODE_IDLE:
-            combi_mode_str = "Idle";
-            break;
-          case COMBI_MODE_SPACE_HEATING:
-            combi_mode_str = "Space Heating";
-            break;
-          case COMBI_MODE_DOMESTIC_HOT_WATER:
-            combi_mode_str = "Domestic Hot Water";
-            break;
+      if (this->heating_mode_sensor != nullptr)
+      {
+        std::string heating_mode_str;
+        switch (this->state.heating_mode)
+        {
+        case HEATING_MODE_IDLE:
+          heating_mode_str = "Idle";
+          break;
+        case HEATING_MODE_SPACE_HEATING:
+          heating_mode_str = "Space Heating";
+          break;
+        case HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND:
+          heating_mode_str = "Domestic Hot Water";
+          break;
+        case HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING:
+          heating_mode_str = "DHW Recirculating";
+          break;
+        default:
+          heating_mode_str = "Unknown";
         }
-        this->combi_mode_sensor->publish_state(combi_mode_str);
+        this->heating_mode_sensor->publish_state(heating_mode_str);
       }
+
       if (this->unk_sensor_w06 != nullptr)
         this->unk_sensor_w06->publish_state(this->state.water_unknowns.unknown_06);
       if (this->unk_sensor_w07 != nullptr)
         this->unk_sensor_w07->publish_state(this->state.water_unknowns.unknown_07);
-      if (this->unk_sensor_w10 != nullptr)
-        this->unk_sensor_w10->publish_state(this->state.water_unknowns.unknown_10);
       if (this->unk_sensor_w14 != nullptr)
         this->unk_sensor_w14->publish_state(this->state.water_unknowns.unknown_14);
       if (this->unk_sensor_w15 != nullptr)
@@ -214,8 +235,6 @@ namespace esphome
         this->unk_sensor_w25->publish_state(this->state.water_unknowns.unknown_25);
       if (this->unk_sensor_w26 != nullptr)
         this->unk_sensor_w26->publish_state(this->state.water_unknowns.unknown_26);
-      if (this->unk_sensor_w27 != nullptr)
-        this->unk_sensor_w27->publish_state(this->state.water_unknowns.unknown_27);
       if (this->unk_sensor_w28 != nullptr)
         this->unk_sensor_w28->publish_state(this->state.water_unknowns.unknown_28);
       if (this->unk_sensor_w29 != nullptr)
@@ -238,7 +257,10 @@ namespace esphome
         this->unk_sensor_w38->publish_state(this->state.water_unknowns.unknown_38);
       if (this->unk_sensor_w39 != nullptr)
         this->unk_sensor_w39->publish_state(this->state.water_unknowns.unknown_39);
-
+      if (this->boiler_active_sensor != nullptr)
+      {
+        this->boiler_active_sensor->publish_state(this->state.water.boiler_active);
+      }
       // Update the climate control with the current target temperature
       if (this->climate != nullptr)
       {
@@ -297,12 +319,73 @@ namespace esphome
         this->outlet_temp_sensor->publish_state(this->state.water.outlet_temp);
       if (this->inlet_temp_sensor != nullptr)
         this->inlet_temp_sensor->publish_state(this->state.water.inlet_temp);
+      if (this->operating_state_sensor != nullptr)
+      {
+        std::string operating_state_str;
+        switch (this->state.operating_state)
+        {
+        case STANDBY:
+          operating_state_str = "Standby";
+          break;
+        case STARTUP:
+          operating_state_str = "Startup";
+          break;
+        case DEMAND:
+          operating_state_str = "Demand";
+          break;
+        case PRE_PURGE_1:
+          operating_state_str = "Pre Purge Stage 1";
+          break;
+        case PRE_PURGE_2:
+          operating_state_str = "Pre Purge Stage 2";
+          break;
+        case PRE_IGNITION:
+          operating_state_str = "Pre-Ignition";
+          break;
+        case IGNITION:
+          operating_state_str = "Ignition";
+          break;
+        case FLAME_ON:
+          operating_state_str = "Flame On";
+          break;
+        case RAMP_UP:
+          operating_state_str = "Ramp Up";
+          break;
+        case ACTIVE_COMBUSTION:
+          operating_state_str = "Active Combustion";
+          break;
+        case WATER_ADJUSTMENT_VALVE_OPERATION:
+          operating_state_str = "Water Adjustment Valve Operation";
+          break;
+        case FLAME_OFF:
+          operating_state_str = "Flame Off";
+          break;
+        case POST_PURGE_1:
+          operating_state_str = "Post Purge Stage 1";
+          break;
+        case POST_PURGE_2:
+          operating_state_str = "Post Purge Stage 2";
+          break;
+        case DHW_WAIT:
+          operating_state_str = "DHW Wait/Set Point Match";
+          break;
+        default:
+          char buf[64];
+          std::snprintf(
+              buf,
+              sizeof(buf),
+              "Unknown (%u)",
+              static_cast<unsigned int>(this->state.operating_state));
+
+          operating_state_str = buf;
+          break;
+        }
+        this->operating_state_sensor->publish_state(operating_state_str);
+      }
     }
 
     void Navien::update_gas_sensors()
     {
-      if (this->gas_target_temp_sensor != nullptr)
-        this->gas_target_temp_sensor->publish_state(this->state.gas.set_temp);
 
       // Update the climate control with the current target temperature
       if (this->climate != nullptr)
@@ -311,16 +394,69 @@ namespace esphome
         // this->climate->target_temperature = this->state.gas.set_temp * 9.f / 5.f + 32.f;
         this->climate->publish_state();
       }
-
-      if (this->gas_outlet_temp_sensor != nullptr)
-        this->gas_outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
-
-      if (this->gas_inlet_temp_sensor != nullptr)
-        this->gas_inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
-
       if (this->gas_total_sensor != nullptr)
         this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);
-
+      if (this->device_type_sensor != nullptr)
+      {
+        std::string device_type_str;
+        switch (this->state.device_type)
+        {
+        case NO_DEVICE:
+          device_type_str = "No Device";
+          break;
+        case NPE:
+          device_type_str = "NPE";
+          break;
+        case NCB:
+          device_type_str = "NCB";
+          break;
+        case NHB:
+          device_type_str = "NHB";
+          break;
+        case CAS_NPE:
+          device_type_str = "CAS NPE";
+          break;
+        case CAS_NHB:
+          device_type_str = "CAS NHB";
+          break;
+        case NFB:
+          device_type_str = "NFB";
+          break;
+        case CAS_NFB:
+          device_type_str = "CAS NFB";
+          break;
+        case NFC:
+          device_type_str = "NFC";
+          break;
+        case NPN:
+          device_type_str = "NPN";
+          break;
+        case CAS_NPN:
+          device_type_str = "CAS NPN";
+          break;
+        case NPE2:
+          device_type_str = "NPE2";
+          break;
+        case CAS_NPE2:
+          device_type_str = "CAS NPE2";
+          break;
+        case NCB_H:
+          device_type_str = "NCB-H";
+          break;
+        case NVW:
+          device_type_str = "NVW";
+          break;
+        case CAS_NVW:
+          device_type_str = "CAS NVW";
+          break;
+        default:
+          device_type_str = "Unknown";
+          break;
+        }
+        this->device_type_sensor->publish_state(device_type_str);
+      }
+      if (this->heat_capacity_sensor != nullptr)
+        this->heat_capacity_sensor->publish_state(this->state.gas.heat_capacity);
       if (this->sh_outlet_temp_sensor != nullptr)
         this->sh_outlet_temp_sensor->publish_state(this->state.gas.sh_outlet_temp);
       if (this->sh_return_temp_sensor != nullptr)
@@ -331,16 +467,52 @@ namespace esphome
         this->unk_sensor_g00->publish_state(this->state.gas_unknowns.unknown_00);
       if (this->unk_sensor_g01 != nullptr)
         this->unk_sensor_g01->publish_state(this->state.gas_unknowns.unknown_01);
-      if (this->unk_sensor_g02 != nullptr)
-        this->unk_sensor_g02->publish_state(this->state.gas_unknowns.unknown_02);
       if (this->unk_sensor_g03 != nullptr)
         this->unk_sensor_g03->publish_state(this->state.gas_unknowns.unknown_03);
       if (this->unk_sensor_g18 != nullptr)
         this->unk_sensor_g18->publish_state(this->state.gas_unknowns.unknown_18);
-      if (this->unk_sensor_g19 != nullptr)
-        this->unk_sensor_g19->publish_state(this->state.gas_unknowns.unknown_19);
       if (this->unk_sensor_g20 != nullptr)
         this->unk_sensor_g20->publish_state(this->state.gas_unknowns.unknown_20);
+      if (this->total_dhw_usage_sensor != nullptr)
+        this->total_dhw_usage_sensor->publish_state(this->state.gas.total_dhw_usage);
+      if (this->total_operating_time_sensor != nullptr)
+        this->total_operating_time_sensor->publish_state(this->state.gas.total_operating_time);
+      if (this->cumulative_dwh_usage_hours_sensor != nullptr)
+        this->cumulative_dwh_usage_hours_sensor->publish_state(this->state.gas.cumulative_dwh_usage_hours);
+      if (this->cumulative_sh_usage_hours_sensor != nullptr)
+        this->cumulative_sh_usage_hours_sensor->publish_state(this->state.gas.cumulative_sh_usage_hours);
+      if (this->cumulative_domestic_usage_cnt_sensor != nullptr)
+        this->cumulative_domestic_usage_cnt_sensor->publish_state(this->state.cumulative_domestic_usage_cnt);
+      if (this->days_since_install_sensor != nullptr)
+        this->days_since_install_sensor->publish_state(this->state.days_since_install);
+      if (this->controller_version_sensor != nullptr)
+        this->controller_version_sensor->publish_state(this->state.controller_version);
+      if (this->panel_version_sensor != nullptr)
+        this->panel_version_sensor->publish_state(this->state.panel_version);
+      if (this->unk_sensor_g26 != nullptr)
+        this->unk_sensor_g26->publish_state(this->state.gas_unknowns.unknown_26);
+      if (this->unk_sensor_g27 != nullptr)
+        this->unk_sensor_g27->publish_state(this->state.gas_unknowns.unknown_27);
+      if (this->unk_sensor_g32 != nullptr)
+        this->unk_sensor_g32->publish_state(this->state.gas_unknowns.unknown_32);
+      if (this->unk_sensor_g33 != nullptr)
+        this->unk_sensor_g33->publish_state(this->state.gas_unknowns.unknown_33);
+      if (this->unk_sensor_g34 != nullptr)
+        this->unk_sensor_g34->publish_state(this->state.gas_unknowns.unknown_34);
+      if (this->unk_sensor_g35 != nullptr)
+        this->unk_sensor_g35->publish_state(this->state.gas_unknowns.unknown_35);
+      if (this->unk_sensor_g42 != nullptr)
+        this->unk_sensor_g42->publish_state(this->state.gas_unknowns.unknown_42);
+      if (this->unk_sensor_g43 != nullptr)
+        this->unk_sensor_g43->publish_state(this->state.gas_unknowns.unknown_43);
+      if (this->unk_sensor_g44 != nullptr)
+        this->unk_sensor_g44->publish_state(this->state.gas_unknowns.unknown_44);
+      if (this->unk_sensor_g45 != nullptr)
+        this->unk_sensor_g45->publish_state(this->state.gas_unknowns.unknown_45);
+      if (this->unk_sensor_g46 != nullptr)
+        this->unk_sensor_g46->publish_state(this->state.gas_unknowns.unknown_46);
+      if (this->unk_sensor_g47 != nullptr)
+        this->unk_sensor_g47->publish_state(this->state.gas_unknowns.unknown_47);
     }
 
     void Navien::update()
