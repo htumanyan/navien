@@ -51,7 +51,7 @@ void NavienLink::parse_packet(){
   uint8_t crc_c = 0x00;
   uint8_t crc_r = 0x00;
 
-  //NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
+  NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
   crc_r = this->recv_buffer.raw_data[HDR_SIZE + this->recv_buffer.hdr.len];
   
   switch(this->recv_buffer.hdr.direction){
