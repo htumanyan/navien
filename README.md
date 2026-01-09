@@ -84,6 +84,12 @@ bash esphome run navien-wrd-hb.yml
 
 #### [Connecting to Navien-240](./doc/240.md)
 
+---
+
+### 📖 User Manual for Custom Navien Controller
+
+For detailed instructions on connecting, configuring, and using the custom Navien controller device, see the [User Manual](./user_manual.md). This guide covers hardware setup, wiring, and usage tips specific to the custom controller.
+
 ------------------------------------------------------------------------
 
 ## [Protocol Details](./doc/README.md) 🔬
