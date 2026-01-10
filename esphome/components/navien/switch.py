@@ -6,30 +6,15 @@ from esphome.components.navien.sensor import NAVIEN_CONFIG_ID, Navien
 
 AUTO_LOAD = ["switch", "sensor"]
 
-#print (switch)
-
-  
-#import navien_ns, CONFIG_NAVIEN_ID, NAVIEN_NAMESPACE, Navien
-#navien_ns = cg.esphome_ns.namespace("navien")
-#import navien_ns
-
 navien_ns = cg.esphome_ns.namespace("navien")
 
-print ("Hello compojnents switch - ns")
-
-#DEPENDENCIES = ["sensor.navien"]
-
-#navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
-
 NavienOnOff = navien_ns.class_("NavienOnOffSwitch", switch.Switch, cg.Component)
-
 
 CONFIG_SCHEMA = (
     switch.switch_schema(NavienOnOff)
     .extend(
         {
             cv.GenerateID(NAVIEN_CONFIG_ID): cv.use_id(Navien),
-            #cv.GenerateID(): cv.declare_id(NavienOnOff)
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
