@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "S6B_XH_SM4_TB")(type "KiCad")(uri "${KIPRJMOD}/libraries/S6B_XH_SM4_TB/2025-02-04_18-02-45.kicad_sym")(options "")(descr ""))
+  (lib (name "THVD1406DR")(type "KiCad")(uri "${KIPRJMOD}/libraries/THVD1406DR/2025-01-31_21-26-30.kicad_sym")(options "")(descr ""))
+)
