@@ -26,26 +26,25 @@ typedef struct {
   uint8_t packet_marker;
   
   /**
-   * Unknown value, but could be the protocol version (very likely)
+   * System type identifier.
    */
-  uint8_t unknown_0x05;
+  uint8_t sys_type;
 
   /**
-   * Direction of the packet. Not unlikely to be "recipient address" essentially.
-   * Needs to be captured in multi-unit installation to see if it is simply a direction or a version.
+   * Source address of the packet.
    *
-   * Navien to control device - 0x50, PACKET_DIRECTION_STATUS
-   * Control Device to Navien - 0x0F, PACKET_DIRECTION_CONTROL
+   * Navien to control device - 0x4B, PACKET_DIRECTION_STATUS
+   * Control Device to Navien - 0x62, PACKET_DIRECTION_CONTROL
    */
-  uint8_t direction;
+  uint8_t src;
 
   /**
-   * There are two known packet types with somewhat overlapping
+   * Destination address / packet type. There are two known packet types with somewhat overlapping
    * data but also with unique data points in each
-   * 0x50 - water flow and temperature data - PACKET_TYPE_WATER
-   * 0x0F - gas flow and also water temperature - PACKET_TYPE_GAS
+   * 0xB8 - water flow and temperature data - PACKET_TYPE_WATER
+   * 0x32 - gas flow and also water temperature - PACKET_TYPE_GAS
    */
-  uint8_t packet_type;
+  uint8_t dst;
 
   /**
    * Unknown value. Observed to be 0x90 for navien-device direction

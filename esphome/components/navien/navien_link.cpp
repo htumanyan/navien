@@ -32,7 +32,7 @@ void NavienLink::parse_control_packet(){
 }
   
 void NavienLink::parse_status_packet(){
-  switch(this->recv_buffer.hdr.packet_type){
+  switch(this->recv_buffer.hdr.dst){
   case PACKET_TYPE_WATER:
     //NavienLink::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
     ESP_LOGV(TAG, "B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
@@ -53,8 +53,13 @@ void NavienLink::parse_packet(){
 
   NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
   crc_r = this->recv_buffer.raw_data[HDR_SIZE + this->recv_buffer.hdr.len];
-  
-  switch(this->recv_buffer.hdr.direction){
+
+  if (this->recv_buffer.hdr.unknown_0x90 == 0x10){
+    ESP_LOGV(TAG, "0x10 Packet received ignoring");
+    return;    
+  }
+
+  switch(this->recv_buffer.hdr.src){
   case PACKET_DIRECTION_STATUS:
     crc_c = NavienLink::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, CHECKSUM_SEED_4B);
     if (crc_c != crc_r){
