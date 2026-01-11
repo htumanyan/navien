@@ -130,23 +130,7 @@ namespace navien {
       this->water_utilization_sensor->publish_state(this->state.water.utilization);
 
     if (this->heating_mode_sensor != nullptr){
-      std::string heating_mode_str;
-      switch(this->state.heating_mode){
-      case HEATING_MODE_IDLE:
-        heating_mode_str = "Idle";
-        break;
-      case HEATING_MODE_SPACE_HEATING:
-        heating_mode_str = "Space Heating";
-        break;
-      case HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND:
-        heating_mode_str = "Domestic Hot Water";
-        break;
-      case HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING:
-        heating_mode_str = "DHW Recirculating";
-        break;
-      default:
-        heating_mode_str = "Unknown";
-      }
+      std::string heating_mode_str = heat_mode_to_str(this->state.heating_mode);
       this->heating_mode_sensor->publish_state(heating_mode_str);
     }
     if (this->boiler_active_sensor != nullptr){
@@ -204,64 +188,7 @@ namespace navien {
     if (this->inlet_temp_sensor != nullptr)
       this->inlet_temp_sensor->publish_state(this->state.water.inlet_temp);
     if (this->operating_state_sensor != nullptr){
-      std::string operating_state_str;
-      switch(this->state.operating_state){
-      case STANDBY:
-        operating_state_str = "Standby";
-        break;
-      case STARTUP:
-        operating_state_str = "Startup";
-        break;
-      case DEMAND:
-        operating_state_str = "Demand";
-        break;
-      case PRE_PURGE_1:
-        operating_state_str = "Pre Purge Stage 1";
-        break;
-      case PRE_PURGE_2:
-        operating_state_str = "Pre Purge Stage 2";
-        break;
-      case PRE_IGNITION:
-        operating_state_str = "Pre-Ignition";
-        break;
-      case IGNITION:
-        operating_state_str = "Ignition";
-        break;
-      case FLAME_ON:
-        operating_state_str = "Flame On";
-        break;
-      case RAMP_UP:
-        operating_state_str = "Ramp Up";
-        break;
-      case ACTIVE_COMBUSTION:
-        operating_state_str = "Active Combustion";
-        break;
-      case WATER_ADJUSTMENT_VALVE_OPERATION:
-        operating_state_str = "Water Adjustment Valve Operation";
-        break;
-      case FLAME_OFF:
-        operating_state_str = "Flame Off";
-        break;
-      case POST_PURGE_1:
-        operating_state_str = "Post Purge Stage 1";
-        break;
-      case POST_PURGE_2:
-        operating_state_str = "Post Purge Stage 2";
-        break;
-      case DHW_WAIT:
-        operating_state_str = "DHW Wait/Set Point Match";
-        break;
-      default:
-        char buf[64];
-        std::snprintf(
-            buf,
-            sizeof(buf),
-            "Unknown (%u)",
-            static_cast<unsigned int>(this->state.operating_state));
-
-        operating_state_str = buf;
-        break;
-      }
+      std::string operating_state_str = op_state_to_str(this->state.operating_state);
       this->operating_state_sensor->publish_state(operating_state_str);
     }
   }
@@ -287,61 +214,7 @@ namespace navien {
       this->gas_total_sensor->publish_state(this->state.gas.accumulated_gas_usage);
 
     if (this->device_type_sensor != nullptr){
-      std::string device_type_str;
-      switch (this->state.device_type)
-      {
-      case NO_DEVICE:
-        device_type_str = "No Device";
-        break;
-      case NPE:
-        device_type_str = "NPE";
-        break;
-      case NCB:
-        device_type_str = "NCB";
-        break;
-      case NHB:
-        device_type_str = "NHB";
-        break;
-      case CAS_NPE:
-        device_type_str = "CAS NPE";
-        break;
-      case CAS_NHB:
-        device_type_str = "CAS NHB";
-        break;
-      case NFB:
-        device_type_str = "NFB";
-        break;
-      case CAS_NFB:
-        device_type_str = "CAS NFB";
-        break;
-      case NFC:
-        device_type_str = "NFC";
-        break;
-      case NPN:
-        device_type_str = "NPN";
-        break;
-      case CAS_NPN:
-        device_type_str = "CAS NPN";
-        break;
-      case NPE2:
-        device_type_str = "NPE2";
-        break;
-      case CAS_NPE2:
-        device_type_str = "CAS NPE2";
-        break;
-      case NCB_H:
-        device_type_str = "NCB-H";
-        break;
-      case NVW:
-        device_type_str = "NVW";
-        break;
-      case CAS_NVW:
-        device_type_str = "CAS NVW";
-        break;
-      default:
-        device_type_str = "Unknown";
-        break;
-      }
+      std::string device_type_str = device_type_to_str(this->state.device_type);
       this->device_type_sensor->publish_state(device_type_str);
     }
     if (this->heat_capacity_sensor != nullptr)
@@ -402,6 +275,103 @@ namespace navien {
     //this->setup();
   }
 
+  std::string NavienBase::op_state_to_str(OPERATING_STATE state) {
+    switch(state){
+      case STANDBY:
+        return "Standby";
+      case STARTUP:
+        return "Startup";
+      case DEMAND:
+        return "Demand";
+      case PRE_PURGE_1:
+        return "Pre Purge Stage 1";
+      case PRE_PURGE_2:
+        return "Pre Purge Stage 2";
+      case PRE_IGNITION:
+        return "Pre-Ignition";
+      case IGNITION:
+        return "Ignition";
+      case FLAME_ON:
+        return "Flame On";
+      case RAMP_UP:
+        return "Ramp Up";
+      case ACTIVE_COMBUSTION:
+        return "Active Combustion";
+      case WATER_ADJUSTMENT_VALVE_OPERATION:
+        return "Water Adjustment Valve Operation";
+      case FLAME_OFF:
+        return "Flame Off";
+      case POST_PURGE_1:
+        return "Post Purge Stage 1";
+      case POST_PURGE_2:
+        return "Post Purge Stage 2";
+      case DHW_WAIT:
+        return "DHW Wait/Set Point Match";
+      default:
+        char buf[64];
+        std::snprintf(
+            buf,
+            sizeof(buf),
+            "Unknown (%u)",
+            static_cast<unsigned int>(state));
+
+        return buf;
+      }
+  }
+
+  std::string NavienBase::heat_mode_to_str(DEVICE_HEATING_MODE mode) {
+    switch(mode){
+      case HEATING_MODE_IDLE:
+        return "Idle";
+      case HEATING_MODE_SPACE_HEATING:
+        return "Space Heating";
+      case HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND:
+        return "Domestic Hot Water";
+      case HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING:
+        return "DHW Recirculating";
+      default:
+        return "Unknown";
+    }
+  }
+
+  std::string NavienBase::device_type_to_str(DEVICE_TYPE type) {
+    switch(type){
+      case NO_DEVICE:
+        return "No Device";
+      case NPE:
+        return "NPE";
+      case NCB:
+        return "NCB";
+      case NHB:
+        return "NHB";
+      case CAS_NPE:
+        return "CAS NPE";
+      case CAS_NHB:
+        return "CAS NHB";
+      case NFB:
+        return "NFB";
+      case CAS_NFB:
+        return "CAS NFB";
+      case NFC:
+        return "NFC";
+      case NPN:
+        return "NPN";
+      case CAS_NPN:
+        return "CAS NPN";
+      case NPE2:
+        return "NPE2";
+      case CAS_NPE2:
+        return "CAS NPE2";
+      case NCB_H:
+        return "NCB-H";
+      case NVW:
+        return "NVW";
+      case CAS_NVW:
+        return "CAS NVW";
+      default:
+        return "Unknown";
+    }
+  }
 
   void Navien::print_buffer(const uint8_t *data, size_t length) {
     char hex_buffer[100];

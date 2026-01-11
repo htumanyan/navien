@@ -271,6 +271,21 @@ namespace navien {
     virtual void update_water_sensors();
     virtual void update_gas_sensors();
 
+    /**
+     * Helper function to convert operating state enum to string
+     */
+    static std::string op_state_to_str(OPERATING_STATE state);
+
+    /**
+     * Helper function to convert heating mode enum to string
+     */
+    static std::string heat_mode_to_str(DEVICE_HEATING_MODE mode);
+
+    /**
+     * Helper function to convert device type enum to string
+     */
+    static std::string device_type_to_str(DEVICE_TYPE type);
+
   protected:
     // Data, extracted from gas and water packers and stored
     // Once the "update" is called this data gets reported to readers.
