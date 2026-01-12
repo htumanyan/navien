@@ -137,6 +137,8 @@ void NavienLink::receive() {
 	/// there are queued commands. Need to send them
 	NAVIEN_CMD cmd = cmd_buffer.back();
 	cmd_buffer.pop_back();
+        ESP_LOGI(TAG, "Sending queued CMD (%d bytes)", cmd.len);
+        NavienLink::print_buffer(cmd.buffer, cmd.len);
 	this->uart.write_array(cmd.buffer, cmd.len);
       }else{
 	//Navilink keeps sending this sequence every time it receives a packet
