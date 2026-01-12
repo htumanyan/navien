@@ -12,7 +12,7 @@ packages:
 
 
 logger:
-  level: INFO
+  level: INFO 
   baud_rate: 0 #disable logging over uart
   
 dashboard_import:
