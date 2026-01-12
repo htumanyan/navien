@@ -175,13 +175,13 @@ void NavienLink::send_turn_off_cmd(){
 }
 
 void NavienLink::send_hot_button_cmd(){
-  //this->send_cmd(RECIRC_ON_CMD, sizeof(RECIRC_ON_CMD));
-  //return;  
-    this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
-    //    delay(1);
-    // this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
-    //delay(15);
-    this->send_cmd(HOT_BUTTON_RELSE_CMD, sizeof(HOT_BUTTON_RELSE_CMD));
+  ESP_LOGI(TAG, "Hot Button: PRESS");
+  NavienLink::print_buffer(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
+  this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
+
+  ESP_LOGI(TAG, "Hot Button: RELEASE");
+  NavienLink::print_buffer(HOT_BUTTON_RELSE_CMD, sizeof(HOT_BUTTON_RELSE_CMD));
+  this->send_cmd(HOT_BUTTON_RELSE_CMD, sizeof(HOT_BUTTON_RELSE_CMD));
 }
   
 
