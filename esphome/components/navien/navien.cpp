@@ -48,7 +48,7 @@ namespace navien {
     // Update the counter that will be used in assessment
     // of whether we're connected to navien or not
     this->received_cnt++;
-    this->state.water.boiler_active = static_cast<bool>(water.boiler_active);
+    this->state.water.boiler_active = water.boiler_active & 0x01;
     this->state.water.set_temp = NavienLink::t2c(water.set_temp);
     this->state.water.outlet_temp = NavienLink::t2c(water.outlet_temp);
     this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
@@ -275,7 +275,7 @@ namespace navien {
     //this->setup();
   }
 
-  std::string NavienBase::op_state_to_str(OPERATING_STATE state) {
+  std::string Navien::op_state_to_str(OPERATING_STATE state) {
     switch(state){
       case STANDBY:
         return "Standby";
@@ -319,7 +319,7 @@ namespace navien {
       }
   }
 
-  std::string NavienBase::heat_mode_to_str(DEVICE_HEATING_MODE mode) {
+  std::string Navien::heat_mode_to_str(DEVICE_HEATING_MODE mode) {
     switch(mode){
       case HEATING_MODE_IDLE:
         return "Idle";
@@ -334,7 +334,7 @@ namespace navien {
     }
   }
 
-  std::string NavienBase::device_type_to_str(DEVICE_TYPE type) {
+  std::string Navien::device_type_to_str(DEVICE_TYPE type) {
     switch(type){
       case NO_DEVICE:
         return "No Device";
