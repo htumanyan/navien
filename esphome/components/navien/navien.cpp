@@ -4,12 +4,46 @@
 #include "esphome.h"
 #include "esphome/core/log.h"
 #include "navien.h"
+#include "navien_link_esp.h"
 
 namespace esphome {
 namespace navien {
 
   static const char *TAG = "navien.sensor";
 
+  // NavienBase implementation
+  void NavienBase::set_link(NavienLinkEsp *link) {
+    this->link_ = link;
+    if (link != nullptr) {
+      link->add_visitor(this);
+    }
+  }
+
+  void NavienBase::send_turn_on_cmd() {
+    if (this->link_ != nullptr) {
+      this->link_->send_turn_on_cmd();
+    }
+  }
+
+  void NavienBase::send_turn_off_cmd() {
+    if (this->link_ != nullptr) {
+      this->link_->send_turn_off_cmd();
+    }
+  }
+
+  void NavienBase::send_hot_button_cmd() {
+    if (this->link_ != nullptr) {
+      this->link_->send_hot_button_cmd();
+    }
+  }
+
+  void NavienBase::send_set_temp_cmd(float temp) {
+    if (this->link_ != nullptr) {
+      this->link_->send_set_temp_cmd(temp);
+    }
+  }
+
+  // Navien implementation
   void Navien::setup() {
     this->state.power = POWER_OFF;
   }

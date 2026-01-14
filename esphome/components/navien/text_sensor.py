@@ -11,10 +11,11 @@ CONF_OPERATING_STATE = "operating_state"
 CONF_PANEL_VERSION = "panel_version"
 CONF_CONTROLLER_VERSION = "controller_version"
 
+navien_ns = cg.esphome_ns.namespace("navien")
+NavienTextSensor = navien_ns.class_("NavienTextSensor", cg.PollingComponent)
+
 CONFIG_SCHEMA = (
-    text_sensor.text_sensor_schema()
-    .extend(
-        {
+    cv.Schema({
             cv.GenerateID(NAVIEN_CONFIG_ID): cv.use_id(Navien),
             
             cv.Optional(CONF_HEATING_MODE): cv.boolean,
@@ -26,11 +27,13 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_PANEL_VERSION): cv.boolean,
             
             cv.Optional(CONF_CONTROLLER_VERSION): cv.boolean,
+            cv.Optional("src"): cv.string
         }
     )
 )
 
 async def to_code(config):
+    print ("To code")
     var = await text_sensor.new_text_sensor(config)
     paren = await cg.get_variable(config[NAVIEN_CONFIG_ID])
     

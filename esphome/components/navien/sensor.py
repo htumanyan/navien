@@ -8,7 +8,8 @@ NAVIEN_CONFIG_ID = "navien"
 
 navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
-Navien = navien_ns.class_("Navien", cg.PollingComponent, uart.UARTDevice)
+Navien = navien_ns.class_("Navien", cg.PollingComponent)
+NavienLinkEsp = navien_ns.class_("NavienLinkEsp", cg.Component, uart.UARTDevice)
 
 
 from esphome.const import (
@@ -49,11 +50,13 @@ CONF_REAL_TIME          = "real_time"
 CONF_HEAT_CAPACITY      = "heat_capacity"
 CONF_RECIRC_STATUS      = "recirc_status"
 CONF_TOTAL_DHW_USAGE    = "total_dhw_usage"
-CONF_TOTAL_OPERATING_TIME = "total_operating_time"
-CONF_BOILER_ACTIVE      = "boiler_active"
+CONF_TOTAL_OPERATING_TIME       = "total_operating_time"
+CONF_BOILER_ACTIVE              = "boiler_active"
 CONF_CUMULATIVE_DWH_USAGE_HOURS = "total_dhw_usage_hours"
 CONF_CUMULATIVE_SH_USAGE_HOURS  = "total_sh_usage_hours"
-CONF_DAYS_SINCE_INSTALL  = "days_since_install"
+CONF_DAYS_SINCE_INSTALL         = "days_since_install"
+CONF_SRC                        = "src"
+
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
@@ -131,19 +134,47 @@ CONFIG_SCHEMA = cv.All(
                 device_class = DEVICE_CLASS_CONNECTIVITY
             ),
             cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
-            cv.Optional(CONF_REAL_TIME): cv.boolean
+            cv.Optional(CONF_REAL_TIME): cv.boolean,
+            cv.Optional(CONF_SRC): cv.string
         }
     )
     .extend(cv.polling_component_schema("5s"))
     .extend(uart.UART_DEVICE_SCHEMA)
 )
 
+# Global variable to store the NavienLinkEsp singleton variable
+NAVIEN_LINK_ESP_SINGLETON = None
+# Counter to generate unique ID
+_link_counter = 0
 
 
 async def to_code(config):
+    global NAVIEN_LINK_ESP_SINGLETON
+    global _link_counter
+    
+    print ("Codegen - " )
+    print (config[CONF_ID])
+    
+    # Create or get the singleton NavienLinkEsp instance
+    if NAVIEN_LINK_ESP_SINGLETON is None:
+        # First time - create the NavienLinkEsp singleton
+        from esphome.core import ID
+        link_id = ID(type=NavienLinkEsp, id=f"navien_link_esp_{_link_counter}", is_declaration=True)
+        _link_counter += 1
+        link_var = cg.new_Pvariable(link_id)
+        cg.add(cg.App.register_component(link_var))
+        await uart.register_uart_device(link_var, config)
+        NAVIEN_LINK_ESP_SINGLETON = link_var
+    else:
+        # Reuse the existing singleton
+        link_var = NAVIEN_LINK_ESP_SINGLETON
+    
+    # Create the Navien instance
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-    await uart.register_uart_device(var, config)
+    
+    # Connect Navien to the link singleton
+    cg.add(var.set_link(link_var))
 
     if CONF_TARGET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TARGET_TEMPERATURE])

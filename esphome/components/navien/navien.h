@@ -19,7 +19,7 @@
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/climate/climate.h"
 
-#include "navien_link.h"
+#include "navien_link_esp.h"
 
 #ifndef USE_SWITCH
 namespace switch_ {
@@ -134,9 +134,26 @@ namespace navien {
   } NAVIEN_STATE;
 
 
-  class NavienBase : public uart::UARTDevice, protected NavienUartI, public NavienLinkVisitorI{
+  // Forward declaration
+  class NavienLinkEsp;
+
+  class NavienBase : public NavienLinkVisitorI {
   public:
-    NavienBase() : navien_link(*this, *this), is_rt(false){}
+    NavienBase() : link_(nullptr), is_rt(false) {}
+
+    /**
+     * Set the link to the NavienLinkEsp singleton instance.
+     * This also registers this instance as a visitor to receive callbacks.
+     */
+    void set_link(NavienLinkEsp *link);
+
+    /**
+     * Send commands to Navien unit (forwarded to link)
+     */
+    void send_turn_on_cmd();
+    void send_turn_off_cmd();
+    void send_hot_button_cmd();
+    void send_set_temp_cmd(float temp);
 
   public:
     void set_target_temp_sensor(sensor::Sensor *sensor) { target_temp_sensor = sensor; }
@@ -184,25 +201,7 @@ namespace navien {
     //void set_climate(switch_::Switch * ps){power_switch = ps;}
 
 
-    void send_turn_on_cmd(){this->navien_link.send_turn_on_cmd();}
-    void send_turn_off_cmd(){this->navien_link.send_turn_off_cmd();}
-    void send_hot_button_cmd(){this->navien_link.send_hot_button_cmd();}
-    void send_set_temp_cmd(float temp){this->navien_link.send_set_temp_cmd(temp);}
-
   protected:
-    /**
-     * NavienUartI interface implementation for ESPHome
-     */
-    virtual int     available() {return uart::UARTDevice::available();}
-    virtual uint8_t peek_byte(uint8_t * byte){return uart::UARTDevice::peek_byte(byte);}
-    virtual uint8_t read_byte(uint8_t * byte){return uart::UARTDevice::read_byte(byte);}
-    virtual bool read_array(uint8_t * data, uint8_t len){return uart::UARTDevice::read_array(data, len);}
-    virtual void write_array(const uint8_t * data, uint8_t len){uart::UARTDevice::write_array(data, len);}
-
-
-  protected:
-    NavienLink navien_link;
-
     /**
      * Sensor definitions
      */
@@ -217,9 +216,6 @@ namespace navien {
     sensor::Sensor *water_utilization_sensor = nullptr;
     sensor::Sensor *gas_total_sensor = nullptr;
     sensor::Sensor *gas_current_sensor = nullptr;
-    text_sensor::TextSensor *heating_mode_sensor = nullptr;
-    text_sensor::TextSensor *device_type_sensor = nullptr;
-    text_sensor::TextSensor *operating_state_sensor = nullptr;
     sensor::Sensor *sh_outlet_temp_sensor = nullptr;
     sensor::Sensor *sh_return_temp_sensor = nullptr;
     sensor::Sensor *heat_capacity_sensor = nullptr;
@@ -229,8 +225,13 @@ namespace navien {
     sensor::Sensor *cumulative_sh_usage_hours_sensor = nullptr;
     sensor::Sensor *cumulative_domestic_usage_cnt_sensor = nullptr;
     sensor::Sensor *days_since_install_sensor = nullptr;
+
     text_sensor::TextSensor *controller_version_sensor = nullptr;
     text_sensor::TextSensor *panel_version_sensor = nullptr;
+    text_sensor::TextSensor *heating_mode_sensor = nullptr;
+    text_sensor::TextSensor *device_type_sensor = nullptr;
+    text_sensor::TextSensor *operating_state_sensor = nullptr;
+
     binary_sensor::BinarySensor *boiler_active_sensor = nullptr;
     binary_sensor::BinarySensor *conn_status_sensor = nullptr;
     binary_sensor::BinarySensor *recirc_status_sensor = nullptr;
@@ -238,6 +239,7 @@ namespace navien {
     switch_::Switch *power_switch = nullptr;
     climate::Climate *climate = nullptr;
 
+    NavienLinkEsp *link_;
     bool is_rt;
   };
 
@@ -253,11 +255,6 @@ namespace navien {
     virtual void setup() override;
     void update() override;
     void dump_config() override;
-    // Component::loop implementation that simply calls receive to engage in
-    // receipt of stats over rs485 using the UART class embedded here.
-    void loop() override {
-      this->navien_link.receive();
-    }
 
   protected:
     // Debug helper to print hex buffers
