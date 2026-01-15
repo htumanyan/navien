@@ -51,7 +51,56 @@ ota:
 
 binary_sensor:
 
+switch:
+  - platform: navien
+    navien: navien_master
+    name: ${friendly_name} Master Power On/Off
+
+  - platform: navien
+    navien: navien_slave
+    name: ${friendly_name} Slave Power On/Off
+
+button:
+  - platform: restart
+    name: "${friendly_name} Restart"
+
 text_sensor:
+  - platform: version
+    name: "${friendly_name} ESPHome Version"
+    id: esphome_version
+    hide_timestamp: True
+  - platform: wifi_info
+    ip_address:
+      id: ip_address
+      name: "${friendly_name} IP Address"
+    mac_address:
+      name: "${friendly_name} Mac"
+      id: mac_address
+  - platform: navien
+    navien: navien_master
+    name: "${friendly_name} Heating Mode"
+    id: heating_mode
+    heating_mode: true
+  - platform: navien
+    navien: navien_master
+    name: "${friendly_name} Device Type"
+    id: device_type
+    device_type: true
+  - platform: navien
+    navien: navien_master
+    name: "${friendly_name} Operating State"
+    id: operating_state
+    operating_state: true
+  - platform: navien
+    navien: navien_master
+    name: "${friendly_name} Controller Version"
+    id: controller_version
+    controller_version: true
+  - platform: navien
+    navien: navien_master
+    name: "${friendly_name} Panel Version"
+    id: panel_version 
+    panel_version: true
 
 climate:
 
@@ -76,16 +125,18 @@ sensor:
   - platform: wifi_signal
     name: "${friendly_name} WiFi Signal"
   - platform: navien
+    id: navien_slave
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
     src: 1
     target_temperature:
       id: target_temp_slave
-      name: "${friendly_name} Slave Target Temp"
+      name: "${friendly_name} Target Temp Slave"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
   - platform: navien
+    id: navien_master
     src: 0
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
