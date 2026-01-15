@@ -5,7 +5,7 @@ substitutions:
   #device_name: navien-heater # hostname & entity_id
   #friendly_name: "Navien Gas Heater" # Displayed in HA frontend
   project_name: Navien.esp8266
-  project_version: "0.0.0.1"
+  project_version: "1.0.0"
 
 packages:
   navien: !include navien-base.yml
@@ -19,7 +19,7 @@ logger:
                        # with the MCU communication through the main hardware UART
 
   # https://esphome.io/components/logger
-  level: INFO
+  level: DEBUG
   esp8266_store_log_strings_in_flash: false
   
 

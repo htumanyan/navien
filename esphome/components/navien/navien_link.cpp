@@ -27,7 +27,7 @@ bool NavienLink::seek_to_marker(){
 
 
 void NavienLink::parse_control_packet(){
-  ESP_LOGV(TAG, "Got Control Packet => %d bytes", this->recv_buffer.hdr.len + HDR_SIZE);
+  ESP_LOGD(TAG, "Got Control Packet => %d bytes", this->recv_buffer.hdr.len + HDR_SIZE);
   //  Navien::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
 }
   
@@ -35,7 +35,7 @@ void NavienLink::parse_status_packet(){
   switch(this->recv_buffer.hdr.dst){
   case PACKET_DST_WATER:
     //NavienLink::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
-    ESP_LOGV(TAG, "SRC:0x%02X B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
              this->recv_buffer.hdr.src,
 	     this->recv_buffer.water.unknown_06,
 	     this->recv_buffer.water.unknown_32,
@@ -43,7 +43,7 @@ void NavienLink::parse_status_packet(){
     this->cb.on_water(recv_buffer.water, recv_buffer.hdr.src);
     break;
   case PACKET_DST_GAS:
-    ESP_LOGV(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src); 
+    ESP_LOGD(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src); 
     this->cb.on_gas(recv_buffer.gas, recv_buffer.hdr.src);
     break;
   }

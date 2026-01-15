@@ -135,6 +135,18 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+    inlet_temperature:
+      id: inlet_temp_slave
+      name: "${friendly_name} Inlet Temp Slave"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    outlet_temperature:
+      id: outlet_temp_slave
+      name: "${friendly_name} Outlet Temp Slave"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
   - platform: navien
     id: navien_master
     src: 0

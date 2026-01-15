@@ -50,7 +50,7 @@ namespace navien {
   }
 
   void Navien::on_water(const WATER_DATA & water, uint8_t src){
-    ESP_LOGV(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
              src,
              water.set_temp,
              water.inlet_temp,
@@ -95,14 +95,14 @@ namespace navien {
   }
 
   void Navien::on_gas(const GAS_DATA & gas, uint8_t src){
-    ESP_LOGV(TAG, "SRC:0x%02X Received Gas Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Gas Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X",
        src,
        gas.set_temp,
        gas.inlet_temp,
        gas.outlet_temp
     );
 
-    ESP_LOGV(TAG, "SRC:0x%02X Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
        src,
        gas.cumulative_gas_hi,
        gas.cumulative_gas_lo,
