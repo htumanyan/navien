@@ -139,13 +139,15 @@ namespace navien {
 
   class NavienBase : public NavienLinkVisitorI {
   public:
-    NavienBase() : link_(nullptr), is_rt(false) {}
+    NavienBase() : link_(nullptr), src_(0), is_rt(false) {}
 
     /**
      * Set the link to the NavienLinkEsp singleton instance.
      * This also registers this instance as a visitor to receive callbacks.
+     * @param link - pointer to the NavienLinkEsp singleton
+     * @param src - source index (0-15) used to identify this visitor
      */
-    void set_link(NavienLinkEsp *link);
+    void set_link(NavienLinkEsp *link, uint8_t src = 0);
 
     /**
      * Send commands to Navien unit (forwarded to link)
@@ -240,6 +242,7 @@ namespace navien {
     climate::Climate *climate = nullptr;
 
     NavienLinkEsp *link_;
+    uint8_t src_;
     bool is_rt;
   };
 
@@ -292,8 +295,8 @@ namespace navien {
     /**
      * NavienLinkVisitorI interface implementation
      */
-    virtual void on_water(const WATER_DATA & water);
-    virtual void on_gas(const GAS_DATA & gas);
+    virtual void on_water(const WATER_DATA & water, uint8_t src);
+    virtual void on_gas(const GAS_DATA & gas, uint8_t src);
     virtual void on_error();
 
   protected:

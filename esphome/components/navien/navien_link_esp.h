@@ -1,14 +1,17 @@
 #pragma once
 
 #include <cinttypes>
-#include <vector>
+#include <cstring>
 
 #include "esphome/core/component.h"
+#include "esphome/core/log.h"
 #include "esphome/components/uart/uart.h"
 #include "navien_link.h"
 
 namespace esphome {
 namespace navien {
+
+static const uint8_t NAVIEN_CASCADE_MAX = 16;
 
 /**
  * ESPHome-specific implementation of NavienUartI interface.
@@ -18,15 +21,18 @@ namespace navien {
  */
 class NavienLinkEsp : public Component, public uart::UARTDevice, protected NavienUartI, public NavienLinkVisitorI {
 public:
-  NavienLinkEsp() : navien_link(*this, *this) {}
+  NavienLinkEsp() : navien_link(*this, *this) {
+    memset(visitors_, 0, sizeof(visitors_));
+  }
 
   /**
    * Register a visitor to receive callbacks when packets are received.
-   * Multiple visitors can be registered to receive the same data.
+   * @param visitor - pointer to the visitor instance
+   * @param src - index in the visitor array (0-15), defaults to 0
    */
-  void add_visitor(NavienLinkVisitorI *visitor) { 
-    if (visitor != nullptr) {
-      visitors_.push_back(visitor); 
+  void add_visitor(NavienLinkVisitorI *visitor, uint8_t src = 0) { 
+    if (visitor != nullptr && src < NAVIEN_CASCADE_MAX) {
+      visitors_[src] = visitor; 
     }
   }
 
@@ -56,29 +62,48 @@ protected:
   virtual void write_array(const uint8_t *data, uint8_t len) override { uart::UARTDevice::write_array(data, len); }
 
   /**
-   * NavienLinkVisitorI interface implementation - broadcasts to all registered visitors
+   * NavienLinkVisitorI interface implementation - calls the visitor for the specific src
    */
-  virtual void on_water(const WATER_DATA &water) override {
-    for (auto *visitor : visitors_) {
-      visitor->on_water(water);
+  virtual void on_water(const WATER_DATA &water, uint8_t src) override {
+    ESP_LOGD("navien_link_esp", "SRC:0x%02X on_water called", src);
+    NavienLinkVisitorI *visitor = get_visitor(src);
+    if (visitor != nullptr) {
+      visitor->on_water(water, src);
     }
   }
 
-  virtual void on_gas(const GAS_DATA &gas) override {
-    for (auto *visitor : visitors_) {
-      visitor->on_gas(gas);
+  virtual void on_gas(const GAS_DATA &gas, uint8_t src) override {
+    ESP_LOGD("navien_link_esp", "SRC:0x%02X on_gas called", src);
+    NavienLinkVisitorI *visitor = get_visitor(src);
+    if (visitor != nullptr) {
+      visitor->on_gas(gas, src);
     }
   }
 
   virtual void on_error() override {
-    for (auto *visitor : visitors_) {
-      visitor->on_error();
+    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; i++) {
+      if (visitors_[i] != nullptr) {
+        visitors_[i]->on_error();
+      }
     }
   }
 
 protected:
+  /**
+   * Get visitor by src address.
+   * @param src - the source address from the packet header (PACKET_SRC_STATUS+)
+   * @return pointer to the visitor or nullptr if out of bounds
+   */
+  NavienLinkVisitorI* get_visitor(uint8_t src) {
+    uint8_t idx = src - PACKET_SRC_STATUS;
+    if (idx < NAVIEN_CASCADE_MAX) {
+      return visitors_[idx];
+    }
+    return nullptr;
+  }
+
   NavienLink navien_link;
-  std::vector<NavienLinkVisitorI *> visitors_;
+  NavienLinkVisitorI *visitors_[NAVIEN_CASCADE_MAX];
 };
 
 }  // namespace navien

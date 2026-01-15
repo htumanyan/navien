@@ -78,7 +78,7 @@ sensor:
   - platform: navien
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
-    src: navien_slave
+    src: 1
     target_temperature:
       id: target_temp_slave
       name: "${friendly_name} Slave Target Temp"
@@ -86,7 +86,7 @@ sensor:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
   - platform: navien
-    src: navien_master
+    src: 0
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
     target_temperature:

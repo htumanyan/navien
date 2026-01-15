@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor, binary_sensor, uart
 from esphome.components import output
+from esphome.core import ID  
 
 NAVIEN_NAMESPACE = "navien"
 NAVIEN_CONFIG_ID = "navien"
@@ -135,7 +136,7 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
             cv.Optional(CONF_REAL_TIME): cv.boolean,
-            cv.Optional(CONF_SRC): cv.string
+            cv.Optional(CONF_SRC): cv.int_range(min=0, max=15)
         }
     )
     .extend(cv.polling_component_schema("5s"))
@@ -144,13 +145,10 @@ CONFIG_SCHEMA = cv.All(
 
 # Global variable to store the NavienLinkEsp singleton variable
 NAVIEN_LINK_ESP_SINGLETON = None
-# Counter to generate unique ID
-_link_counter = 0
 
 
 async def to_code(config):
     global NAVIEN_LINK_ESP_SINGLETON
-    global _link_counter
     
     print ("Codegen - " )
     print (config[CONF_ID])
@@ -158,23 +156,27 @@ async def to_code(config):
     # Create or get the singleton NavienLinkEsp instance
     if NAVIEN_LINK_ESP_SINGLETON is None:
         # First time - create the NavienLinkEsp singleton
-        from esphome.core import ID
-        link_id = ID(type=NavienLinkEsp, id=f"navien_link_esp_{_link_counter}", is_declaration=True)
-        _link_counter += 1
+        link_id = ID(type=NavienLinkEsp, id="navien_link_esp", is_declaration=True)
         link_var = cg.new_Pvariable(link_id)
         cg.add(cg.App.register_component(link_var))
         await uart.register_uart_device(link_var, config)
         NAVIEN_LINK_ESP_SINGLETON = link_var
     else:
-        # Reuse the existing singleton
+        # Reuse the existing singleton instance
         link_var = NAVIEN_LINK_ESP_SINGLETON
     
     # Create the Navien instance
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     
-    # Connect Navien to the link singleton
-    cg.add(var.set_link(link_var))
+    # Connect Navien to the link singleton with src index
+    # By default the src is 0, which matches the single unit Navien
+    # install. In multi-unit setups, different src values can be passed
+    # from the configuration
+    src = 0
+    if CONF_SRC in config:
+        src = config[CONF_SRC]
+    cg.add(var.set_link(link_var, src))
 
     if CONF_TARGET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TARGET_TEMPERATURE])

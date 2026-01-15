@@ -12,10 +12,11 @@ namespace navien {
   static const char *TAG = "navien.sensor";
 
   // NavienBase implementation
-  void NavienBase::set_link(NavienLinkEsp *link) {
+  void NavienBase::set_link(NavienLinkEsp *link, uint8_t src) {
     this->link_ = link;
+    this->src_ = src;
     if (link != nullptr) {
-      link->add_visitor(this);
+      link->add_visitor(this, src);
     }
   }
 
@@ -48,8 +49,9 @@ namespace navien {
     this->state.power = POWER_OFF;
   }
 
-  void Navien::on_water(const WATER_DATA & water){
-    ESP_LOGV(TAG, "Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+  void Navien::on_water(const WATER_DATA & water, uint8_t src){
+    ESP_LOGV(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+             src,
              water.set_temp,
              water.inlet_temp,
              water.outlet_temp,
@@ -92,14 +94,16 @@ namespace navien {
       this->update_water_sensors();
   }
 
-  void Navien::on_gas(const GAS_DATA & gas){
-    ESP_LOGV(TAG, "Received Gas Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X",
+  void Navien::on_gas(const GAS_DATA & gas, uint8_t src){
+    ESP_LOGV(TAG, "SRC:0x%02X Received Gas Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X",
+       src,
        gas.set_temp,
        gas.inlet_temp,
        gas.outlet_temp
     );
 
-    ESP_LOGV(TAG, "Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
+    ESP_LOGV(TAG, "SRC:0x%02X Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
+       src,
        gas.cumulative_gas_hi,
        gas.cumulative_gas_lo,
        gas.current_gas_hi,

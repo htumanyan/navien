@@ -67,17 +67,19 @@ class NavienLinkVisitorI{
 public:
   /**
    * Called then the direction is from Navien to reporting device
-   * and type field is PACKET_TYPE_WATER
+   * and type field is PACKET_DST_WATER
    * @param water - the data payload of the water packet
+   * @param src - the source address from the packet header
    */  
-  virtual void on_water(const WATER_DATA & water) = 0;
+  virtual void on_water(const WATER_DATA & water, uint8_t src) = 0;
 
   /**
    * Called then the direction is from Navien to reporting device
-   * and type field is PACKET_TYPE_GAS
+   * and type field is PACKET_DST_GAS
    * @param gas - the data payload of the gas packet
+   * @param src - the source address from the packet header
    */  
-  virtual void on_gas(const GAS_DATA & gas)   = 0;
+  virtual void on_gas(const GAS_DATA & gas, uint8_t src)   = 0;
   virtual void on_error()     = 0;
 };
 

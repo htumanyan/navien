@@ -26,32 +26,33 @@ typedef struct {
   uint8_t packet_marker;
 
   /**
-   * Unknown value, but could be the protocol version (very likely)
+   * System type - identifies the type of Navien system
    */
-  uint8_t unknown_0x05;
+  uint8_t sys_type;
 
   /**
-   * Direction of the packet. Not unlikely to be "recipient address" essentially.
+   * Source of the packet. Not unlikely to be "recipient address" essentially.
    * Needs to be captured in multi-unit installation to see if it is simply a direction or a version.
    *
-   * Navien to control device - 0x50, PACKET_DIRECTION_STATUS
-   * Control Device to Navien - 0x0F, PACKET_DIRECTION_CONTROL
+   * Navien to control device - 0x50, PACKET_SRC_STATUS
+   * Control Device to Navien - 0x0F, PACKET_SRC_CONTROL
+   */
+  uint8_t src;
+
+  /**
+   * Destination - there are two known packet types with somewhat overlapping
+   * data but also with unique data points in each
+   * 0x50 - water flow and temperature data - PACKET_DST_WATER
+   * 0x0F - gas flow and also water temperature - PACKET_DST_GAS
+   */
+  uint8_t dst;
+
+  /**
+   * Direction of the packet.
+   * 0x90 - Status packet (from Navien to control device), PACKET_DIR_STATUS
+   * 0x10 - Control packet (from control device to Navien), PACKET_DIR_CONTROL
    */
   uint8_t direction;
-
-  /**
-   * There are two known packet types with somewhat overlapping
-   * data but also with unique data points in each
-   * 0x50 - water flow and temperature data - PACKET_TYPE_WATER
-   * 0x0F - gas flow and also water temperature - PACKET_TYPE_GAS
-   */
-  uint8_t packet_type;
-
-  /**
-   * Unknown value. Observed to be 0x90 for navien-device direction
-   * and 0x10 in device-to-navien (control packets).
-   */
-  uint8_t unknown_0x90;
 
   /**
    * Length of the packet including the header and checksum, i.e. total number of bytes
@@ -63,11 +64,14 @@ typedef struct {
 const uint8_t HDR_SIZE = sizeof(HEADER);
 const uint8_t PACKET_MARKER = 0xF7;
 
-const uint8_t PACKET_DIRECTION_CONTROL = 0x0F;
-const uint8_t PACKET_DIRECTION_STATUS  = 0x50;
+const uint8_t PACKET_SRC_CONTROL = 0x0F;
+const uint8_t PACKET_SRC_STATUS  = 0x50;
 
-const uint8_t PACKET_TYPE_WATER = 0x50;
-const uint8_t PACKET_TYPE_GAS   = 0x0F;
+const uint8_t PACKET_DST_WATER = 0x50;
+const uint8_t PACKET_DST_GAS   = 0x0F;
+
+const uint8_t PACKET_DIR_STATUS  = 0x90;
+const uint8_t PACKET_DIR_CONTROL = 0x10;
 
 const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
@@ -200,9 +204,9 @@ typedef struct {
   uint8_t  inlet_temp;
   uint8_t  sh_outlet_temp; // combi (and space heat?) models
   uint8_t  sh_return_temp; // combi (and space heat?) models
-  uint8_t  unknown_18; // 0x9E on NCB-H models
-  uint8_t  heat_capacity; // varies based on boiler cycling while operating
-  uint8_t  unknown_20; // pinned to 0x21 on NCB-H models; 0x05 always so far elsewhere
+  uint8_t  unknown_18;     // 0x9E on NCB-H models
+  uint8_t  heat_capacity;  // varies based on boiler cycling while operating
+  uint8_t  unknown_20;     // pinned to 0x21 on NCB-H models; 0x05 always so far elsewhere
   uint8_t  current_gas_lo;
   uint8_t  current_gas_hi;
   uint8_t  cumulative_gas_lo;
