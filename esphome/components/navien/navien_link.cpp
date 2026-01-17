@@ -74,6 +74,15 @@ void NavienLink::parse_packet(){
     break;
   }
   case PACKET_DIR_CONTROL:
+  /**
+   * The condition below was obsrved in cascade setup where there are lots of 
+   * messages, apparently between Navien units and that have some other checksum algorithm that 
+   * we're yet to discover. For now we simply ignore those packets. 
+   */
+    if (this->recv_buffer.hdr.src != PACKET_SRC_CONTROL) {
+      ESP_LOGD(TAG, "Control packet from SRC:0x%02X - we don't know how to handle it yet", this->recv_buffer.hdr.src);
+      return;
+    }
     crc_c = NavienLink::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, CHECKSUM_SEED_62);
     if (crc_c != crc_r){
       ESP_LOGE(TAG, "SRC:0x%02X Control Packet checksum error: 0x%02X (calc) != 0x%02X (recv), seed=0x%02X", this->recv_buffer.hdr.src, crc_c, crc_r, CHECKSUM_SEED_62);
