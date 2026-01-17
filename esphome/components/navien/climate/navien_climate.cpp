@@ -3,6 +3,7 @@
 #include <array>
 #include "esphome.h"
 #include "esphome/components/climate/climate_mode.h"
+//#include "esphome/components/climate/climate_traits.h"
 #include "navien_climate.h"
 
 namespace esphome {
@@ -10,8 +11,9 @@ namespace navien {
   
 static const char *TAG = "navien.climate";
 
-std::set<climate::ClimateMode> supported_modes = {climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT};
-  
+//std::set<climate::ClimateMode> supported_modes = {climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT};
+static constexpr climate::ClimateModeMask supported_modes = {climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT}; 
+
 void NavienClimate::setup(){
 }
   

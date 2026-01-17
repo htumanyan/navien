@@ -102,7 +102,16 @@ text_sensor:
     id: panel_version 
     panel_version: true
 
+
 climate:
+  - platform: navien
+    navien: navien_master
+    id: navien_climate
+    visual:
+      min_temperature: 98F
+      max_temperature: 120F
+      temperature_step: '1°F'
+    name: "${friendly_name} Target Temperature"
 
 uart:
   tx_pin: ${tx_pin}
