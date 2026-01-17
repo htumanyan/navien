@@ -57,19 +57,26 @@ void NavienLink::parse_packet(){
   crc_r = this->recv_buffer.raw_data[HDR_SIZE + this->recv_buffer.hdr.len];
   
   switch(this->recv_buffer.hdr.direction){
-  case PACKET_DIR_STATUS:
-    crc_c = NavienLink::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, CHECKSUM_SEED_4B);
+  case PACKET_DIR_STATUS: {
+    uint16_t seed;
+    if (this->recv_buffer.hdr.src == PACKET_SRC_STATUS) {
+      seed = CHECKSUM_SEED_4B;
+    } else {
+      seed = CHECKSUM_SEED_62;
+    }
+    crc_c = NavienLink::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, seed);
     if (crc_c != crc_r){
-      ESP_LOGE(TAG, "SRC:0x%02X Status Packet checksum error: 0x%02X (calc) != 0x%02X (recv)", this->recv_buffer.hdr.src, crc_c, crc_r);
+      ESP_LOGE(TAG, "SRC:0x%02X Status Packet checksum error: 0x%02X (calc) != 0x%02X (recv), seed=0x%02X", this->recv_buffer.hdr.src, crc_c, crc_r, seed);
       NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
       break;
     }
     parse_status_packet();
     break;
+  }
   case PACKET_DIR_CONTROL:
     crc_c = NavienLink::checksum(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len, CHECKSUM_SEED_62);
     if (crc_c != crc_r){
-      ESP_LOGE(TAG, "SRC:0x%02X Control Packet checksum error: 0x%02X (calc) != 0x%02X (recv)", this->recv_buffer.hdr.src, crc_c, crc_r);
+      ESP_LOGE(TAG, "SRC:0x%02X Control Packet checksum error: 0x%02X (calc) != 0x%02X (recv), seed=0x%02X", this->recv_buffer.hdr.src, crc_c, crc_r, CHECKSUM_SEED_62);
       NavienLink::print_buffer(this->recv_buffer.raw_data, HDR_SIZE + this->recv_buffer.hdr.len + 1);
       break;
     }
