@@ -7,6 +7,8 @@ substitutions:
 
 packages:
   navien: !include navien-wrd-hb.yml
+#  sensors: !include navien-sensors.yml
+  navien_sub: !include navien-sensors-cascade.yml
 
 switch:
   - platform: gpio

@@ -1,0 +1,112 @@
+substitutions:
+  sensor_suffix: ""
+
+text_sensor:
+  - platform: navien
+    navien: navien_main
+    name: "${friendly_name} Heating Mode"
+    id: heating_mode
+    heating_mode: true
+  - platform: navien
+    navien: navien_main
+    name: "${friendly_name} Device Type"
+    id: device_type
+    device_type: true
+  - platform: navien
+    navien: navien_main
+    name: "${friendly_name} Operating State"
+    id: operating_state
+    operating_state: true
+  - platform: navien
+    navien: navien_main
+    name: "${friendly_name} Controller Version"
+    id: controller_version
+    controller_version: true
+  - platform: navien
+    navien: navien_main
+    name: "${friendly_name} Panel Version"
+    id: panel_version 
+    panel_version: true
+
+sensor:
+  - platform: navien
+    id: navien_main
+    src: 0
+    name: "${friendly_name} Metrics"
+    uart_id: main_hw_uart
+    target_temperature:
+      id: navien_target_temperature
+      name: "${friendly_name} Target Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    inlet_temperature:
+      name: "${friendly_name} Inlet Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    outlet_temperature:
+      name: "${friendly_name} Outlet Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    sh_outlet_temperature:
+      name: "${friendly_name} SH Outlet Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    sh_return_temperature:
+      name: "${friendly_name} SH Return Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    water_flow:
+      name: "${friendly_name} Water Flow${sensor_suffix}"
+      filters:
+        - lambda: return x / 3.785;
+      unit_of_measurement: "GPM"
+    water_utilization:  
+      name: "${friendly_name} Water Capacity Utilization${sensor_suffix}"
+      unit_of_measurement: "%"
+    heat_capacity:
+      name: "${friendly_name} Heat Capacity${sensor_suffix}"
+      unit_of_measurement: "%"
+      accuracy_decimals: 1
+    gas_total:
+      name: "${friendly_name} Accumulated Gas Usage${sensor_suffix}"
+      filters:
+        - lambda: return x * 9131.0 / 25193.0 / 10.0;
+      unit_of_measurement: "Therms"
+      accuracy_decimals: 1
+    gas_current:
+      name: "${friendly_name} Current Gas Usage${sensor_suffix}"
+      filters:
+        - lambda: return x * 3.9680;
+      unit_of_measurement: "BTU"
+      device_class: power
+      state_class: measurement
+      accuracy_decimals: 1
+    total_dhw_usage:
+      name: "${friendly_name} Total DHW Uses${sensor_suffix}"
+      accuracy_decimals: 0
+    total_operating_time:
+      name: "${friendly_name} Total Operating Time${sensor_suffix}"
+      unit_of_measurement: "H"
+    total_dhw_usage_hours:
+      name: "${friendly_name} Total DHW Operating Time${sensor_suffix}"
+      unit_of_measurement: "H"
+    total_sh_usage_hours:
+      name: "${friendly_name} Total SH Operating Time${sensor_suffix}"
+      unit_of_measurement: "H"
+    days_since_install:
+      name: "${friendly_name} Days Since Install${sensor_suffix}"
+      accuracy_decimals: 0
+    conn_status:
+      id: conn_status
+      name: "${friendly_name} Connection Status${sensor_suffix}"
+    recirc_status:
+      id: recirc_status
+      name: "${friendly_name} Recirculation Status${sensor_suffix}"   
+    boiler_active:
+      id: boiler_active
+      name: "${friendly_name} Boiler Active${sensor_suffix}"

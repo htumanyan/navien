@@ -1,0 +1,44 @@
+
+#
+# This is so that the names of sensors on the main unit change to include " Main"
+# when running in cascade configutation for easy distinction between the main and sub units.
+#
+substitutions:
+  sensor_suffix: " Main"
+
+# Navien Sub Device Definitions
+
+
+packages:
+  sensors: !include navien-sensors.yml
+
+
+sensor:
+  - platform: navien
+    id: navien_sub
+    name: "${friendly_name} Metrics Sub"
+    uart_id: main_hw_uart
+    src: 1
+    target_temperature:
+      id: target_temp_sub
+      name: "${friendly_name} Target Temp Sub"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    inlet_temperature:
+      id: inlet_temp_sub
+      name: "${friendly_name} Inlet Temp Sub"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    outlet_temperature:
+      id: outlet_temp_sub
+      name: "${friendly_name} Outlet Temp Sub"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+
+switch:
+  - platform: navien
+    navien: navien_sub
+    name: ${friendly_name} Sub Power On/Off
