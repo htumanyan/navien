@@ -149,10 +149,7 @@ NAVIEN_LINK_ESP_SINGLETON = None
 
 async def to_code(config):
     global NAVIEN_LINK_ESP_SINGLETON
-    
-    print ("Codegen - " )
-    print (config[CONF_ID])
-    
+        
     # Create or get the singleton NavienLinkEsp instance
     if NAVIEN_LINK_ESP_SINGLETON is None:
         # First time - create the NavienLinkEsp singleton
