@@ -19,7 +19,7 @@ logger:
                        # with the MCU communication through the main hardware UART
 
   # https://esphome.io/components/logger
-  level: DEBUG
+  level: INFO
   esp8266_store_log_strings_in_flash: false
   
 

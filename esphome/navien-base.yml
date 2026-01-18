@@ -53,12 +53,12 @@ binary_sensor:
 
 switch:
   - platform: navien
-    navien: navien_master
-    name: ${friendly_name} Master Power On/Off
+    navien: navien_main
+    name: ${friendly_name} Main Power On/Off
 
   - platform: navien
-    navien: navien_slave
-    name: ${friendly_name} Slave Power On/Off
+    navien: navien_sub
+    name: ${friendly_name} Sub Power On/Off
 
 button:
   - platform: restart
@@ -77,27 +77,27 @@ text_sensor:
       name: "${friendly_name} Mac"
       id: mac_address
   - platform: navien
-    navien: navien_master
+    navien: navien_main
     name: "${friendly_name} Heating Mode"
     id: heating_mode
     heating_mode: true
   - platform: navien
-    navien: navien_master
+    navien: navien_main
     name: "${friendly_name} Device Type"
     id: device_type
     device_type: true
   - platform: navien
-    navien: navien_master
+    navien: navien_main
     name: "${friendly_name} Operating State"
     id: operating_state
     operating_state: true
   - platform: navien
-    navien: navien_master
+    navien: navien_main
     name: "${friendly_name} Controller Version"
     id: controller_version
     controller_version: true
   - platform: navien
-    navien: navien_master
+    navien: navien_main
     name: "${friendly_name} Panel Version"
     id: panel_version 
     panel_version: true
@@ -105,7 +105,7 @@ text_sensor:
 
 climate:
   - platform: navien
-    navien: navien_master
+    navien: navien_main
     id: navien_climate
     visual:
       min_temperature: 98F
@@ -134,35 +134,35 @@ sensor:
   - platform: wifi_signal
     name: "${friendly_name} WiFi Signal"
   - platform: navien
-    id: navien_slave
+    id: navien_sub
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
     src: 1
     target_temperature:
-      id: target_temp_slave
-      name: "${friendly_name} Target Temp Slave"
+      id: target_temp_sub
+      name: "${friendly_name} Target Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     inlet_temperature:
-      id: inlet_temp_slave
-      name: "${friendly_name} Inlet Temp Slave"
+      id: inlet_temp_sub
+      name: "${friendly_name} Inlet Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     outlet_temperature:
-      id: outlet_temp_slave
-      name: "${friendly_name} Outlet Temp Slave"
+      id: outlet_temp_sub
+      name: "${friendly_name} Outlet Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
   - platform: navien
-    id: navien_master
+    id: navien_main
     src: 0
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
     target_temperature:
-      name: "${friendly_name} Target Temp Master"
+      name: "${friendly_name} Target Temp Main"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
