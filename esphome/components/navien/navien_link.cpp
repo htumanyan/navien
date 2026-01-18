@@ -28,6 +28,10 @@ bool NavienLink::seek_to_marker(){
 
 void NavienLink::parse_control_packet(){
   ESP_LOGV(TAG, "Got Control Packet => %d bytes", this->recv_buffer.hdr.len + HDR_SIZE);
+  if (!this->other_navilink_installed){
+    ESP_LOGI(TAG, "Detected NAVILINK_PRESENT packet from another NaviLink device, will stop sending NAVILINK_PRESENT packets until rebooted");
+    this->other_navilink_installed = true;
+  }
   //  Navien::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
 }
   
@@ -128,14 +132,25 @@ void NavienLink::receive() {
       }
       ESP_LOGV(TAG, "Got Packet => %d bytes", len+HDR_SIZE );
 
-      if (!this->cmd_buffer.empty()){
-	/// there are queued commands. Need to send them
-	NAVIEN_CMD cmd = cmd_buffer.back();
-	cmd_buffer.pop_back();
-	this->uart.write_array(cmd.buffer, cmd.len);
+      if (!this->cmd_buffer.empty()) {
+        // there are queued commands. Need to send them. But if there's another NaviLink connected, wait for 
+        // it to send its NAVLINK_PRESENT packet first so it doesn't stomp on us
+        if (!this->other_navilink_installed || memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0){
+          NAVIEN_CMD cmd = cmd_buffer.back();
+          cmd_buffer.pop_back();
+          this->uart.write_array(cmd.buffer, cmd.len);
+          // NavienLink::print_buffer(cmd.buffer, cmd.len);
+        }
       }else{
-	//Navilink keeps sending this sequence every time it receives a packet
-	//this->send_cmd(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+        if (!this->other_navilink_installed){
+          // If there's no pending command, send a NAVILINK_PRESENT packet so the unit knows we're here.
+          // When the unit is in an automatic recirculation mode, this tell is that we're controlling 
+          // when it does and does not recirculate (and it triggers the "Recirculation settings must be 
+          // configured through the NaviLink app" message on the unit's front panel when you try to
+          // change the recirculation setting)
+          this->uart.write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+          // NavienLink::print_buffer(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+        }
       }
        
       //Navien::print_buffer(this->recv_buffer.raw_data, len+HDR_SIZE);
@@ -146,37 +161,26 @@ void NavienLink::receive() {
   }
 }
 
-void NavienLink::send_cmd(const uint8_t * buffer, uint8_t len){
-  /*  if (buffer && len){
-    this->write_array(buffer, len);
-    }*/
-  this->cmd_buffer.push_front(NAVIEN_CMD(buffer, len));
+void NavienLink::send_cmd(const uint8_t * buffer, uint8_t len, uint8_t tries){
+  // Send multiple times by default. In experiments I've noticed
+  // that sending once does not always work and that
+  // the NaviLink sends the commands multiple times
+  for (uint8_t i = 0; i < tries; i++) {
+    this->cmd_buffer.push_front(NAVIEN_CMD(buffer, len));
+  }
 }
   
 void NavienLink::send_turn_on_cmd(){
-  // Send twice. In experiments I've noticed
-  // that sending once does not always work and that
-  // the Navilink sends the commands multiple times
-  this->send_cmd(TURN_ON_CMD, sizeof(TURN_ON_CMD));
   this->send_cmd(TURN_ON_CMD, sizeof(TURN_ON_CMD));
 }
 
 void NavienLink::send_turn_off_cmd(){
-  // Send twice. In experiments I've noticed
-  // that sending once does not always work and that
-  // the Navilink sends the commands multiple times
-  this->send_cmd(TURN_OFF_CMD, sizeof(TURN_OFF_CMD));
   this->send_cmd(TURN_OFF_CMD, sizeof(TURN_OFF_CMD));
 }
 
 void NavienLink::send_hot_button_cmd(){
-  //this->send_cmd(RECIRC_ON_CMD, sizeof(RECIRC_ON_CMD));
-  //return;  
-    this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
-    //    delay(1);
-    // this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
-    //delay(15);
-    this->send_cmd(HOT_BUTTON_RELSE_CMD, sizeof(HOT_BUTTON_RELSE_CMD));
+  this->send_cmd(HOT_BUTTON_PRESS_CMD, sizeof(HOT_BUTTON_PRESS_CMD));
+  this->send_cmd(HOT_BUTTON_RELSE_CMD, sizeof(HOT_BUTTON_RELSE_CMD), 1);
 }
   
 
@@ -189,7 +193,15 @@ void NavienLink::send_set_temp_cmd(float temp){
   NavienLink::print_buffer(cmd, sizeof(SET_TEMP_CMD_TEMPLATE));
   this->send_cmd(cmd, sizeof(SET_TEMP_CMD_TEMPLATE));
 }
-  
+
+void NavienLink::send_scheduled_recirculation_active_cmd(){
+  this->send_cmd(SCHEDULED_RECIRC_ON_CMD, sizeof(SCHEDULED_RECIRC_ON_CMD));
+}
+
+void NavienLink::send_scheduled_recirculation_inactive_cmd(){
+  this->send_cmd(SCHEDULED_RECIRC_OFF_CMD, sizeof(SCHEDULED_RECIRC_OFF_CMD));
+}
+
 /**
  * Convert flow units to liters/min values
  * flow is reported as 0.1 liter units.

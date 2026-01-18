@@ -18,6 +18,7 @@
 //#endif
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/climate/climate.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 
 #include "navien_link.h"
 
@@ -37,10 +38,10 @@ namespace navien {
   } DEVICE_POWER_STATE;
 
   
-  typedef enum _DEVICE_RECIRC_STATE{
-    RECIRCULATION_OFF,
-    RECIRCULATION_ON
-  } DEVICE_RECIRC_STATE;
+  typedef enum _DEVICE_RECIRC_MODE{
+    HOTBUTTON,
+    SCHEDULED
+  } DEVICE_RECIRC_MODE;
 
   typedef enum _DEVICE_UNITS{
     CELSIUS,
@@ -103,6 +104,9 @@ namespace navien {
       float flow_lpm;
       uint8_t utilization;
       bool boiler_active;
+      bool scheduled_recirc_allowed;
+      bool hotbutton_recirc_running;
+      bool scheduled_recirc_running;
     } water;
     struct{
       uint8_t  set_temp;
@@ -129,7 +133,7 @@ namespace navien {
     DEVICE_HEATING_MODE heating_mode;
     DEVICE_TYPE device_type;
     DEVICE_POWER_STATE  power;
-    DEVICE_RECIRC_STATE recirculation;
+    DEVICE_RECIRC_MODE  recirculation;
     DEVICE_UNITS        units;
   } NAVIEN_STATE;
 
@@ -147,6 +151,8 @@ namespace navien {
     void set_gas_outlet_temp_sensor(sensor::Sensor *sensor) { gas_outlet_temp_sensor = sensor; }
     void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
     void set_water_utilization_sensor(sensor::Sensor *sensor) { water_utilization_sensor = sensor; }
+    void set_scheduled_recirc_running_sensor(binary_sensor::BinarySensor *sensor) { scheduled_recirc_running_sensor = sensor; }
+    void set_hotbutton_recirc_running_sensor(binary_sensor::BinarySensor *sensor) { hotbutton_recirc_running_sensor = sensor; }
     void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
     void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }
     void set_device_type_sensor(text_sensor::TextSensor *sensor) { device_type_sensor = sensor; }
@@ -155,7 +161,7 @@ namespace navien {
 
     void set_heating_mode_sensor(text_sensor::TextSensor *sensor) { heating_mode_sensor = sensor; }
     void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
-    void set_recirc_status_sensor(binary_sensor::BinarySensor *sensor) { recirc_status_sensor = sensor; }
+    void set_recirc_mode_sensor(text_sensor::TextSensor *sensor) { recirc_mode_sensor = sensor; }  
     void set_sh_outlet_temp_sensor(sensor::Sensor *sensor) { sh_outlet_temp_sensor = sensor; }
     void set_sh_return_temp_sensor(sensor::Sensor *sensor) { sh_return_temp_sensor = sensor; }
     void set_heat_capacity_sensor(sensor::Sensor *sensor) { heat_capacity_sensor = sensor; } 
@@ -168,6 +174,7 @@ namespace navien {
     void set_cumulative_dwh_usage_hours_sensor(sensor::Sensor *sensor) { cumulative_dwh_usage_hours_sensor = sensor; }
     void set_cumulative_sh_usage_hours_sensor(sensor::Sensor *sensor) { cumulative_sh_usage_hours_sensor = sensor; }
     void set_cumulative_domestic_usage_cnt_sensor(sensor::Sensor *sensor) { cumulative_domestic_usage_cnt_sensor = sensor; }
+    void set_other_navilink_installed_sensor(binary_sensor::BinarySensor *sensor) { other_navilink_installed_sensor = sensor; }
 
     /**
      * Sets the power switch component that will be notified of power
@@ -183,11 +190,18 @@ namespace navien {
      */
     //void set_climate(switch_::Switch * ps){power_switch = ps;}
 
+    /**
+     * Sets the scheduled recirculation switch component that will be notified of
+     * when scheduled recirculation is active or inactive
+     */
+    void set_allow_recirc_switch(switch_::Switch * ps){allow_recirc_switch = ps;}
 
     void send_turn_on_cmd(){this->navien_link.send_turn_on_cmd();}
     void send_turn_off_cmd(){this->navien_link.send_turn_off_cmd();}
     void send_hot_button_cmd(){this->navien_link.send_hot_button_cmd();}
     void send_set_temp_cmd(float temp){this->navien_link.send_set_temp_cmd(temp);}
+    void send_scheduled_recirculation_active_cmd(){this->navien_link.send_scheduled_recirculation_active_cmd();}
+    void send_scheduled_recirculation_inactive_cmd(){this->navien_link.send_scheduled_recirculation_inactive_cmd();}
 
   protected:
     /**
@@ -233,9 +247,13 @@ namespace navien {
     text_sensor::TextSensor *panel_version_sensor = nullptr;
     binary_sensor::BinarySensor *boiler_active_sensor = nullptr;
     binary_sensor::BinarySensor *conn_status_sensor = nullptr;
-    binary_sensor::BinarySensor *recirc_status_sensor = nullptr;
+    text_sensor::TextSensor *recirc_mode_sensor = nullptr;
+    binary_sensor::BinarySensor *scheduled_recirc_running_sensor = nullptr;
+    binary_sensor::BinarySensor *hotbutton_recirc_running_sensor = nullptr;
+    binary_sensor::BinarySensor *other_navilink_installed_sensor = nullptr;
 
     switch_::Switch *power_switch = nullptr;
+    switch_::Switch *allow_recirc_switch = nullptr;
     climate::Climate *climate = nullptr;
 
     bool is_rt;
@@ -286,6 +304,11 @@ namespace navien {
      */
     static std::string device_type_to_str(DEVICE_TYPE type);
 
+    /**
+     * Helper function to convert recirculation mode enum to string
+     */
+    static std::string device_recirc_mode_to_str(DEVICE_RECIRC_MODE state);
+
   protected:
     // Data, extracted from gas and water packers and stored
     // Once the "update" is called this data gets reported to readers.
@@ -322,6 +345,17 @@ namespace navien {
 
 #ifdef USE_SWITCH
 class NavienOnOffSwitch : public switch_::Switch, public Component {
+  protected:
+    Navien * parent = nullptr;
+  public:
+    void setup() override;
+
+    void set_parent(Navien * parent);
+    void write_state(bool state) override;
+    void dump_config() override;
+  };
+
+  class NavienAllowScheduledRecircSwitch : public switch_::Switch, public Component {
   protected:
     Navien * parent = nullptr;
   public:
