@@ -92,6 +92,7 @@ namespace navien {
     FLAME_OFF = 0x3C,
     POST_PURGE_1 = 0x46,
     POST_PURGE_2 = 0x47,
+    SHUTTING_DOWN = 0x48,
     DHW_WAIT = 0x49 //DHW Wait / Set Point Match depending on model
   } OPERATING_STATE;
 

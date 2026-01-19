@@ -60,20 +60,20 @@ namespace navien {
              water.system_status,
              water.recirculation_enabled);
 
-    if (water.system_power & POWER_STATUS_ON_OFF_MASK){
+    if ((water.system_power & POWER_STATUS_ON_OFF_MASK) == POWER_STATUS_ON_OFF_MASK){
       state.power = POWER_ON;
     }else{
       state.power = POWER_OFF;
     }
 
-    if (water.system_status & SYS_STATUS_FLAG_RECIRC){
+    if ((water.system_status & SYS_STATUS_FLAG_RECIRC) == SYS_STATUS_FLAG_RECIRC){
       state.recirculation = RECIRCULATION_ON;
     }else{
       state.recirculation = RECIRCULATION_OFF;
     }
 
     
-    if (water.system_status & SYS_STATUS_FLAG_UNITS){
+    if ((water.system_status & SYS_STATUS_FLAG_UNITS) == SYS_STATUS_FLAG_UNITS){
       state.units = CELSIUS;
     }else{
       state.units = FARENHEIT;
@@ -345,6 +345,8 @@ namespace navien {
         return "Post Purge Stage 2";
       case DHW_WAIT:
         return "DHW Wait/Set Point Match";
+      case SHUTTING_DOWN:
+        return "Shutting Down";
       default:
         char buf[64];
         std::snprintf(
