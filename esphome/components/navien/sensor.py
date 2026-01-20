@@ -66,7 +66,6 @@ CONF_GAS_CURRENT        = "gas_current"
 
 CONF_CONN_STATUS        = "conn_status"
 CONF_REAL_TIME          = "real_time"
-CONF_INLET_TEMPERATURE_REAL_TIME = "inlet_temperature_real_time"
 
 CONF_RECIRC_STATUS      = "recirc_status"
 
@@ -136,7 +135,6 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_RECIRC_STATUS): binary_sensor.binary_sensor_schema(),
             cv.Optional(CONF_REAL_TIME): cv.boolean,
-            cv.Optional(CONF_INLET_TEMPERATURE_REAL_TIME): cv.boolean,
         },
         extra=cv.ALLOW_EXTRA,
     )
@@ -193,9 +191,6 @@ async def to_code(config):
 
     if CONF_REAL_TIME in config:
         cg.add(var.set_real_time(config[CONF_REAL_TIME]))
-
-    if CONF_INLET_TEMPERATURE_REAL_TIME in config:
-        cg.add(var.set_inlet_temp_real_time(config[CONF_INLET_TEMPERATURE_REAL_TIME]))
 
     if CONF_CONN_STATUS in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_CONN_STATUS])
