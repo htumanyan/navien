@@ -201,17 +201,10 @@ void Navien::update_gas_sensors(bool publish_inlet_temp){
 void Navien::update() {
   ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
     
-  // here we track how many packets were received
-  // since the last update
-  // if Navien is connected and we receive packets, the
-  // received packet count should be greater than the last time
-  // we did an update. If it is not it means we no longer receive packets
-  // and therefore should change our status to disconnected
   if (this->received_cnt > this->updated_cnt){
     this->updated_cnt = this->received_cnt;
     this->is_connected = true;
   }else{
-    // We've been disconnected. Reset counters
     this->is_connected = false;
     this->received_cnt = 0;
     this->updated_cnt = 0;
@@ -220,8 +213,8 @@ void Navien::update() {
   if (this->conn_status_sensor != nullptr)
     this->conn_status_sensor->publish_state(this->is_connected);
 
-  update_water_sensors(true);
-  update_gas_sensors(true);
+  update_water_sensors(this->inlet_temp_rt);  // ← Changed from true
+  update_gas_sensors(this->inlet_temp_rt);    // ← Changed from true
 }
 
   
