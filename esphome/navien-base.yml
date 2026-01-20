@@ -129,6 +129,7 @@ sensor:
       id: recirc_status
       name: Recirculation Status
     real_time: true
+    inlet_temperature_real_time: false
 
 binary_sensor:
 

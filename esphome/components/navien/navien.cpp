@@ -55,7 +55,7 @@ void Navien::on_water(const WATER_DATA & water){
     this->state.water.sys_status = water.sys_status;
     
     if (this->is_rt) {
-      this->update_water_sensors();
+      this->update_water_sensors(this->inlet_temp_rt);
     }
 }
   
@@ -92,7 +92,7 @@ void Navien::on_gas(const GAS_DATA & gas){
   this->state.panel_version = gas.panel_version_hi << 8 | gas.panel_version_lo;
 
   if (this->is_rt) {
-    this->update_gas_sensors();
+    this->update_gas_sensors(this->inlet_temp_rt);
   }
 }
   
@@ -105,14 +105,14 @@ void Navien::on_error(){
   this->is_connected = false;
 }
 
-void Navien::update_water_sensors(){
+void Navien::update_water_sensors(bool publish_inlet_temp){
   if (this->target_temp_sensor != nullptr)
     this->target_temp_sensor->publish_state(this->state.water.set_temp);
 
   if (this->outlet_temp_sensor != nullptr)
     this->outlet_temp_sensor->publish_state(this->state.water.outlet_temp);
 
-  if (this->inlet_temp_sensor != nullptr)
+  if (publish_inlet_temp && this->inlet_temp_sensor != nullptr)
     this->inlet_temp_sensor->publish_state(this->state.water.inlet_temp);
 
   if (this->water_flow_sensor != nullptr)
@@ -171,7 +171,7 @@ void Navien::update_water_sensors(){
 
 }
 
-void Navien::update_gas_sensors(){
+void Navien::update_gas_sensors(bool publish_inlet_temp){
   if (this->target_temp_sensor != nullptr)
     this->target_temp_sensor->publish_state(this->state.gas.set_temp);
 
@@ -185,7 +185,7 @@ void Navien::update_gas_sensors(){
   if (this->outlet_temp_sensor != nullptr)
     this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
 
-  if (this->inlet_temp_sensor != nullptr)
+  if (publish_inlet_temp && this->inlet_temp_sensor != nullptr)
       this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
 
   if (this->gas_total_sensor != nullptr)
@@ -220,8 +220,8 @@ void Navien::update() {
   if (this->conn_status_sensor != nullptr)
     this->conn_status_sensor->publish_state(this->is_connected);
 
-  update_water_sensors();
-  update_gas_sensors();
+  update_water_sensors(true);
+  update_gas_sensors(true);
 }
 
   

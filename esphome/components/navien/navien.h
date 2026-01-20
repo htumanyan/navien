@@ -88,6 +88,7 @@ public:
   void set_gas_total_cuft_sensor(sensor::Sensor *sensor) { gas_total_cuft_sensor = sensor; }
   void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }
   void set_real_time(bool rt){this->is_rt = rt;}
+  void set_inlet_temp_real_time(bool rt){this->inlet_temp_rt = rt;}
 
   void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
   void set_recirc_status_sensor(binary_sensor::BinarySensor *sensor) { recirc_status_sensor = sensor; }  
@@ -148,6 +149,7 @@ protected:
   climate::Climate *climate = nullptr;
 
   bool is_rt;
+  bool inlet_temp_rt = false;
 };
 		   
 class Navien : public PollingComponent, public NavienBase {
@@ -177,8 +179,8 @@ protected:
    * Helper functions to be used for updating sensor states either in real time or
    * on timer if used in a polling component
    */
-  virtual void update_water_sensors();
-  virtual void update_gas_sensors();
+  virtual void update_water_sensors(bool publish_inlet_temp = true);
+  virtual void update_gas_sensors(bool publish_inlet_temp = true);
   
 protected:
   // Data, extracted from gas and water packers and stored
