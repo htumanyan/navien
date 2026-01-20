@@ -134,6 +134,7 @@ sensor:
     recirc_status:
       name: $friendly_name Navien Recirculation Status
     real_time: true
+    inlet_temperature_real_time: false
 
 binary_sensor:
 
