@@ -77,7 +77,7 @@ const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
 
 
-const uint8_t POWER_STATUS_ON_OFF_MASK     = 0x05;
+const uint8_t POWER_STATUS_ON_OFF_MASK     = 0x01;
 const uint8_t RECIRCULATION_ON_OFF_MASK    = 0x20;
 
 
@@ -88,11 +88,11 @@ const uint8_t RECIRCULATION_ON_OFF_MASK    = 0x20;
 // On Navien 240A Celsius is set by turning DIP Switch 4 ON (upper position) on the front panel
 // Note: this does not affect the values reported by Navien unit. Those are always reported in metric.
 // This flag just tells us what unit does the Navien unit itself use for display on the front panel
-const uint8_t SYS_STATUS_FLAG_UNITS      = 0x08;
+const uint8_t SYS_STATUS_FLAG_UNITS      = 0x02;
 
 // If this bit is 1, then recirculation is enabled.
 // On Navien 240A Celsius is set by turning DIP Switch 2 ON (upper position) on the front panel
-const uint8_t SYS_STATUS_FLAG_RECIRC     = 0x02;
+const uint8_t SYS_STATUS_FLAG_RECIRC     = 0x08;
 
 /**
  * Hardcoded command packets. Some commands have no uses data. Therefore rather than assemblying a packet
