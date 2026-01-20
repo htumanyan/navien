@@ -121,7 +121,7 @@ public:
 
   static uint8_t t2f(uint8_t);
   static float flow2gpm(uint8_t f);
-  static uint8_t t2c(uint8_t);
+  static float t2c(uint8_t);
   static float flow2lpm(uint8_t f);
 
 protected:
