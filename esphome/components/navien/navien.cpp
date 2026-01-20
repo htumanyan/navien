@@ -220,13 +220,8 @@ void Navien::update() {
   if (this->conn_status_sensor != nullptr)
     this->conn_status_sensor->publish_state(this->is_connected);
 
-  bool publish_inlet_temp = true;
-  if (this->is_rt) {
-    publish_inlet_temp = this->inlet_temp_rt;
-  }
-
-  update_water_sensors(publish_inlet_temp);
-  update_gas_sensors(publish_inlet_temp);
+  update_water_sensors(true);
+  update_gas_sensors(true);
 }
 
   
