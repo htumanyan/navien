@@ -1,0 +1,116 @@
+# This configuration file is for an M5Stacks AtomS3-Lite with the Tail485 add-on.
+#
+# Tail485 wiring:
+#
+# | Tail485 | 5-pin connector #1 |
+# |---------|--------------------|
+# | B       | pin 2              |
+# | A       | pin 3              |
+# | 12V     | pin 1              |
+# | GND     | pin 5              |
+#
+# Confirm first that your Navien delivers +12V (give or take a volt) on pin 1 (true on an NPE-240-A2 at least)
+#
+# See [the 240 wiring docs](docs/240.md) for more info
+
+substitutions:
+  tx_pin: GPIO2
+  rx_pin: GPIO1
+  platform: esp32
+  board: m5stack-atoms3
+  friendly_name: Navien
+  project_name: Navien.AtomS3-Lite-Tail485-ESP32
+  project_version: "0.0.0.1"
+
+esp32:
+  framework:
+    type: esp-idf
+    
+packages:
+  navien: !include navien-base.yml
+  sensors: !include navien-sensors.yml
+
+logger:
+  level: INFO
+  baud_rate: 0 #disable logging over uart
+
+dashboard_import:
+  package_import_url: github://htumanyan/navien/esphome/navien-esphome-atoms3-lite-tail485-esp32.yml
+  import_full_config: false
+
+button:
+  - platform: navien
+    name: ${friendly_name} Hot Button
+
+light:
+  - platform: esp32_rmt_led_strip
+    internal: true
+    chipset: WS2812
+    pin: GPIO35
+    num_leds: 1
+    rgb_order: GRB
+    id: led
+    name: "Indicator Light"
+
+# This exposes the button on the Atom S3 Lite itself as a button in Home Assistant, for use as
+# whatever you want. If you don't want it, you can comment this block out.
+binary_sensor:
+  - platform: gpio
+    id: atom_s3_lite_button
+    name: "Atom S3 Lite Button"
+    pin:
+      number: GPIO41
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_off: 10ms
+    on_press:
+      - lambda: |-
+          ESP_LOGI("binary_sensor.atom_s3_lite_button", "Pressed");
+
+# LED behavior:
+#  at power on: yellow
+#  at wifi connected: green
+#  at wifi disconnect: red
+#  at shutdown: blue
+
+esphome:
+  on_boot:
+    priority: 500
+    then:
+      - light.turn_on:
+          id: led
+          brightness: 80%
+          red: 100%
+          green: 100%
+          blue: 0%
+  on_shutdown:
+    priority: -100
+    then:
+      - light.turn_on:
+          id: led
+          brightness: 80%
+          red: 0%
+          green: 0%
+          blue: 100%
+        
+wifi:
+  on_connect:
+    then:
+      - light.turn_on:
+          id: led
+          brightness: 80%
+          red: 0%
+          green: 100%
+          blue: 0%
+  on_disconnect:
+    then:
+      - light.turn_on:
+          id: led
+          brightness: 80%
+          red: 100%
+          green: 0%
+          blue: 0%
+      
