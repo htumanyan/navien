@@ -98,9 +98,9 @@ namespace navien {
 
   typedef struct{
     struct{
-      uint8_t set_temp;
-      uint8_t outlet_temp;
-      uint8_t inlet_temp;
+      float set_temp;
+      float outlet_temp;
+      float inlet_temp;
       float flow_lpm;
       uint8_t utilization;
       bool boiler_active;
@@ -109,13 +109,13 @@ namespace navien {
       bool scheduled_recirc_running;
     } water;
     struct{
-      uint8_t  set_temp;
-      uint8_t  outlet_temp;
-      uint8_t  inlet_temp;
+      float  set_temp;
+      float  outlet_temp;
+      float  inlet_temp;
       uint16_t accumulated_gas_usage;
       uint16_t current_gas_usage;
-      uint8_t  sh_outlet_temp; // combi (and space heat?) models
-      uint8_t  sh_return_temp; // combi (and space heat?) models
+      float  sh_outlet_temp; // combi (and space heat?) models
+      float  sh_return_temp; // combi (and space heat?) models
       uint8_t heat_capacity;
       uint16_t total_dhw_usage;
       uint16_t total_operating_time;

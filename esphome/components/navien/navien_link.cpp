@@ -208,7 +208,7 @@ void NavienLink::send_hot_button_cmd(){
 void NavienLink::send_set_temp_cmd(float temp){
   uint8_t cmd[19];
   memcpy(cmd, SET_TEMP_CMD_TEMPLATE, sizeof(SET_TEMP_CMD_TEMPLATE));
-  cmd[9] = temp * 2;
+  cmd[9] = temp * 2 + 0.5;
   cmd[18] = NavienLink::checksum(cmd, sizeof(SET_TEMP_CMD_TEMPLATE) - 1, CHECKSUM_SEED_62);
 
   NavienLink::print_buffer(cmd, sizeof(SET_TEMP_CMD_TEMPLATE));
@@ -241,7 +241,7 @@ float NavienLink::flow2gpm(uint8_t f){
   return  (float)f / 10.f / 3.785f;
 }
 
-uint8_t NavienLink::t2c(uint8_t c){
+float NavienLink::t2c(uint8_t c){
   return (float)c / 2.f;
 }
   
