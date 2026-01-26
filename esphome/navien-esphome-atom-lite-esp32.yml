@@ -11,6 +11,9 @@ packages:
   navien: !include navien-base.yml
   sensors: !include navien-sensors.yml
 
+esp32:
+  framework:
+    type: esp-idf
 
 logger:
   level: INFO 
@@ -25,7 +28,7 @@ button:
     name: NavienHotButton
     
 light:
-  - platform: fastled_clockless
+  - platform: esp32_rmt_led_strip
     chipset: SK6812
     pin: 27
     num_leds: 1

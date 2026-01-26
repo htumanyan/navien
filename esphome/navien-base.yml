@@ -55,7 +55,7 @@ switch:
   - platform: navien
     navien: navien_main
     type: power
-    name: ${friendly_name} Main Power On/Off
+    name: ${friendly_name} Main Power
     id: main_power
   # "Allow Recirculation" turns on recirculation when the water heater is not in HotButton mode
   - platform: navien
@@ -63,7 +63,6 @@ switch:
     type: allow_scheduled_recirc
     name: "${friendly_name} Allow Recirculation"
     id: allow_scheduled_recirc
-
 
 button:
   - platform: restart
