@@ -3,7 +3,12 @@
 # You can modify this file to suit your needs.
 /.esphome/
 /secrets.yaml
+/.build_prefs.json
 *~
-*/__pycache__/
-*.pyc
 tmp/*
+
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+uv.lock

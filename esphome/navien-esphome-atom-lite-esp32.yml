@@ -11,11 +11,14 @@ packages:
   navien: !include navien-base.yml
   sensors: !include navien-sensors.yml
 
+esp32:
+  framework:
+    type: arduino
 
 logger:
   level: INFO 
   baud_rate: 0 #disable logging over uart
-  
+
 dashboard_import:
   package_import_url: github://htumanyan/navien/esphome/navien-esphome-atom-lite-esp32.yml
   import_full_config: false
@@ -23,11 +26,11 @@ dashboard_import:
 button:
   - platform: navien
     name: NavienHotButton
-    
+
 light:
   - platform: fastled_clockless
     chipset: SK6812
     pin: 27
     num_leds: 1
     rgb_order: GRB
-    name: "FastLED Light"
+    name: "Status LED"

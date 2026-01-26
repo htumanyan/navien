@@ -1,0 +1,9 @@
+[project]
+name = "navien-esphome"
+version = "0.1.0"
+description = "ESPHome firmware for Navien water heater integration"
+requires-python = ">=3.11"
+dependencies = ["esphome"]
+
+[tool.uv]
+dev-dependencies = []
