@@ -84,18 +84,23 @@ sensor:
       unit_of_measurement: "%"
       accuracy_decimals: 1
     gas_total:
+      id: gas_total_therms
       name: "${friendly_name} Accumulated Gas Usage${sensor_suffix}"
+      # Navien reports accumulated gas in m³/10.
+      # 1 m³ gas = 9131 kcal; 1 Therm = 25193 kcal.
       filters:
         - lambda: return x * 9131.0 / 25193.0 / 10.0;
       unit_of_measurement: "Therms"
       accuracy_decimals: 1
     gas_current:
+      id: gas_current_btu
       name: "${friendly_name} Current Gas Usage${sensor_suffix}"
+      # Navien reports instantaneous gas usage in 10x kcal/hr.
+      # 1 kcal = 3.968 BTU; the 10x factor is confirmed by comparing
+      # against the reported heat capacity percentage.
       filters:
         - lambda: return x * 3.9680;
       unit_of_measurement: "BTU"
-      device_class: power
-      state_class: measurement
       accuracy_decimals: 1
     total_dhw_usage:
       name: "${friendly_name} Total DHW Uses${sensor_suffix}"
@@ -127,4 +132,35 @@ sensor:
     # this will be true if another NaviLink device is also connected
     other_navilink_installed:
       id: other_navilink_installed
-      name: "${friendly_name} Other NaviLink Installed${sensor_suffix}"  
+      name: "${friendly_name} Other NaviLink Installed${sensor_suffix}"
+
+  # HA-compatible gas sensors. These are disabled by default; enable them in
+  # the ESPHome integration if you want Energy Dashboard compatibility.
+  #
+  # "Therms" is not a valid HA unit for device_class gas, so we provide CCF.
+  # 1 CCF ~= 1.038 Therms.
+  - platform: copy
+    source_id: gas_total_therms
+    name: "${friendly_name} Accumulated Gas Usage CCF${sensor_suffix}"
+    unit_of_measurement: "CCF"
+    device_class: gas
+    state_class: total_increasing
+    filters:
+      - lambda: return x / 1.038;
+    accuracy_decimals: 1
+    disabled_by_default: true
+
+  # Instantaneous gas usage in kW (power, not energy).
+  # The legacy BTU sensor value is 1/10 of actual BTU/hr (see gas_current
+  # comments above), so we correct by 10x and convert BTU/hr to kW.
+  # 1 kW = 3412 BTU/hr.
+  - platform: copy
+    source_id: gas_current_btu
+    name: "${friendly_name} Current Gas Usage kW${sensor_suffix}"
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    filters:
+      - lambda: return x * 10.0 / 3412.0;
+    accuracy_decimals: 1
+    disabled_by_default: true
