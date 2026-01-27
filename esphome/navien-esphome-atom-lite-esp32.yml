@@ -18,7 +18,7 @@ esp32:
 logger:
   level: INFO 
   baud_rate: 0 #disable logging over uart
-  
+
 dashboard_import:
   package_import_url: github://htumanyan/navien/esphome/navien-esphome-atom-lite-esp32.yml
   import_full_config: false
@@ -26,7 +26,7 @@ dashboard_import:
 button:
   - platform: navien
     name: NavienHotButton
-    
+
 light:
   - platform: esp32_rmt_led_strip
     chipset: SK6812
