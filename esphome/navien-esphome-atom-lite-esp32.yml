@@ -13,7 +13,7 @@ packages:
 
 esp32:
   framework:
-    type: arduino
+    type: esp-idf
 
 logger:
   level: INFO 
@@ -28,9 +28,9 @@ button:
     name: NavienHotButton
 
 light:
-  - platform: fastled_clockless
+  - platform: esp32_rmt_led_strip
     chipset: SK6812
     pin: 27
     num_leds: 1
     rgb_order: GRB
-    name: "Status LED"
+    name: "FastLED Light"

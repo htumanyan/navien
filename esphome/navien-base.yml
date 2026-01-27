@@ -64,7 +64,6 @@ switch:
     name: "${friendly_name} Allow Recirculation"
     id: allow_scheduled_recirc
 
-
 button:
   - platform: restart
     name: "${friendly_name} Restart"
