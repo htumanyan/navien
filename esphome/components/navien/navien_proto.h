@@ -77,34 +77,47 @@ const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
 
 
-const uint8_t POWER_STATUS_ON_OFF_MASK     = 0x05;
+const uint8_t POWER_STATUS_ON_OFF_MASK     = 0x01;
 const uint8_t RECIRCULATION_ON_OFF_MASK    = 0x20;
 
 
 /**
- * Bitmask values for the sustem status byte in the water packet (WATER_DATA.system_status field)
+ * Bitmask values for the system status byte in the water packet (WATER_DATA.system_status field)
  */
 // If this bit is 1, then the display units are Celsius, otherwise - Farenheit
 // On Navien 240A Celsius is set by turning DIP Switch 4 ON (upper position) on the front panel
 // Note: this does not affect the values reported by Navien unit. Those are always reported in metric.
 // This flag just tells us what unit does the Navien unit itself use for display on the front panel
+// NOTE: on a NCB unit this seems to be indicated in bit 1, not bit 3
 const uint8_t SYS_STATUS_FLAG_UNITS      = 0x08;
 
-// If this bit is 1, then recirculation is enabled.
-// On a Navien 240-A2, if this bit is 0 then recirculation is configured for "HotButton", otherwise 
-// it's in one of the other three modes, all of which cede control of recirculation scheduling to a 
-// NaviLink-like device (e.g. this ESPHome device) if one is present.
-const uint8_t SYS_STATUS_FLAG_RECIRC     = 0x02;
+// Recirculation mode bits in system_status:
+// Bit 0 (0x01): Internal scheduled recirculation mode
+// Bit 1 (0x02): External scheduled recirculation mode
+// If either bit is set, the unit is in one of the scheduled modes, which cede control
+// of recirculation scheduling to a NaviLink-like device (e.g. this ESPHome device) if one is present.
+// If both bits are 0, recirculation is either disabled or in "HotButton" mode.
+const uint8_t SYS_STATUS_FLAG_RECIRC_INT_SCHEDULED = 0x01;
+const uint8_t SYS_STATUS_FLAG_RECIRC_EXT_SCHEDULED = 0x02;
 
 /**
  * Bitmask values for the recirculation_enabled byte (WATER_DATA.recirculation_enabled field)
  */
 // In HotButton mode: If this bit is 1, hot button recirculation has been triggered and is active
 const uint8_t RECIRC_STATUS_FLAG_HOTBUTTON_ON = 0x01;
-// In Scheduled mode: If this bit is 1, recirculation is enabled. Note that this can still be 
-// changed when in HotButton mode, but the unit doesn't actually do anything in response until you 
+// In Scheduled mode: If this bit is 1, recirculation is enabled. Note that this can still be
+// changed when in HotButton mode, but the unit doesn't actually do anything in response until you
 // switch the unit back to Scheduled mode.
 const uint8_t RECIRC_STATUS_FLAG_SCHEDULED_ON = 0x02;
+
+/**
+ * Bitmask values for GAS_DATA.system_status_2
+ * This byte contains unit configuration flags that are consistent across unit types.
+ */
+// If this bit is 1, the unit is displaying imperial units (Fahrenheit), else metric (Celsius)
+const uint8_t SYS_STATUS_2_DISPLAY_UNITS = 0x01;
+// If this bit is 1, HotButton recirculation mode is enabled (vs disabled)
+const uint8_t SYS_STATUS_2_HOTBUTTON_ENABLED = 0x04;
 
 /**
  * Hardcoded command packets. Some commands have no uses data. Therefore rather than assemblying a packet
@@ -232,7 +245,7 @@ typedef struct {
   uint8_t  sh_return_temp; // combi (and space heat?) models
   uint8_t  unknown_18;     // 0x9E on NCB-H models
   uint8_t  heat_capacity;  // varies based on boiler cycling while operating
-  uint8_t  unknown_20;     // pinned to 0x21 on NCB-H models; 0x05 always so far elsewhere
+  uint8_t  system_status_2;  // bit 5 always on on NCB-H models; bit 2 is hotbutton-enabled on NPE2 models; bit 0 is units on both
   uint8_t  current_gas_lo;
   uint8_t  current_gas_hi;
   uint8_t  cumulative_gas_lo;

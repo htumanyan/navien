@@ -110,12 +110,9 @@ sensor:
     boiler_active:
       id: boiler_active
       name: "${friendly_name} Boiler Active${sensor_suffix}"
-    hotbutton_recirc_running:
-      id: hotbutton_recirc_running
-      name: "${friendly_name} Hot Button Recirculation${sensor_suffix}"
-    scheduled_recirc_running:
-      id: scheduled_recirc_running
-      name: "${friendly_name} Scheduled Recirculation${sensor_suffix}"
+    recirc_running:
+      id: recirc_running
+      name: "${friendly_name} Recirculation Running${sensor_suffix}"
     # this will be true if another NaviLink device is also connected
     other_navilink_installed:
       id: other_navilink_installed
