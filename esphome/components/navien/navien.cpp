@@ -78,18 +78,22 @@ namespace navien {
       state.power = POWER_OFF;
     }
 
-    if (water.system_status & SYS_STATUS_FLAG_RECIRC){
-      state.recirculation = SCHEDULED;
+    if (this->state.device_type == NCB_H) {
+      // NCB_H units don't seem to report their recirculation setting in the packets
+      /* TODO this might also be true of other device types that use packet type 0x06, 
+         see comment by recirc_running below */
+      state.recirculation = RECIRC_UNKNOWN;
+    }else if (water.system_status & SYS_STATUS_FLAG_RECIRC_INT_SCHEDULED){
+      state.recirculation = RECIRC_INT_SCHEDULED;
+    }else if (water.system_status & SYS_STATUS_FLAG_RECIRC_EXT_SCHEDULED){
+      state.recirculation = RECIRC_EXT_SCHEDULED;
+    }else if (state.hotbutton_mode_enabled){
+      // hotbutton_mode_enabled actually comes from gas packets
+      state.recirculation = RECIRC_EXT_HOTBUTTON;
     }else{
-      state.recirculation = HOTBUTTON;
+      state.recirculation = RECIRC_OFF;
     }
-
     
-    if (water.system_status & SYS_STATUS_FLAG_UNITS){
-      state.units = CELSIUS;
-    }else{
-      state.units = FARENHEIT;
-    }
     state.heating_mode = static_cast<DEVICE_HEATING_MODE>(water.heating_mode);
 
     state.operating_state = static_cast<OPERATING_STATE>(water.operating_state);
@@ -102,8 +106,19 @@ namespace navien {
     this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
     this->state.water.utilization = water.operating_capacity * 0.5f;
-    this->state.water.scheduled_recirc_running = water.heating_mode & HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING;
-    this->state.water.hotbutton_recirc_running = water.recirculation_enabled & RECIRC_STATUS_FLAG_HOTBUTTON_ON;
+    // Recirculation running detection varies by device type
+    /* TODO detecting this by the second byte of the header might be better, since it's
+       0x05 on NPE and 0x06 on NCB_H, and who knows what on other device types, but for now
+       this is a less invasive code change since the header isn't available here yet */
+    if (this->state.device_type == NCB_H) {
+        // NCB_H units: pump running indicated by system_power bit 5
+        this->state.water.recirc_running = water.system_power & RECIRCULATION_ON_OFF_MASK;
+    } else {
+        // NPE and other units: scheduled (heating_mode 0x08) or hotbutton (byte 33 bit 0)
+        this->state.water.recirc_running =
+            (water.heating_mode & HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING) ||
+            (water.recirculation_enabled & RECIRC_STATUS_FLAG_HOTBUTTON_ON);
+    }
     this->state.water.scheduled_recirc_allowed = water.recirculation_enabled & RECIRC_STATUS_FLAG_SCHEDULED_ON;
 
     if (this->is_rt)
@@ -144,6 +159,12 @@ namespace navien {
     this->state.gas.current_gas_usage = gas.current_gas_hi << 8 | gas.current_gas_lo;
     this->state.gas.cumulative_dwh_usage_hours = gas.cumulative_dwh_usage_hours_hi << 8 | gas.cumulative_dwh_usage_hours_lo;
     this->state.gas.cumulative_sh_usage_hours = gas.cumulative_sh_usage_hours_hi << 8 | gas.cumulative_sh_usage_hours_lo;
+    
+    if (gas.system_status_2 & SYS_STATUS_2_DISPLAY_UNITS){
+      this->state.units = FARENHEIT;
+    }else{
+      this->state.units = CELSIUS;
+    }
 
     std::string contVers = std::to_string(gas.controller_version_lo);
     if (contVers.length() < 2){
@@ -159,6 +180,7 @@ namespace navien {
 
     this->state.days_since_install = gas.days_since_install_hi << 8 | gas.days_since_install_lo;
     this->state.cumulative_domestic_usage_cnt = gas.cumulative_domestic_usage_cnt_hi << 8 | gas.cumulative_domestic_usage_cnt_lo;
+    this->state.hotbutton_mode_enabled = gas.system_status_2 & SYS_STATUS_2_HOTBUTTON_ENABLED;
 
     if (this->is_rt)
       this->update_gas_sensors();
@@ -190,11 +212,8 @@ namespace navien {
     if (this->boiler_active_sensor != nullptr){
       this->boiler_active_sensor->publish_state(this->state.water.boiler_active);
     }
-    if (this->scheduled_recirc_running_sensor != nullptr){
-      this->scheduled_recirc_running_sensor->publish_state(this->state.water.scheduled_recirc_running);
-    }
-    if (this->hotbutton_recirc_running_sensor != nullptr){
-      this->hotbutton_recirc_running_sensor->publish_state(this->state.water.hotbutton_recirc_running);
+    if (this->recirc_running_sensor != nullptr){
+      this->recirc_running_sensor->publish_state(this->state.water.recirc_running);
     }
 
     // Update the climate control with the current target temperature
@@ -367,6 +386,8 @@ namespace navien {
         return "Post Purge Stage 1";
       case POST_PURGE_2:
         return "Post Purge Stage 2";
+      case SHUTTING_DOWN:
+        return "Shutting Down";
       case DHW_WAIT:
         return "DHW Wait/Set Point Match";
       default:
@@ -392,7 +413,7 @@ namespace navien {
       case HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING:
         return "DHW Recirculating";
       default:
-        return "Unknown";
+        return "unknown";
     }
   }
 
@@ -431,18 +452,23 @@ namespace navien {
       case CAS_NVW:
         return "CAS NVW";
       default:
-        return "Unknown";
+        return "unknown";
     }
   }
 
   std::string Navien::device_recirc_mode_to_str(DEVICE_RECIRC_MODE state) {
     switch(state){
-      case HOTBUTTON:
-        return "HotButton";
-      case SCHEDULED:
-        return "Scheduled";
+      case RECIRC_OFF:
+        return "Off";
+      case RECIRC_EXT_HOTBUTTON:
+        return "External HotButton";
+      case RECIRC_EXT_SCHEDULED:
+        return "External Scheduled";
+      case RECIRC_INT_SCHEDULED:
+        return "Internal Scheduled";
+      case RECIRC_UNKNOWN:
       default:
-        return "Unknown";
+        return "unknown";
     }
   }
 

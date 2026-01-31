@@ -49,8 +49,7 @@ CONF_GAS_TOTAL          = "gas_total"
 CONF_GAS_CURRENT        = "gas_current"
 CONF_SH_OUTLET_TEMPERATURE = "sh_outlet_temperature"
 CONF_SH_RETURN_TEMPERATURE = "sh_return_temperature"
-CONF_SCHEDULED_RECIRC_RUNNING = "scheduled_recirc_running"
-CONF_HOTBUTTON_RECIRC_RUNNING = "hotbutton_recirc_running"
+CONF_RECIRC_RUNNING = "recirc_running"
 
 CONF_CONN_STATUS        = "conn_status"
 CONF_REAL_TIME          = "real_time"
@@ -94,10 +93,7 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_PERCENT,
                 accuracy_decimals=2,
             ),
-            cv.Optional(CONF_SCHEDULED_RECIRC_RUNNING): binary_sensor.binary_sensor_schema(
-                device_class = DEVICE_CLASS_RUNNING
-            ),
-            cv.Optional(CONF_HOTBUTTON_RECIRC_RUNNING): binary_sensor.binary_sensor_schema(
+            cv.Optional(CONF_RECIRC_RUNNING): binary_sensor.binary_sensor_schema(
                 device_class = DEVICE_CLASS_RUNNING
             ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
@@ -217,15 +213,10 @@ async def to_code(config):
         cg.add(sens.set_icon(config[CONF_WATER_UTILIZATION].get(CONF_ICON, "mdi:water-percent")))
         cg.add(var.set_water_utilization_sensor(sens))
 
-    if CONF_SCHEDULED_RECIRC_RUNNING in config:
-        sens = await binary_sensor.new_binary_sensor(config[CONF_SCHEDULED_RECIRC_RUNNING])
-        cg.add(sens.set_icon(config[CONF_SCHEDULED_RECIRC_RUNNING].get(CONF_ICON, "mdi:water-sync")))
-        cg.add(var.set_scheduled_recirc_running_sensor(sens))
-
-    if CONF_HOTBUTTON_RECIRC_RUNNING in config:
-        sens = await binary_sensor.new_binary_sensor(config[CONF_HOTBUTTON_RECIRC_RUNNING])
-        cg.add(sens.set_icon(config[CONF_HOTBUTTON_RECIRC_RUNNING].get(CONF_ICON, "mdi:water-sync")))
-        cg.add(var.set_hotbutton_recirc_running_sensor(sens))
+    if CONF_RECIRC_RUNNING in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_RECIRC_RUNNING])
+        cg.add(sens.set_icon(config[CONF_RECIRC_RUNNING].get(CONF_ICON, "mdi:water-sync")))
+        cg.add(var.set_recirc_running_sensor(sens))
         
     if CONF_GAS_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_GAS_TOTAL])

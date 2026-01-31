@@ -86,6 +86,28 @@ bash esphome run navien-wrd-hb.yml
 
 ---
 
+### 8. Importing the Scheduled Recirculation Automation Blueprint
+
+If you have a unit, such as the NPE2 series, that supports scheduled recirculation (meaning it has recirculation modes named something like "Always", "Intelligent", "Weekly", etc), and setting your unit to one of those modes results in the "Navien Recirculation Mode" sensor in Home Assistant reporting "External Scheduled" or "Internal Scheduled", then you can likely use the automation blueprint for scheduling your unit's recirculation times. To do that:
+
+First, you need to create a Schedule entity that will control when circulation is active:
+
+1. In Home Assistant, go to "Settings", "Devices and Services"
+2. Click "Add integration"
+3. Find "Schedule (helper)" and select it
+4. Give the schedule a name like "Navien Recirculation", and set up the schedule (or you can do that part later)
+5. Click "Create"
+
+Then, set up the automation:
+
+1. In Home Assistant, go to "Settings", "Automations & scenes", then to the "Blueprints" tab.
+2. Click "Import Blueprint" in the lower-right corner
+3. Enter Blueprint address: `https://raw.githubusercontent.com/htumanyan/navien/refs/heads/main/navien_schedule_automation_blueprint.yaml`
+4. Click "Preview", then "Import blueprint"
+5. In the list of blueprints, "Navien Scheduled Recirculation" should now appear. Click it.
+6. Fill in all the values per the directions (you might need to create some more helper entities depending on how you want to do things)
+7. Click "Save" and give the new automation a name.
+
 ### 📖 User Manual for Custom Navien Controller
 
 For detailed instructions on connecting, configuring, and using the custom Navien controller device, see the [User Manual](./user_manual.md). This guide covers hardware setup, wiring, and usage tips specific to the custom controller.

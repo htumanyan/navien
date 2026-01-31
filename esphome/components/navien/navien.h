@@ -39,8 +39,11 @@ namespace navien {
 
   
   typedef enum _DEVICE_RECIRC_MODE{
-    HOTBUTTON,
-    SCHEDULED
+    RECIRC_UNKNOWN,
+    RECIRC_OFF,
+    RECIRC_EXT_HOTBUTTON,
+    RECIRC_EXT_SCHEDULED,
+    RECIRC_INT_SCHEDULED,
   } DEVICE_RECIRC_MODE;
 
   typedef enum _DEVICE_UNITS{
@@ -93,6 +96,7 @@ namespace navien {
     FLAME_OFF = 0x3C,
     POST_PURGE_1 = 0x46,
     POST_PURGE_2 = 0x47,
+    SHUTTING_DOWN = 0x48,
     DHW_WAIT = 0x49 //DHW Wait / Set Point Match depending on model
   } OPERATING_STATE;
 
@@ -105,8 +109,7 @@ namespace navien {
       uint8_t utilization;
       bool boiler_active;
       bool scheduled_recirc_allowed;
-      bool hotbutton_recirc_running;
-      bool scheduled_recirc_running;
+      bool recirc_running;
     } water;
     struct{
       float  set_temp;
@@ -135,6 +138,7 @@ namespace navien {
     DEVICE_POWER_STATE  power;
     DEVICE_RECIRC_MODE  recirculation;
     DEVICE_UNITS        units;
+    bool hotbutton_mode_enabled;  // From GAS packet - true if HotButton mode is configured
   } NAVIEN_STATE;
 
 
@@ -172,8 +176,7 @@ namespace navien {
     void set_gas_outlet_temp_sensor(sensor::Sensor *sensor) { gas_outlet_temp_sensor = sensor; }
     void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
     void set_water_utilization_sensor(sensor::Sensor *sensor) { water_utilization_sensor = sensor; }
-    void set_scheduled_recirc_running_sensor(binary_sensor::BinarySensor *sensor) { scheduled_recirc_running_sensor = sensor; }
-    void set_hotbutton_recirc_running_sensor(binary_sensor::BinarySensor *sensor) { hotbutton_recirc_running_sensor = sensor; }
+    void set_recirc_running_sensor(binary_sensor::BinarySensor *sensor) { recirc_running_sensor = sensor; }
     void set_gas_total_sensor(sensor::Sensor *sensor) { gas_total_sensor = sensor; }
     void set_gas_current_sensor(sensor::Sensor *sensor) { gas_current_sensor = sensor; }
     void set_device_type_sensor(text_sensor::TextSensor *sensor) { device_type_sensor = sensor; }
@@ -251,8 +254,7 @@ namespace navien {
 
     binary_sensor::BinarySensor *boiler_active_sensor = nullptr;
     binary_sensor::BinarySensor *conn_status_sensor = nullptr;
-    binary_sensor::BinarySensor *scheduled_recirc_running_sensor = nullptr;
-    binary_sensor::BinarySensor *hotbutton_recirc_running_sensor = nullptr;
+    binary_sensor::BinarySensor *recirc_running_sensor = nullptr;
     binary_sensor::BinarySensor *other_navilink_installed_sensor = nullptr;
 
     switch_::Switch *power_switch = nullptr;

@@ -6,7 +6,7 @@ blueprint:
     This automation only works if your Navien water heater is configured to use scheduled ("Always On", "Intelligent",
     or "Weekly") recirculation. It will not work if the water heater is configured for "HotButton" recirculation.
 
-    Version: 1.0.1
+    Version: 1.1.0
   domain: automation
   input:
     recirculation_schedule:
@@ -27,10 +27,10 @@ blueprint:
           filter:
             - domain: switch
               integration: esphome
-    navien_circulating:
-      name: Navien Scheduled Recirculation
+    navien_recirculating:
+      name: Navien Recirculation Running
       description: >
-        Set this to the "Scheduled Recirculation" sensor from your Navien device. This indicates if the Navien is 
+        Set this to the "Recirculation Running" sensor from your Navien device. This indicates if the Navien is 
         actively recirculating water.
       selector:
         entity:
@@ -84,7 +84,9 @@ blueprint:
 trigger_variables:
   schedule_entity: !input recirculation_schedule
   alternate_entity: !input alternate_recirculation_switch
+  navien_hotbutton: !input navien_hotbutton
 variables:
+  navien_recirculating: !input navien_recirculating
   schedule_and_alternate_are_off: >
     {{ is_state(schedule_entity, 'off') and (alternate_entity == "" or is_state(alternate_entity, 'off')) }}
   navien_mode: !input navien_mode
@@ -110,13 +112,20 @@ triggers:
   - trigger: state
     id: hotbutton
     entity_id: !input navien_hotbutton
+  # Trigger when recirculating stops to see if the schedule should stay enabled or be disabled.
+  # This takes care of turning the schedule back off after a hot button trigger while it was off.
+  - trigger: state
+    id: recirculating_off
+    entity_id: !input navien_recirculating
+    from: "on"
+    to: "off"
 actions:
   # Complain if the Navien is in the wrong mode. But keep going, because the Navien will remember the state
   # of "Allow Recirculation" even if it's in the wrong mode, and recirculation will start if the user fixes it.
   - if:
       - condition: template
         value_template: >-
-          {{ not is_state(navien_mode, 'Scheduled') }}
+          {{ is_state(navien_mode, 'Off') or is_state(navien_mode, 'External HotButton') }}
     then:
       - service: persistent_notification.create
         data:
@@ -147,6 +156,9 @@ actions:
       - conditions:
           - condition: trigger
             id: hotbutton
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state.state not in ['unknown', 'unavailable'] and trigger.to_state.state not in ['unknown', 'unavailable'] }}
         sequence:
           # If scheduled recirculation is enabled, disable it first. Disabling and re-enabling it will trigger a 
           # recirculation cycle.
@@ -168,18 +180,6 @@ actions:
             target:
               entity_id: !input navien_recirculation_switch
             data: {}
-          # Wait for the recirculation cycle to finish.
-          - wait_for_trigger:
-              - trigger: state
-                entity_id: !input navien_circulating
-                from: "on"
-                to: "off"
-          # Stop here if recirculation is supposed to be on right now, leaving it on.
-          - condition: template
-            value_template: "{{ schedule_and_alternate_are_off }}"
-          - action: switch.turn_off
-            target:
-              entity_id: !input navien_recirculation_switch
       # Enable recirculation when either the schedule or alternate trigger turns on.
       - conditions:
           - condition: trigger
@@ -192,14 +192,8 @@ actions:
               entity_id: !input navien_recirculation_switch
       # Disable recirculation when both the schedule and alternate trigger are off.
       - conditions:
-          - condition: and
-            conditions:
-              - condition: trigger
-                id:
-                  - schedule_off
-                  - alternate_off
-              - condition: template
-                value_template: "{{ schedule_and_alternate_are_off }}"
+          - condition: template
+            value_template: "{{ schedule_and_alternate_are_off }}"
         sequence:
           - action: switch.turn_off
             target:
