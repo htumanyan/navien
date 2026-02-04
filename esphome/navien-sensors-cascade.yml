@@ -16,24 +16,24 @@ packages:
 sensor:
   - platform: navien
     id: navien_sub
-    name: "${friendly_name} Metrics Sub"
+    name: "Metrics Sub"
     uart_id: main_hw_uart
     src: 1
     target_temperature:
       id: target_temp_sub
-      name: "${friendly_name} Target Temp Sub"
+      name: "Target Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     inlet_temperature:
       id: inlet_temp_sub
-      name: "${friendly_name} Inlet Temp Sub"
+      name: "Inlet Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
     outlet_temperature:
       id: outlet_temp_sub
-      name: "${friendly_name} Outlet Temp Sub"
+      name: "Outlet Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
@@ -41,4 +41,4 @@ sensor:
 switch:
   - platform: navien
     navien: navien_sub
-    name: ${friendly_name} Sub Power On/Off
+    name: Sub Power On/Off

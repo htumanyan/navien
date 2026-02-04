@@ -3,7 +3,6 @@
 substitutions:
   #   # https://esphome.io/guides/configuration-types.html#substitutions
   device_name: navien-heater # hostname & entity_id
-  friendly_name: "Navien" # Displayed in HA frontend
   device_description: "Navien Gas Water Heater"
   tx_pin: GPIO15
   rx_pin: GPIO13
@@ -54,24 +53,24 @@ binary_sensor:
 switch:
   - platform: navien
     navien: navien_main
-    name: ${friendly_name} Main Power On/Off
+    name: Main Power On/Off
 
 
 button:
   - platform: restart
-    name: "${friendly_name} Restart"
+    name: "Restart"
 
 text_sensor:
   - platform: version
-    name: "${friendly_name} ESPHome Version"
+    name: "ESPHome Version"
     id: esphome_version
     hide_timestamp: True
   - platform: wifi_info
     ip_address:
       id: ip_address
-      name: "${friendly_name} IP Address"
+      name: "IP Address"
     mac_address:
-      name: "${friendly_name} Mac"
+      name: "Mac"
       id: mac_address
 
 
@@ -84,7 +83,7 @@ climate:
       min_temperature: 98F
       max_temperature: 120F
       temperature_step: '1°F'
-    name: "${friendly_name} Target Temperature"
+    name: "Target Temperature"
 
 uart:
   tx_pin: ${tx_pin}

@@ -153,7 +153,7 @@ void NavienLink::receive() {
 	this->uart.write_array(cmd.buffer, cmd.len);
       }else{
 	//Navilink keeps sending this sequence every time it receives a packet
-	//this->send_cmd(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+	      this->send_cmd(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
       }
        
       //Navien::print_buffer(this->recv_buffer.raw_data, len+HDR_SIZE);

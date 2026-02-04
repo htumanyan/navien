@@ -50,7 +50,7 @@ namespace navien {
   }
 
   void Navien::on_water(const WATER_DATA & water, uint8_t src){
-    ESP_LOGI(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
              src,
              water.set_temp,
              water.inlet_temp,
@@ -61,10 +61,8 @@ namespace navien {
              water.recirculation_enabled);
   
     if (water.system_power & POWER_STATUS_ON_OFF_MASK){
-         ESP_LOGI(TAG,"power on");
       state.power = POWER_ON;
     }else{
-        ESP_LOGI(TAG,"power off");
       state.power = POWER_OFF;
     }
   
