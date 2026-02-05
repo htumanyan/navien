@@ -85,8 +85,10 @@ sensor:
   - platform: wifi_signal
     name: $friendly_name wifi signal
   - platform: navien
-    name: $friendly_name Test sensor
+    type: navien_link
     uart_id: main_hw_uart
+  - platform: navien
+    name: $friendly_name Test sensor
     target_temperature:
       name: $friendly_name Target Temp
       filters:

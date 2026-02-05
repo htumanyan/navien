@@ -6,6 +6,10 @@ from esphome.core import ID
 
 NAVIEN_NAMESPACE = "navien"
 NAVIEN_CONFIG_ID = "navien"
+NAVIEN_LINK_ID   = "navien_link_id"
+
+TYPE_NAVIEN      = "navien"
+TYPE_NAVIEN_LINK = "navien_link"
 
 navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
@@ -21,6 +25,7 @@ from esphome.const import (
     CONF_SENSOR,
     CONF_NAME,
     CONF_TARGET_TEMPERATURE,
+    CONF_TYPE,
     
     DEVICE_CLASS_CONNECTIVITY,
     DEVICE_CLASS_GAS,
@@ -65,12 +70,14 @@ CONF_SRC                        = "src"
 CONF_OTHER_NAVILINK_INSTALLED   = "other_navilink_installed"
 
 
-CONFIG_SCHEMA = cv.All(
-    cv.Schema(
-        {
+CONFIG_SCHEMA = cv.typed_schema(
+    {
+        TYPE_NAVIEN: cv.Schema({
             cv.GenerateID(): cv.declare_id(Navien),
             
             cv.Optional(CONF_NAME, default= 'Navien' ): cv.string_strict,
+
+            cv.GenerateID(NAVIEN_LINK_ID): cv.use_id(NavienLinkEsp),
 
             cv.Optional(CONF_TARGET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
@@ -149,32 +156,29 @@ CONFIG_SCHEMA = cv.All(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC
             ),
             cv.Optional(CONF_REAL_TIME): cv.boolean,
-            cv.Optional(CONF_SRC): cv.int_range(min=0, max=15)
-        }
-    )
-    .extend(cv.polling_component_schema("5s"))
-    .extend(uart.UART_DEVICE_SCHEMA)
+
+            # TODO: Schema validator for uniqueness since NavienLinkEsp supports 1-per src?
+            cv.Optional(CONF_SRC, default="0"): cv.int_range(min=0, max=15)
+        })
+        .extend(cv.polling_component_schema("5s")),
+
+        TYPE_NAVIEN_LINK: cv.Schema({
+            cv.GenerateID(): cv.declare_id(NavienLinkEsp),
+            cv.Optional(CONF_NAME, default='NavienLinkEsp'): cv.string_strict,
+        })
+        .extend(uart.UART_DEVICE_SCHEMA)
+    },
+    key=CONF_TYPE,
+    default_type=TYPE_NAVIEN,
 )
 
-# Global variable to store the NavienLinkEsp singleton variable
-NAVIEN_LINK_ESP_SINGLETON = None
+async def to_code_navien_link(config):
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
+    await uart.register_uart_device(var, config)
 
 
-async def to_code(config):
-    global NAVIEN_LINK_ESP_SINGLETON
-        
-    # Create or get the singleton NavienLinkEsp instance
-    if NAVIEN_LINK_ESP_SINGLETON is None:
-        # First time - create the NavienLinkEsp singleton
-        link_id = ID(type=NavienLinkEsp, id="navien_link_esp", is_declaration=True)
-        link_var = cg.new_Pvariable(link_id)
-        cg.add(cg.App.register_component(link_var))
-        await uart.register_uart_device(link_var, config)
-        NAVIEN_LINK_ESP_SINGLETON = link_var
-    else:
-        # Reuse the existing singleton instance
-        link_var = NAVIEN_LINK_ESP_SINGLETON
-    
+async def to_code_navien(config):
     # Create the Navien instance
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
@@ -183,10 +187,8 @@ async def to_code(config):
     # By default the src is 0, which matches the single unit Navien
     # install. In multi-unit setups, different src values can be passed
     # from the configuration
-    src = 0
-    if CONF_SRC in config:
-        src = config[CONF_SRC]
-    cg.add(var.set_link(link_var, src))
+    link_var = await cg.get_variable(config[NAVIEN_LINK_ID])
+    cg.add(var.set_link(link_var, config[CONF_SRC]))
 
     if CONF_TARGET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TARGET_TEMPERATURE])
@@ -285,3 +287,13 @@ async def to_code(config):
     if CONF_OTHER_NAVILINK_INSTALLED in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_OTHER_NAVILINK_INSTALLED])
         cg.add(var.set_other_navilink_installed_sensor(sens))
+
+
+async def to_code(config):
+    if config[CONF_TYPE] == TYPE_NAVIEN:
+        await to_code_navien(config)
+    elif config[CONF_TYPE] == TYPE_NAVIEN_LINK:
+        await to_code_navien_link(config)
+    else:
+        # Shouldn't happen as schema was validated, but just in-case
+        raise cv.Invalid(f"Unknown Navien type: {config[CONF_TYPE]}")

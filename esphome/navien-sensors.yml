@@ -30,10 +30,10 @@ text_sensor:
 
 sensor:
   - platform: navien
+    type: navien_link
+  - platform: navien
     id: navien_main
-    src: 0
     name: "${friendly_name} Metrics"
-    uart_id: main_hw_uart
     target_temperature:
       id: navien_target_temperature
       name: "${friendly_name} Target Temp${sensor_suffix}"
