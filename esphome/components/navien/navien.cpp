@@ -4,60 +4,82 @@
 #include "esphome.h"
 #include "esphome/core/log.h"
 #include "navien.h"
-#include "navien_link_esp.h"
 
 namespace esphome {
 namespace navien {
 
   static const char *TAG = "navien.sensor";
 
+namespace {
+class NavienEspUartAdapter : public NavienUartI {
+ public:
+  void set_uart(esphome::uart::UARTComponent *uart) { uart_ = uart; }
+  int available() override { return uart_ ? uart_->available() : 0; }
+  uint8_t peek_byte(uint8_t *byte) override {
+    if (!uart_) return 0;
+    return uart_->peek_byte(byte) ? 1 : 0;
+  }
+  uint8_t read_byte(uint8_t *byte) override {
+    if (!uart_) return 0;
+    return uart_->read_byte(byte) ? 1 : 0;
+  }
+  bool read_array(uint8_t *data, uint8_t len) override {
+    if (!uart_) return false;
+    return uart_->read_array(data, len);
+  }
+  void write_array(const uint8_t *data, uint8_t len) override {
+    if (!uart_) return;
+    uart_->write_array(data, len);
+  }
+
+ private:
+  esphome::uart::UARTComponent *uart_ = nullptr;
+};
+
+NavienEspUartAdapter global_uart_adapter;
+}  // namespace
+
+NavienBase::NavienBase() : navien_link_(nullptr), uart_(nullptr), src_(0), is_rt(false) {}
+
+void NavienBase::setup() {
+  if (!uart_) {
+    ESP_LOGE(TAG, "UART interface not set");
+    return;
+  }
+  global_uart_adapter.set_uart(uart_);
+  navien_link_ = NavienLink::get_instance(&global_uart_adapter);
+  if (navien_link_ != nullptr) {
+    navien_link_->add_visitor(this, src_);
+  } else {
+    ESP_LOGE(TAG, "Failed to acquire NavienLink singleton");
+  }
+}
+
   // NavienBase implementation
-  void NavienBase::set_link(NavienLinkEsp *link, uint8_t src) {
-    this->link_ = link;
-    this->src_ = src;
-    if (link != nullptr) {
-      link->add_visitor(this, src);
-    }
-  }
+// NavienLinkEsp removed. set_link now uses NavienLink.
 
-  void NavienBase::send_turn_on_cmd() {
-    if (this->link_ != nullptr) {
-      this->link_->send_turn_on_cmd();
-    }
-  }
-
-  void NavienBase::send_turn_off_cmd() {
-    if (this->link_ != nullptr) {
-      this->link_->send_turn_off_cmd();
-    }
-  }
-
-  void NavienBase::send_hot_button_cmd() {
-    if (this->link_ != nullptr) {
-      this->link_->send_hot_button_cmd();
-    }
-  }
-
-  void NavienBase::send_set_temp_cmd(float temp) {
-    if (this->link_ != nullptr) {
-      this->link_->send_set_temp_cmd(temp);
-    }
-  }
-
-  void NavienBase::send_scheduled_recirculation_on_cmd() {
-    if (this->link_ != nullptr) {
-      this->link_->send_scheduled_recirculation_on_cmd();
-    }
-  }
-
-  void NavienBase::send_scheduled_recirculation_off_cmd() {
-    if (this->link_ != nullptr) {
-      this->link_->send_scheduled_recirculation_off_cmd();
-    }
-  }
+void NavienBase::send_turn_on_cmd() {
+  if (navien_link_) navien_link_->send_turn_on_cmd();
+}
+void NavienBase::send_turn_off_cmd() {
+  if (navien_link_) navien_link_->send_turn_off_cmd();
+}
+void NavienBase::send_hot_button_cmd() {
+  if (navien_link_) navien_link_->send_hot_button_cmd();
+}
+void NavienBase::send_set_temp_cmd(float temp) {
+  if (navien_link_) navien_link_->send_set_temp_cmd(temp);
+}
+void NavienBase::send_scheduled_recirculation_on_cmd() {
+  if (navien_link_) navien_link_->send_scheduled_recirculation_on_cmd();
+}
+void NavienBase::send_scheduled_recirculation_off_cmd() {
+  if (navien_link_) navien_link_->send_scheduled_recirculation_off_cmd();
+}
 
   // Navien implementation
   void Navien::setup() {
+    NavienBase::setup();
     this->state.power = POWER_OFF;
   }
 
@@ -324,6 +346,11 @@ namespace navien {
   void Navien::update() {
     ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
 
+    // Call receive on navien_link_ to process UART data
+    if (navien_link_) {
+      navien_link_->receive();
+    }
+
     // here we track how many packets were received
     // since the last update
     // if Navien is connected and we receive packets, the
@@ -344,7 +371,7 @@ namespace navien {
       this->conn_status_sensor->publish_state(this->is_connected);
 
     if (this->other_navilink_installed_sensor != nullptr)
-      this->other_navilink_installed_sensor->publish_state(this->link_->is_other_navilink_installed());
+      this->other_navilink_installed_sensor->publish_state(this->navien_link_->is_other_navilink_installed());
 
     update_water_sensors();
     update_gas_sensors();

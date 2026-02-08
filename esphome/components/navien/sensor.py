@@ -10,10 +10,11 @@ NAVIEN_CONFIG_ID = "navien"
 navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
 Navien = navien_ns.class_("Navien", cg.PollingComponent)
-NavienLinkEsp = navien_ns.class_("NavienLinkEsp", cg.Component, uart.UARTDevice)
+NavienLink = navien_ns.class_("NavienLink")
 
 
 from esphome.const import (
+    CONF_UART_ID,
     CONF_ID, UNIT_EMPTY, ICON_EMPTY,
     CONF_ICON,
     CONF_LATITUDE,
@@ -156,37 +157,22 @@ CONFIG_SCHEMA = cv.All(
     .extend(uart.UART_DEVICE_SCHEMA)
 )
 
-# Global variable to store the NavienLinkEsp singleton variable
-NAVIEN_LINK_ESP_SINGLETON = None
+
 
 
 async def to_code(config):
-    global NAVIEN_LINK_ESP_SINGLETON
-        
-    # Create or get the singleton NavienLinkEsp instance
-    if NAVIEN_LINK_ESP_SINGLETON is None:
-        # First time - create the NavienLinkEsp singleton
-        link_id = ID(type=NavienLinkEsp, id="navien_link_esp", is_declaration=True)
-        link_var = cg.new_Pvariable(link_id)
-        cg.add(cg.App.register_component(link_var))
-        await uart.register_uart_device(link_var, config)
-        NAVIEN_LINK_ESP_SINGLETON = link_var
-    else:
-        # Reuse the existing singleton instance
-        link_var = NAVIEN_LINK_ESP_SINGLETON
-    
     # Create the Navien instance
     var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
-    
-    # Connect Navien to the link singleton with src index
-    # By default the src is 0, which matches the single unit Navien
-    # install. In multi-unit setups, different src values can be passed
-    # from the configuration
+    # Set UART interface and src index for NavienBase
+    uart_id = config.get(CONF_UART_ID)
+    if uart_id is not None:
+        uart_var = await cg.get_variable(uart_id)
+        cg.add(var.set_uart(uart_var))
     src = 0
     if CONF_SRC in config:
         src = config[CONF_SRC]
-    cg.add(var.set_link(link_var, src))
+    cg.add(var.set_src(src))
+    await cg.register_component(var, config)
 
     if CONF_TARGET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TARGET_TEMPERATURE])

@@ -11,16 +11,34 @@ namespace navien {
 static const char *TAG = "navien.link";
 
 
+NavienLink *NavienLink::get_instance(NavienUartI *uart) {
+  static NavienLink *instance = nullptr;
+  if (instance == nullptr) {
+    if (uart == nullptr) {
+      ESP_LOGE(TAG, "NavienLink UART adapter required on first get_instance call");
+      return nullptr;
+    }
+    instance = new NavienLink(uart);
+  } else if (uart != nullptr && instance->uart != uart) {
+    ESP_LOGW(TAG, "Ignoring request to replace Navien UART adapter after initialization");
+  }
+  return instance;
+}
+
+
 bool NavienLink::seek_to_marker(){
+  if (uart == nullptr) {
+    return false;
+  }
   uint8_t byte;
 
-  int available = this->uart.available();
+  int available = uart->available();
   for (int i = 0; i < available; i++){
-    this->uart.peek_byte(&byte);
+    uart->peek_byte(&byte);
     if (byte == PACKET_MARKER)
       return true;
     
-    this->uart.read_byte(&byte);
+    uart->read_byte(&byte);
   }
   return false;
 }
@@ -41,17 +59,24 @@ void NavienLink::parse_control_packet(){
 void NavienLink::parse_status_packet(){
   switch(this->recv_buffer.hdr.dst){
   case PACKET_DST_WATER:
-    //NavienLink::print_buffer(this->recv_buffer.raw_data, this->recv_buffer.hdr.len + HDR_SIZE);
     ESP_LOGD(TAG, "SRC:0x%02X B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
              this->recv_buffer.hdr.src,
-	     this->recv_buffer.water.unknown_06,
-	     this->recv_buffer.water.unknown_32,
-	     this->recv_buffer.water.recirculation_enabled);
-    this->cb.on_water(recv_buffer.water, recv_buffer.hdr.src);
+             this->recv_buffer.water.unknown_06,
+             this->recv_buffer.water.unknown_32,
+             this->recv_buffer.water.recirculation_enabled);
+    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
+      if (visitors_[i]) {
+        visitors_[i]->on_water(recv_buffer.water, recv_buffer.hdr.src);
+      }
+    }
     break;
   case PACKET_DST_GAS:
     ESP_LOGD(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src); 
-    this->cb.on_gas(recv_buffer.gas, recv_buffer.hdr.src);
+    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
+      if (visitors_[i]) {
+        visitors_[i]->on_gas(recv_buffer.gas, recv_buffer.hdr.src);
+      }
+    }
     break;
   }
 }
@@ -104,80 +129,91 @@ void NavienLink::parse_packet(){
 
 }
 
+
+void NavienLink::on_error() {
+  ESP_LOGD(TAG, "Notifying visitors of communication error");
+  for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
+    if (visitors_[i]) {
+      visitors_[i]->on_error();
+    }
+  }
+}
+
   
 void NavienLink::receive() {
-  uint8_t byte;
-
-  int available = this->uart.available();
-
-  if (!available)
+  if (uart == nullptr) {
+    ESP_LOGE(TAG, "UART pointer is null; skipping receive");
     return;
+  }
+
+  int available = uart->available();
+  if (!available) {
+    return;
+  }
 
   ESP_LOGV(TAG, "%d bytes available", available);
-  while(available){
-    switch(this->recv_state){
-    case INITIAL:
-      if (this->seek_to_marker()){
-      	this->recv_state = MARKER_FOUND;
-	      ESP_LOGV(TAG, "Marker Found");
-	      break;
-      }
-      // No marker found and no data left to read. Exit and wait
-      // for more bytes to come.
-      return;
-    case MARKER_FOUND:
-      available = this->uart.available();
-      if (available < HDR_SIZE){
-	ESP_LOGV(TAG, "Only %d bytes available - less than header size", available);
-	return;
-      }
-      if (!this->uart.read_array(this->recv_buffer.raw_data, HDR_SIZE)){
-	ESP_LOGV(TAG, "Failed to read header");
-	break;
-      }
-      this->recv_state = HEADER_PARSED;
-      ESP_LOGV(TAG, "Parsed header. %d bytes of body left", this->recv_buffer.hdr.len);
-      
-    case HEADER_PARSED:
-      available = this->uart.available();
-
-      // +1 here is for the checksum - it is in the last byte
-      uint8_t len = this->recv_buffer.hdr.len + 1;
-      if (available < len){
-	ESP_LOGV(TAG, "Only %d data bytes available - less than len", available);
-	return;
-      }
-      if (!this->uart.read_array(this->recv_buffer.raw_data + HDR_SIZE, len)){
-	ESP_LOGV(TAG, "Failed to read %d bytes", len);
-	break;
-      }
-      ESP_LOGV(TAG, "Got Packet => %d bytes", len+HDR_SIZE );
-
-      if (!this->cmd_buffer.empty()) {
-        // there are queued commands. Need to send them. But if there's another NaviLink connected, wait for 
-        // it to send its NAVLINK_PRESENT packet first so it doesn't stomp on us
-        if (!this->other_navilink_installed || memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0){
-          NAVIEN_CMD cmd = cmd_buffer.back();
-          cmd_buffer.pop_back();
-          this->uart.write_array(cmd.buffer, cmd.len);
-          // NavienLink::print_buffer(cmd.buffer, cmd.len);
+  while (available) {
+    switch (this->recv_state) {
+      case INITIAL:
+        if (this->seek_to_marker()) {
+          this->recv_state = MARKER_FOUND;
+          ESP_LOGV(TAG, "Marker Found");
+          break;
         }
-      }else{
-        if (!this->other_navilink_installed){
-          // If there's no pending command, send a NAVILINK_PRESENT packet so the unit knows we're here.
-          // When the unit is in an automatic recirculation mode, this tell is that we're controlling 
-          // when it does and does not recirculate (and it triggers the "Recirculation settings must be 
-          // configured through the NaviLink app" message on the unit's front panel when you try to
-          // change the recirculation setting)
-          this->uart.write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
-          // NavienLink::print_buffer(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+        // No marker found and no data left to read. Exit and wait for more bytes to come.
+        return;
+      case MARKER_FOUND:
+        available = uart->available();
+        if (available < HDR_SIZE) {
+          ESP_LOGV(TAG, "Only %d bytes available - less than header size", available);
+          return;
         }
+        if (!uart->read_array(this->recv_buffer.raw_data, HDR_SIZE)) {
+          ESP_LOGV(TAG, "Failed to read header");
+          break;
+        }
+        this->recv_state = HEADER_PARSED;
+        ESP_LOGV(TAG, "Parsed header. %d bytes of body left", this->recv_buffer.hdr.len);
+        // fall through
+      case HEADER_PARSED: {
+        available = uart->available();
+
+        // +1 here is for the checksum - it is in the last byte
+        uint8_t len = this->recv_buffer.hdr.len + 1;
+        if (available < len) {
+          ESP_LOGV(TAG, "Only %d data bytes available - less than len", available);
+          return;
+        }
+        if (!uart->read_array(this->recv_buffer.raw_data + HDR_SIZE, len)) {
+          ESP_LOGV(TAG, "Failed to read %d bytes", len);
+          break;
+        }
+        ESP_LOGV(TAG, "Got Packet => %d bytes", len + HDR_SIZE);
+
+        if (!this->cmd_buffer.empty()) {
+          // There are queued commands. Only send when we are sure the bus is clear to avoid collisions.
+          if (!this->other_navilink_installed || std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0) {
+            NAVIEN_CMD cmd = cmd_buffer.back();
+            cmd_buffer.pop_back();
+            uart->write_array(cmd.buffer, cmd.len);
+            // NavienLink::print_buffer(cmd.buffer, cmd.len);
+          }
+        } else {
+          if (!this->other_navilink_installed
+              && this->recv_buffer.hdr.len == NAVILINK_PRESENT[offsetof(HEADER, len)]
+              && std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT)) == 0) {
+            ESP_LOGW(TAG, "Detected NAVILINK_PRESENT packet from another NaviLink device, will stop sending NAVILINK_PRESENT packets until rebooted %d", sizeof(NAVILINK_PRESENT));
+            this->other_navilink_installed = true;
+          }
+          this->on_error();
+        }
+
+        // Navien::print_buffer(this->recv_buffer.raw_data, len + HDR_SIZE);
+        this->parse_packet();
+        available = uart->available();
+        this->recv_state = INITIAL;
+        break;
       }
-       
-      //Navien::print_buffer(this->recv_buffer.raw_data, len+HDR_SIZE);
-      this->parse_packet();
-      available = this->uart.available();
-      this->recv_state = INITIAL;
     }
   }
 }

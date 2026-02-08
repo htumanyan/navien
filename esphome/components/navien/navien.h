@@ -17,10 +17,12 @@
 #include "esphome/components/switch/switch.h"
 //#endif
 #include "esphome/components/uart/uart.h"
+#include "navien_link.h"
+#include "navien_proto.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 
-#include "navien_link_esp.h"
+// #include "navien_link_esp.h" // No longer needed
 
 #ifndef USE_SWITCH
 namespace switch_ {
@@ -143,23 +145,16 @@ namespace navien {
 
 
   // Forward declaration
-  class NavienLinkEsp;
 
   class NavienBase : public NavienLinkVisitorI {
   public:
-    NavienBase() : link_(nullptr), src_(0), is_rt(false) {}
+    NavienBase();
 
-    /**
-     * Set the link to the NavienLinkEsp singleton instance.
-     * This also registers this instance as a visitor to receive callbacks.
-     * @param link - pointer to the NavienLinkEsp singleton
-     * @param src - source index (0-15) used to identify this visitor
-     */
-    void set_link(NavienLinkEsp *link, uint8_t src = 0);
+    virtual void setup();
 
-    /**
-     * Send commands to Navien unit (forwarded to link)
-     */
+    void set_uart(esphome::uart::UARTComponent* uart) { uart_ = uart; }
+    void set_src(uint8_t src) { src_ = src; }
+
     void send_turn_on_cmd();
     void send_turn_off_cmd();
     void send_hot_button_cmd();
@@ -261,7 +256,8 @@ namespace navien {
     switch_::Switch *allow_recirc_switch = nullptr;
     climate::Climate *climate = nullptr;
 
-    NavienLinkEsp *link_;
+    NavienLink *navien_link_;
+    esphome::uart::UARTComponent* uart_;
     uint8_t src_;
     bool is_rt;
   };
@@ -272,6 +268,7 @@ namespace navien {
       updated_cnt = 0;
       received_cnt = 0;
       is_connected = false;
+      navien_link_ = nullptr;
     }
 
     virtual float get_setup_priority() const { return setup_priority::HARDWARE; }
