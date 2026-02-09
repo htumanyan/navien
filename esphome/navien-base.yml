@@ -9,6 +9,7 @@ substitutions:
   rx_pin: GPIO13
   platform: esp8266
   board: d1_mini
+  external_component_source: components
  
 
 esphome:
@@ -23,10 +24,7 @@ ${platform}:
   board: ${board}
 
 external_components:
-  - source: 
-      type: local
-      path: components
-    components: [navien]
+  - source: ${external_component_source}
 
 wifi:
   ssid: !secret wifi_ssid

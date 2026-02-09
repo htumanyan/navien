@@ -9,6 +9,7 @@ substitutions:
 
 packages:
   navien: !include navien-base.yml
+  sensors: !include navien-sensors.yml
 
 logger:
 #  level: VERBOSE #makes uart stream available in esphome logstream
