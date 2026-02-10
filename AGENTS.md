@@ -110,6 +110,7 @@ If protocol parsing changes:
   - Ask for model info and PCB/front-panel photos when relevant
   - Request RS-485 traces and ESPHome logs
   - Avoid speculative electrical advice; call out unverified assumptions
+- Before pushing commits to any remote branch, obtain explicit user approval.
 
 ## What not to do
 - Do not recommend bypassing safety systems or modifying heater internals.
