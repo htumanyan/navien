@@ -232,11 +232,11 @@ typedef struct {
   uint8_t  unknown_07; // 0x00
   uint8_t  device_type;
   uint8_t  unknown_09; //0x01 on NCB-H models
-  uint8_t  controller_version_lo;
-  uint8_t  controller_version_hi;
+  uint8_t  controller_version;
+  uint8_t  unknown_11;
 
-  uint8_t  panel_version_lo;
-  uint8_t  panel_version_hi;
+  uint8_t  panel_version;
+  uint8_t  unknown_13;
 
   uint8_t  set_temp;
   uint8_t  outlet_temp;
