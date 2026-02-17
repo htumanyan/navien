@@ -148,11 +148,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::on_gas(const GAS_DATA & gas, uint8_t src){
-    ESP_LOGD(TAG, "SRC:0x%02X Received Gas Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Gas DHW Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, SH Temp: 0x%02X",
        src,
        gas.dhw_set_temp,
        gas.inlet_temp,
-       gas.outlet_temp
+       gas.outlet_temp,
+       gas.sh_set_temp
     );
 
     ESP_LOGD(TAG, "SRC:0x%02X Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
@@ -171,6 +172,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     this->state.gas.dhw_set_temp = NavienLink::t2c(gas.dhw_set_temp);
     this->state.gas.outlet_temp = NavienLink::t2c(gas.outlet_temp);
     this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
+    this->state.gas.sh_set_temp = NavienLink::t2c(gas.sh_set_temp);
     this->state.gas.sh_outlet_temp = NavienLink::t2c(gas.sh_outlet_temp);
     this->state.gas.sh_return_temp = NavienLink::t2c(gas.sh_return_temp);
     this->state.device_type = static_cast<DEVICE_TYPE>(gas.device_type);
@@ -214,6 +216,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     this->inlet_temp_sensor->publish_state(0);
     this->water_flow_sensor->publish_state(0);
     
+    this->sh_set_temp_sensor->publish_state(0);
     this->sh_outlet_temp_sensor->publish_state(0);
     this->sh_return_temp_sensor->publish_state(0);
     this->heat_capacity_sensor->publish_state(0);
@@ -319,6 +322,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     }
     if (this->heat_capacity_sensor != nullptr)
       this->heat_capacity_sensor->publish_state(this->state.gas.heat_capacity);
+    if (this->sh_set_temp_sensor != nullptr)
+      this->sh_set_temp_sensor->publish_state(this->state.gas.sh_set_temp);
     if (this->sh_outlet_temp_sensor != nullptr)
       this->sh_outlet_temp_sensor->publish_state(this->state.gas.sh_outlet_temp);
     if (this->sh_return_temp_sensor != nullptr)

@@ -119,6 +119,7 @@ namespace navien {
       float  inlet_temp;
       uint16_t accumulated_gas_usage;
       uint16_t current_gas_usage;
+      float  sh_set_temp;
       float  sh_outlet_temp; // combi (and space heat?) models
       float  sh_return_temp; // combi (and space heat?) models
       uint8_t heat_capacity;
@@ -181,6 +182,7 @@ namespace navien {
     void set_heating_mode_sensor(text_sensor::TextSensor *sensor) { heating_mode_sensor = sensor; }
     void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
     void set_recirc_mode_sensor(text_sensor::TextSensor *sensor) { recirc_mode_sensor = sensor; }  
+    void set_sh_set_temp_sensor(sensor::Sensor *sensor) { sh_set_temp_sensor = sensor; }
     void set_sh_outlet_temp_sensor(sensor::Sensor *sensor) { sh_outlet_temp_sensor = sensor; }
     void set_sh_return_temp_sensor(sensor::Sensor *sensor) { sh_return_temp_sensor = sensor; }
     void set_heat_capacity_sensor(sensor::Sensor *sensor) { heat_capacity_sensor = sensor; } 
@@ -230,6 +232,7 @@ namespace navien {
     sensor::Sensor *water_utilization_sensor = nullptr;
     sensor::Sensor *gas_total_sensor = nullptr;
     sensor::Sensor *gas_current_sensor = nullptr;
+    sensor::Sensor *sh_set_temp_sensor = nullptr;
     sensor::Sensor *sh_outlet_temp_sensor = nullptr;
     sensor::Sensor *sh_return_temp_sensor = nullptr;
     sensor::Sensor *heat_capacity_sensor = nullptr;

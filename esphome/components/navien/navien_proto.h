@@ -234,10 +234,8 @@ typedef struct {
   uint8_t  unknown_09; //0x01 on NCB-H models
   uint8_t  controller_version;
   uint8_t  unknown_11;
-
   uint8_t  panel_version;
-  uint8_t  unknown_13;
-
+  uint8_t  sh_set_temp;
   uint8_t  dhw_set_temp;
   uint8_t  outlet_temp;
   uint8_t  inlet_temp;
