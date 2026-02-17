@@ -192,14 +192,14 @@ typedef struct {
   uint8_t inlet_temp;
   uint8_t unknown_14; //0x00 on NCB-H
   uint8_t unknown_15; //0x00 on NCB-H
-  uint8_t unknown_17; //0x00 on NCB-H
+  uint8_t unknown_16; //0x00 on NCB-H
   uint8_t operating_capacity;
   uint8_t water_flow;
-  uint8_t unknown_20; //0x00 on NCB-H
-  uint8_t unknown_21; //0x58 on NCB-H
-  uint8_t unknown_22; //0xB1 on NCB-H
-  uint8_t unknown_23; //0x10 on NCB-H
-  uint8_t unknown_24; //0x89 on NCB-H
+  uint8_t unknown_19; //0x00 on NCB-H
+  uint8_t unknown_20; //0x58 on NCB-H
+  uint8_t unknown_21; //0xB1 on NCB-H
+  uint8_t unknown_22; //0x10 on NCB-H
+  uint8_t unknown_23; //0x89 on NCB-H
   /**
    * Kudos and credits to individuals below for this byte
    * tsquared at https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567
@@ -228,10 +228,10 @@ typedef struct {
 } WATER_DATA;
 
 typedef struct {
-  uint8_t  unknown_00; // pinned to 0x45 on NCB-H models
-  uint8_t  unknown_01; // 0x00
+  uint8_t  unknown_06; // pinned to 0x45 on NCB-H models
+  uint8_t  unknown_07; // 0x00
   uint8_t  device_type;
-  uint8_t  unknown_03; //0x01 on NCB-H models
+  uint8_t  unknown_09; //0x01 on NCB-H models
   uint8_t  controller_version_lo;
   uint8_t  controller_version_hi;
 
@@ -243,7 +243,7 @@ typedef struct {
   uint8_t  inlet_temp;
   uint8_t  sh_outlet_temp; // combi (and space heat?) models
   uint8_t  sh_return_temp; // combi (and space heat?) models
-  uint8_t  unknown_18;     // 0x9E on NCB-H models
+  uint8_t  unknown_19;     // 0x9E on NCB-H models
   uint8_t  heat_capacity;  // varies based on boiler cycling while operating
   uint8_t  system_status_2;  // bit 5 always on on NCB-H models; bit 2 is hotbutton-enabled on NPE2 models; bit 0 is units on both
   uint8_t  current_gas_lo;
