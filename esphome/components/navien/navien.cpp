@@ -238,35 +238,28 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->recirc_running_sensor->publish_state(this->state.water.recirc_running);
     }
 
+#ifdef USE_CLIMATE
     // Update the climate control with the current target temperature
     if (this->climate != nullptr){
+      switch(this->state.power){
+      case POWER_ON:
+        this->climate->mode = climate::ClimateMode::CLIMATE_MODE_HEAT;
+        break;
+      default:
+        this->climate->mode = climate::ClimateMode::CLIMATE_MODE_OFF;
+      }
+
       this->climate->current_temperature = this->state.water.outlet_temp;
       this->climate->target_temperature = this->state.water.set_temp;
       this->climate->publish_state();
     }
+#endif
 
     if (this->recirc_mode_sensor != nullptr) {
       this->recirc_mode_sensor->publish_state(device_recirc_mode_to_str(this->state.recirculation));
     }
 
-    switch(this->state.power){
-    case POWER_ON:
-      if (this->power_switch != nullptr)
-        this->power_switch->publish_state(true);
-      if (this->climate != nullptr){
-        this->climate->mode = climate::ClimateMode::CLIMATE_MODE_HEAT;
-        this->climate->publish_state();
-      }
-      break;
-    default:
-      if (this->power_switch != nullptr)
-        this->power_switch->publish_state(false);
-      if (this->climate != nullptr){
-        this->climate->mode = climate::ClimateMode::CLIMATE_MODE_OFF;
-        this->climate->publish_state();
-      }
-    }
-
+#ifdef USE_SWITCH
     if (this->power_switch != nullptr){
       switch(this->state.power){
       case POWER_ON:
@@ -280,6 +273,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     if (this->allow_recirc_switch != nullptr){
       this->allow_recirc_switch->publish_state(this->state.water.scheduled_recirc_allowed);
     }
+#endif
 
     if (this->target_temp_sensor != nullptr)
       this->target_temp_sensor->publish_state(this->state.water.set_temp);
@@ -297,12 +291,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     if (this->target_temp_sensor != nullptr)
       this->target_temp_sensor->publish_state(this->state.gas.set_temp);
 
+#ifdef USE_CLIMATE
     // Update the climate control with the current target temperature
     if (this->climate != nullptr){
-      //    this->climate->current_temperature = this->state.gas.outlet_temp * 9.f / 5.f + 32.f;
-      //this->climate->target_temperature = this->state.gas.set_temp * 9.f / 5.f + 32.f;
       this->climate->publish_state();
     }
+#endif
   
   if (this->outlet_temp_sensor != nullptr)
     this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
