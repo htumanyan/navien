@@ -89,7 +89,7 @@ climate:
       min_temperature: 98F
       max_temperature: 120F
       temperature_step: '1°F'
-    name: "${friendly_name} Target Temperature"
+    name: "${friendly_name} DHW Set Temperature"
 
 uart:
   tx_pin: ${tx_pin}

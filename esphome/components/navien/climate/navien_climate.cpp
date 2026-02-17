@@ -36,7 +36,7 @@ void NavienClimate::control(const climate::ClimateCall &call){
     float target = *f;
     
     ESP_LOGD(TAG, "Setting target temperature to %f", target);
-    parent->send_set_temp_cmd(target);
+    parent->send_dhw_set_temp_cmd(target);
   }
     
   if (call.get_mode().has_value()) {

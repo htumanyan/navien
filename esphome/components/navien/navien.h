@@ -104,7 +104,7 @@ namespace navien {
 
   typedef struct{
     struct{
-      float set_temp;
+      float dhw_set_temp;
       float outlet_temp;
       float inlet_temp;
       float flow_lpm;
@@ -114,7 +114,7 @@ namespace navien {
       bool recirc_running;
     } water;
     struct{
-      float  set_temp;
+      float  dhw_set_temp;
       float  outlet_temp;
       float  inlet_temp;
       uint16_t accumulated_gas_usage;
@@ -158,15 +158,15 @@ namespace navien {
     void send_turn_on_cmd();
     void send_turn_off_cmd();
     void send_hot_button_cmd();
-    void send_set_temp_cmd(float temp);
+    void send_dhw_set_temp_cmd(float temp);
     void send_scheduled_recirculation_on_cmd();
     void send_scheduled_recirculation_off_cmd();
 
   public:
-    void set_target_temp_sensor(sensor::Sensor *sensor) { target_temp_sensor = sensor; }
+    void set_dhw_set_temp_sensor(sensor::Sensor *sensor) { dhw_set_temp_sensor = sensor; }
     void set_inlet_temp_sensor(sensor::Sensor *sensor) { inlet_temp_sensor = sensor; }
     void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
-    void set_gas_target_temp_sensor(sensor::Sensor *sensor) { gas_target_temp_sensor = sensor; }
+    void set_gas_dhw_set_temp_sensor(sensor::Sensor *sensor) { gas_dhw_set_temp_sensor = sensor; }
     void set_gas_inlet_temp_sensor(sensor::Sensor *sensor) { gas_inlet_temp_sensor = sensor; }
     void set_gas_outlet_temp_sensor(sensor::Sensor *sensor) { gas_outlet_temp_sensor = sensor; }
     void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
@@ -220,10 +220,10 @@ namespace navien {
      * Sensor definitions
      */
 
-    sensor::Sensor *target_temp_sensor = nullptr;
+    sensor::Sensor *dhw_set_temp_sensor = nullptr;
     sensor::Sensor *outlet_temp_sensor = nullptr;
     sensor::Sensor *inlet_temp_sensor = nullptr;
-    sensor::Sensor *gas_target_temp_sensor = nullptr;
+    sensor::Sensor *gas_dhw_set_temp_sensor = nullptr;
     sensor::Sensor *gas_outlet_temp_sensor = nullptr;
     sensor::Sensor *gas_inlet_temp_sensor = nullptr;
     sensor::Sensor *water_flow_sensor = nullptr;

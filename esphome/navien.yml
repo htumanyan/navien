@@ -87,13 +87,8 @@ sensor:
   - platform: navien
     name: $friendly_name Test sensor
     uart_id: main_hw_uart
-    target_temperature:
-      name: $friendly_name Target Temp
-      filters:
-        - lambda: return x * (9.0/5.0) + 32.0;
-      unit_of_measurement: "°F"
-    gas_target_temperature:
-      name: $friendly_name Gas Target Temp
+    dhw_set_temperature:
+      name: $friendly_name DHW Set Temp
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
@@ -177,7 +172,7 @@ climate:
       min_temperature: 98F
       max_temperature: 110F
       temperature_step: '1°F'
-    name: Target Temperature
+    name: DHW Set Temperature
 
 #output:
 #  - platform: slow_pwm

@@ -135,7 +135,7 @@ public:
   void send_hot_button_cmd();
   void send_scheduled_recirculation_on_cmd();
   void send_scheduled_recirculation_off_cmd();
-  void send_set_temp_cmd(float temp);
+  void send_dhw_set_temp_cmd(float temp);
 
   
 public:

@@ -147,9 +147,9 @@ const uint8_t SCHEDULED_RECIRC_ON_CMD[]  =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x
 // When in scheduled recirculation mode, this turns off recirculation. NaviLink sends this either when you enable a schedule, or when the scheduled time block ends.
 const uint8_t SCHEDULED_RECIRC_OFF_CMD[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0};
 
-//                                                                                                           temp
-const uint8_t SET_TEMP_CMD_TEMPLATE[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-                                        //F7              05    0F    50    10    0C    4F    00      00       5E    00    00    00    00    00    00    00    00  84 
+//                                                                                                               temp
+const uint8_t DHW_SET_TEMP_CMD_TEMPLATE[] =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x0c, 0x4f, 0x00,   0x00,   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                                            //F7              05    0F    50    10    0C    4F    00      00       5E    00    00    00    00    00    00    00    00  84
 
 const uint8_t NAVILINK_PRESENT[]     =  {PACKET_MARKER, 0x05, 0x0F, 0x50, 0x10, 0x03, 0x4a, 0x00, 0x01, 0x55};
 
@@ -187,7 +187,7 @@ typedef struct {
    */
   uint8_t system_power;
   uint8_t operating_state;
-  uint8_t set_temp;
+  uint8_t dhw_set_temp;
   uint8_t outlet_temp;
   uint8_t inlet_temp;
   uint8_t unknown_14; //0x00 on NCB-H
@@ -238,7 +238,7 @@ typedef struct {
   uint8_t  panel_version;
   uint8_t  unknown_13;
 
-  uint8_t  set_temp;
+  uint8_t  dhw_set_temp;
   uint8_t  outlet_temp;
   uint8_t  inlet_temp;
   uint8_t  sh_outlet_temp; // combi (and space heat?) models
