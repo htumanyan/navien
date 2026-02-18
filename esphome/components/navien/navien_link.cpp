@@ -199,11 +199,14 @@ void NavienLink::receive() {
             // NavienLink::print_buffer(cmd.buffer, cmd.len);
           }
         } else {
-          if (!this->other_navilink_installed
-              && this->recv_buffer.hdr.len == NAVILINK_PRESENT[offsetof(HEADER, len)]
-              && std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT)) == 0) {
-            ESP_LOGW(TAG, "Detected NAVILINK_PRESENT packet from another NaviLink device, will stop sending NAVILINK_PRESENT packets until rebooted %d", sizeof(NAVILINK_PRESENT));
-            this->other_navilink_installed = true;
+          if (!this->other_navilink_installed) {
+            // If there's no pending command, send a NAVILINK_PRESENT packet so the unit knows we're here.
+            // When the unit is in an automatic recirculation mode, this tell is that we're controlling 
+            // when it does and does not recirculate (and it triggers the "Recirculation settings must be 
+            // configured through the NaviLink app" message on the unit's front panel when you try to
+            // change the recirculation setting)
+            uart->write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+            // NavienLink::print_buffer(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
           }
           this->on_error();
         }
