@@ -343,13 +343,14 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->panel_version_sensor->publish_state(this->state.panel_version);
   }
 
-  void Navien::update() {
-    ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
-
-    // Call receive on navien_link_ to process UART data
+  void Navien::loop() {
     if (navien_link_) {
       navien_link_->receive();
     }
+  }
+
+  void Navien::update() {
+    ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
 
     // here we track how many packets were received
     // since the last update
