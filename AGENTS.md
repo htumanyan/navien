@@ -31,6 +31,7 @@ Follow the workflow in the root README:
 - Copy secrets (`cp secrets.yaml.sample secrets.yaml`)
 - Compile: `esphome compile <config>.yml`
 - Flash/run: `esphome run <config>.yml`
+- After pulling remote changes, run `esphome compile esphome/navien-ht-device.yml` to ensure the heater test config still builds.
 
 ESPHome versions can introduce breaking changes; follow README version guidance.
 
