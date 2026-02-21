@@ -188,13 +188,13 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->state.units = CELSIUS;
     }
 
-    std::string contVers = std::to_string(gas.controller_version_lo);
+    std::string contVers = std::to_string(gas.controller_version);
     if (contVers.length() < 2){
       contVers.insert(0, 2 - contVers.length(), '0');
     }
     this->state.controller_version = contVers.substr(0, 1) + "." + contVers.substr(1, 1);
 
-    std::string panVers = std::to_string(gas.panel_version_lo);
+    std::string panVers = std::to_string(gas.panel_version);
     if (panVers.length() < 2){
       panVers.insert(0, 2 - panVers.length(), '0');
     }
