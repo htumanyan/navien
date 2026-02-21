@@ -42,12 +42,14 @@ from esphome.const import (
 UNIT_LPM  = "l/m"
 UNIT_BTU  = "BTU"
 
+CONF_DHW_SET_TEMPERATURE = "dhw_set_temperature"
 CONF_INLET_TEMPERATURE  = "inlet_temperature"
 CONF_OUTLET_TEMPERATURE = "outlet_temperature"
 CONF_WATER_FLOW         = "water_flow"
 CONF_WATER_UTILIZATION  = "water_utilization"
 CONF_GAS_TOTAL          = "gas_total"
 CONF_GAS_CURRENT        = "gas_current"
+CONF_SH_SET_TEMPERATURE = "sh_set_temperature"
 CONF_SH_OUTLET_TEMPERATURE = "sh_outlet_temperature"
 CONF_SH_RETURN_TEMPERATURE = "sh_return_temperature"
 CONF_RECIRC_RUNNING = "recirc_running"
@@ -73,6 +75,12 @@ CONFIG_SCHEMA = cv.All(
             
             cv.Optional(CONF_NAME, default= 'Navien' ): cv.string_strict,
 
+            cv.Optional(CONF_DHW_SET_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=2,
+            ),
+
+            # Left for backwards compatibility in config. Alias for DHW_SET_TEMPERATURE.
             cv.Optional(CONF_TARGET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
@@ -105,6 +113,10 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_BTU,
+                accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_SH_SET_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
             ),
             cv.Optional(CONF_SH_OUTLET_TEMPERATURE): sensor.sensor_schema(
@@ -174,10 +186,20 @@ async def to_code(config):
     cg.add(var.set_src(src))
     await cg.register_component(var, config)
 
+    dhw_set_temp_config_key = None
+    if CONF_DHW_SET_TEMPERATURE in config:
+        dhw_set_temp_config_key = CONF_DHW_SET_TEMPERATURE
+
+    # Backwards compat alias
     if CONF_TARGET_TEMPERATURE in config:
-        sens = await sensor.new_sensor(config[CONF_TARGET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_TARGET_TEMPERATURE].get(CONF_ICON, "mdi:coolant-temperature")))
-        cg.add(var.set_target_temp_sensor(sens))
+        if dhw_set_temp_config_key:
+            raise cv.Invalid(f"{CONF_TARGET_TEMPERATURE} is deprecated. Use only {CONF_DHW_SET_TEMPERATURE}.")
+        dhw_set_temp_config_key = CONF_TARGET_TEMPERATURE
+
+    if dhw_set_temp_config_key:
+        sens = await sensor.new_sensor(config[dhw_set_temp_config_key])
+        cg.add(sens.set_icon(config[dhw_set_temp_config_key].get(CONF_ICON, "mdi:coolant-temperature")))
+        cg.add(var.set_dhw_set_temp_sensor(sens))
     
     if CONF_INLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_INLET_TEMPERATURE])
@@ -227,7 +249,12 @@ async def to_code(config):
     if CONF_BOILER_ACTIVE in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_BOILER_ACTIVE])
         cg.add(var.set_boiler_active_sensor(sens))          
-        
+
+    if CONF_SH_SET_TEMPERATURE in config:
+        sens = await sensor.new_sensor(config[CONF_SH_SET_TEMPERATURE])
+        cg.add(sens.set_icon(config[CONF_SH_SET_TEMPERATURE].get(CONF_ICON, "mdi:coolant-temperature")))
+        cg.add(var.set_sh_set_temp_sensor(sens))
+
     if CONF_SH_OUTLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_SH_OUTLET_TEMPERATURE])
         cg.add(sens.set_icon(config[CONF_SH_OUTLET_TEMPERATURE].get(CONF_ICON, "mdi:thermometer-lines")))

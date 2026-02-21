@@ -94,7 +94,7 @@ namespace navien {
 
   typedef struct{
     struct{
-      float set_temp;
+      float dhw_set_temp;
       float outlet_temp;
       float inlet_temp;
       float flow_lpm;
@@ -104,11 +104,12 @@ namespace navien {
       bool recirc_running;
     } water;
     struct{
-      float  set_temp;
+      float  dhw_set_temp;
       float  outlet_temp;
       float  inlet_temp;
       uint16_t accumulated_gas_usage;
       uint16_t current_gas_usage;
+      float  sh_set_temp;
       float  sh_outlet_temp; // combi (and space heat?) models
       float  sh_return_temp; // combi (and space heat?) models
       uint8_t heat_capacity;
@@ -148,15 +149,15 @@ namespace navien {
     void send_turn_on_cmd();
     void send_turn_off_cmd();
     void send_hot_button_cmd();
-    void send_set_temp_cmd(float temp);
+    void send_dhw_set_temp_cmd(float temp);
     void send_scheduled_recirculation_on_cmd();
     void send_scheduled_recirculation_off_cmd();
 
   public:
-    void set_target_temp_sensor(sensor::Sensor *sensor) { target_temp_sensor = sensor; }
+    void set_dhw_set_temp_sensor(sensor::Sensor *sensor) { dhw_set_temp_sensor = sensor; }
     void set_inlet_temp_sensor(sensor::Sensor *sensor) { inlet_temp_sensor = sensor; }
     void set_outlet_temp_sensor(sensor::Sensor *sensor) { outlet_temp_sensor = sensor; }
-    void set_gas_target_temp_sensor(sensor::Sensor *sensor) { gas_target_temp_sensor = sensor; }
+    void set_gas_dhw_set_temp_sensor(sensor::Sensor *sensor) { gas_dhw_set_temp_sensor = sensor; }
     void set_gas_inlet_temp_sensor(sensor::Sensor *sensor) { gas_inlet_temp_sensor = sensor; }
     void set_gas_outlet_temp_sensor(sensor::Sensor *sensor) { gas_outlet_temp_sensor = sensor; }
     void set_water_flow_sensor(sensor::Sensor *sensor) { water_flow_sensor = sensor; }
@@ -171,6 +172,7 @@ namespace navien {
     void set_heating_mode_sensor(text_sensor::TextSensor *sensor) { heating_mode_sensor = sensor; }
     void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
     void set_recirc_mode_sensor(text_sensor::TextSensor *sensor) { recirc_mode_sensor = sensor; }  
+    void set_sh_set_temp_sensor(sensor::Sensor *sensor) { sh_set_temp_sensor = sensor; }
     void set_sh_outlet_temp_sensor(sensor::Sensor *sensor) { sh_outlet_temp_sensor = sensor; }
     void set_sh_return_temp_sensor(sensor::Sensor *sensor) { sh_return_temp_sensor = sensor; }
     void set_heat_capacity_sensor(sensor::Sensor *sensor) { heat_capacity_sensor = sensor; } 
@@ -208,16 +210,17 @@ namespace navien {
      * Sensor definitions
      */
 
-    sensor::Sensor *target_temp_sensor = nullptr;
+    sensor::Sensor *dhw_set_temp_sensor = nullptr;
     sensor::Sensor *outlet_temp_sensor = nullptr;
     sensor::Sensor *inlet_temp_sensor = nullptr;
-    sensor::Sensor *gas_target_temp_sensor = nullptr;
+    sensor::Sensor *gas_dhw_set_temp_sensor = nullptr;
     sensor::Sensor *gas_outlet_temp_sensor = nullptr;
     sensor::Sensor *gas_inlet_temp_sensor = nullptr;
     sensor::Sensor *water_flow_sensor = nullptr;
     sensor::Sensor *water_utilization_sensor = nullptr;
     sensor::Sensor *gas_total_sensor = nullptr;
     sensor::Sensor *gas_current_sensor = nullptr;
+    sensor::Sensor *sh_set_temp_sensor = nullptr;
     sensor::Sensor *sh_outlet_temp_sensor = nullptr;
     sensor::Sensor *sh_return_temp_sensor = nullptr;
     sensor::Sensor *heat_capacity_sensor = nullptr;

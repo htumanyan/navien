@@ -34,9 +34,9 @@ sensor:
     src: 0
     name: "${friendly_name} Metrics"
     uart_id: main_hw_uart
-    target_temperature:
-      id: navien_target_temperature
-      name: "${friendly_name} Target Temp${sensor_suffix}"
+    dhw_set_temperature:
+      id: navien_dhw_set_temperature
+      name: "${friendly_name} DHW Set Temp${sensor_suffix}"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
@@ -47,6 +47,11 @@ sensor:
       unit_of_measurement: "°F"
     outlet_temperature:
       name: "${friendly_name} Outlet Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+    sh_set_temperature:
+      name: "${friendly_name} SH Set Temp${sensor_suffix}"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"

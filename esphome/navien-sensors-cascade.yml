@@ -19,9 +19,9 @@ sensor:
     name: "${friendly_name} Metrics Sub"
     uart_id: main_hw_uart
     src: 1
-    target_temperature:
-      id: target_temp_sub
-      name: "${friendly_name} Target Temp Sub"
+    dhw_set_temperature:
+      id: dhw_set_temp_sub
+      name: "${friendly_name} DHW Set Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"

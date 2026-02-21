@@ -67,8 +67,8 @@ void NavienBase::send_turn_off_cmd() {
 void NavienBase::send_hot_button_cmd() {
   if (navien_link_) navien_link_->send_hot_button_cmd();
 }
-void NavienBase::send_set_temp_cmd(float temp) {
-  if (navien_link_) navien_link_->send_set_temp_cmd(temp);
+void NavienBase::send_dhw_set_temp_cmd(float temp) {
+  if (navien_link_) navien_link_->send_dhw_set_temp_cmd(temp);
 }
 void NavienBase::send_scheduled_recirculation_on_cmd() {
   if (navien_link_) navien_link_->send_scheduled_recirculation_on_cmd();
@@ -86,7 +86,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   void Navien::on_water(const WATER_DATA & water, uint8_t src){
     ESP_LOGD(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
              src,
-             water.set_temp,
+             water.dhw_set_temp,
              water.inlet_temp,
              water.outlet_temp,
              water.water_flow,
@@ -123,7 +123,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     // of whether we're connected to navien or not
     this->received_cnt++;
     this->state.water.boiler_active = water.boiler_active & 0x01;
-    this->state.water.set_temp = NavienLink::t2c(water.set_temp);
+    this->state.water.dhw_set_temp = NavienLink::t2c(water.dhw_set_temp);
     this->state.water.outlet_temp = NavienLink::t2c(water.outlet_temp);
     this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
     this->state.water.flow_lpm = NavienLink::flow2lpm(water.water_flow);
@@ -148,11 +148,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::on_gas(const GAS_DATA & gas, uint8_t src){
-    ESP_LOGD(TAG, "SRC:0x%02X Received Gas Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Gas DHW Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, SH Temp: 0x%02X",
        src,
-       gas.set_temp,
+       gas.dhw_set_temp,
        gas.inlet_temp,
-       gas.outlet_temp
+       gas.outlet_temp,
+       gas.sh_set_temp
     );
 
     ESP_LOGD(TAG, "SRC:0x%02X Received Accumulated: 0x%02X 0x%02X, Current Gas: 0x%02X 0x%02X, Capacity Util: 0x%02X",
@@ -168,9 +169,10 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     // of whether we're connected to navien or not
     this->received_cnt++;
 
-    this->state.gas.set_temp    = NavienLink::t2c(gas.set_temp);
+    this->state.gas.dhw_set_temp = NavienLink::t2c(gas.dhw_set_temp);
     this->state.gas.outlet_temp = NavienLink::t2c(gas.outlet_temp);
     this->state.gas.inlet_temp = NavienLink::t2c(gas.inlet_temp);
+    this->state.gas.sh_set_temp = NavienLink::t2c(gas.sh_set_temp);
     this->state.gas.sh_outlet_temp = NavienLink::t2c(gas.sh_outlet_temp);
     this->state.gas.sh_return_temp = NavienLink::t2c(gas.sh_return_temp);
     this->state.device_type = static_cast<DEVICE_TYPE>(gas.device_type);
@@ -210,11 +212,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
 
   void Navien::on_error(){
     ESP_LOGW(TAG, "Communications interrupted, resetting states!");
-    this->target_temp_sensor->publish_state(0);
+    this->dhw_set_temp_sensor->publish_state(0);
     this->outlet_temp_sensor->publish_state(0);
     this->inlet_temp_sensor->publish_state(0);
     this->water_flow_sensor->publish_state(0);
     
+    this->sh_set_temp_sensor->publish_state(0);
     this->sh_outlet_temp_sensor->publish_state(0);
     this->sh_return_temp_sensor->publish_state(0);
     this->heat_capacity_sensor->publish_state(0);
@@ -251,7 +254,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       }
 
       this->climate->current_temperature = this->state.water.outlet_temp;
-      this->climate->target_temperature = this->state.water.set_temp;
+      this->climate->target_temperature = this->state.water.dhw_set_temp;
       this->climate->publish_state();
     }
 #endif
@@ -276,8 +279,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     }
 #endif
 
-    if (this->target_temp_sensor != nullptr)
-      this->target_temp_sensor->publish_state(this->state.water.set_temp);
+    if (this->dhw_set_temp_sensor != nullptr)
+      this->dhw_set_temp_sensor->publish_state(this->state.water.dhw_set_temp);
     if (this->outlet_temp_sensor != nullptr)
       this->outlet_temp_sensor->publish_state(this->state.water.outlet_temp);
     if (this->inlet_temp_sensor != nullptr)
@@ -289,8 +292,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::update_gas_sensors(){
-    if (this->target_temp_sensor != nullptr)
-      this->target_temp_sensor->publish_state(this->state.gas.set_temp);
+    if (this->dhw_set_temp_sensor != nullptr)
+      this->dhw_set_temp_sensor->publish_state(this->state.gas.dhw_set_temp);
 
 #ifdef USE_CLIMATE
     // Update the climate control with the current target temperature
@@ -314,6 +317,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     }
     if (this->heat_capacity_sensor != nullptr)
       this->heat_capacity_sensor->publish_state(this->state.gas.heat_capacity);
+    if (this->sh_set_temp_sensor != nullptr)
+      this->sh_set_temp_sensor->publish_state(this->state.gas.sh_set_temp);
     if (this->sh_outlet_temp_sensor != nullptr)
       this->sh_outlet_temp_sensor->publish_state(this->state.gas.sh_outlet_temp);
     if (this->sh_return_temp_sensor != nullptr)
