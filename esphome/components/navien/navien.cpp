@@ -209,6 +209,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::on_error(){
+    ESP_LOGW(TAG, "Communications interrupted, resetting states!");
     this->target_temp_sensor->publish_state(0);
     this->outlet_temp_sensor->publish_state(0);
     this->inlet_temp_sensor->publish_state(0);
@@ -344,7 +345,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::loop() {
-    if (navien_link_) {
+    if (navien_link_ && src_ == 0) {
       navien_link_->receive();
     }
   }
