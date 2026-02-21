@@ -273,6 +273,7 @@ namespace navien {
 
     virtual float get_setup_priority() const { return setup_priority::HARDWARE; }
     virtual void setup() override;
+    void loop() override;
     void update() override;
     void dump_config() override;
 

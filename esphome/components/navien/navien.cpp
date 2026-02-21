@@ -209,6 +209,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::on_error(){
+    ESP_LOGW(TAG, "Communications interrupted, resetting states!");
     this->target_temp_sensor->publish_state(0);
     this->outlet_temp_sensor->publish_state(0);
     this->inlet_temp_sensor->publish_state(0);
@@ -343,13 +344,14 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->panel_version_sensor->publish_state(this->state.panel_version);
   }
 
-  void Navien::update() {
-    ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
-
-    // Call receive on navien_link_ to process UART data
-    if (navien_link_) {
+  void Navien::loop() {
+    if (navien_link_ && src_ == 0) {
       navien_link_->receive();
     }
+  }
+
+  void Navien::update() {
+    ESP_LOGV(TAG, "Conn Status: received: %d, updated: %d", this->received_cnt, this->updated_cnt);
 
     // here we track how many packets were received
     // since the last update
