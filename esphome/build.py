@@ -47,8 +47,9 @@ CONFIGS = {
     "1": ("navien.yml", "D1 Mini (ESP8266) - main config"),
     "2": ("navien-d1-mini.yml", "D1 Mini variant"),
     "3": ("navien-esphome-atom-lite-esp32.yml", "ESP32 Atom Lite"),
-    "4": ("navien-ht-device.yml", "Custom HT device"),
-    "5": ("navien-wrd-hb.yml", "D1 Mini with hardwired hot button"),
+    "4": ("navien-esphome-atoms3-lite-tail485-esp32.yml", "ESP32 Atom S3 Lite with Tail485 module"),
+    "5": ("navien-ht-device.yml", "Custom HT device"),
+    "6": ("navien-wrd-hb.yml", "D1 Mini with hardwired hot button"),
 }
 
 
