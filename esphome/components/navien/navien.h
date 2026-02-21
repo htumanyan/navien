@@ -4,31 +4,21 @@
 #include <list>
 
 #include "esphome/core/component.h"
-//#ifdef USE_SENSOR
 #include "esphome/components/sensor/sensor.h"
-//#endif
-
-//#ifdef USE_BINARY_SENSOR
 #include "esphome/components/binary_sensor/binary_sensor.h"
-//#endif
 #include "esphome/components/text_sensor/text_sensor.h"
-
-//#ifdef USE_SWITCH
-#include "esphome/components/switch/switch.h"
-//#endif
 #include "esphome/components/uart/uart.h"
+
+#ifdef USE_CLIMATE
+#include "esphome/components/climate/climate.h"
+#endif
+
+#ifdef USE_SWITCH
+#include "esphome/components/switch/switch.h"
+#endif
+
 #include "navien_link.h"
 #include "navien_proto.h"
-#include "esphome/components/climate/climate.h"
-#include "esphome/components/text_sensor/text_sensor.h"
-
-// #include "navien_link_esp.h" // No longer needed
-
-#ifndef USE_SWITCH
-namespace switch_ {
-class Switch;
-}
-#endif
 
 namespace esphome {
 namespace navien {
@@ -195,6 +185,7 @@ namespace navien {
     void set_cumulative_domestic_usage_cnt_sensor(sensor::Sensor *sensor) { cumulative_domestic_usage_cnt_sensor = sensor; }
     void set_other_navilink_installed_sensor(binary_sensor::BinarySensor *sensor) { other_navilink_installed_sensor = sensor; }
 
+#ifdef USE_SWITCH
     /**
      * Sets the power switch component that will be notified of power
      * state changes, i.e. if the unit goes off, Navien will update the switch to reflect that
@@ -206,14 +197,11 @@ namespace navien {
      * when scheduled recirculation is active or inactive
      */
     void set_allow_recirc_switch(switch_::Switch * rs){allow_recirc_switch = rs;}
+#endif
 
+#ifdef USE_CLIMATE
     void set_climate(climate::Climate * c){climate = c;}
-
-    /**
-     * Sets the climate component that will be receiving temperature updates
-     */
-    //void set_climate(switch_::Switch * ps){power_switch = ps;}
-
+#endif
 
   protected:
     /**
@@ -252,9 +240,14 @@ namespace navien {
     binary_sensor::BinarySensor *recirc_running_sensor = nullptr;
     binary_sensor::BinarySensor *other_navilink_installed_sensor = nullptr;
 
+#ifdef USE_SWITCH
     switch_::Switch *power_switch = nullptr;
     switch_::Switch *allow_recirc_switch = nullptr;
+#endif
+
+#ifdef USE_CLIMATE
     climate::Climate *climate = nullptr;
+#endif
 
     NavienLink *navien_link_;
     esphome::uart::UARTComponent* uart_;
