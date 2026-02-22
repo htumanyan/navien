@@ -52,6 +52,7 @@ CONF_GAS_CURRENT        = "gas_current"
 CONF_SH_SET_TEMPERATURE = "sh_set_temperature"
 CONF_SH_OUTLET_TEMPERATURE = "sh_outlet_temperature"
 CONF_SH_RETURN_TEMPERATURE = "sh_return_temperature"
+CONF_OUTDOOR_TEMPERATURE = "outdoor_temperature"
 CONF_RECIRC_RUNNING = "recirc_running"
 
 CONF_CONN_STATUS        = "conn_status"
@@ -126,6 +127,11 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_SH_RETURN_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+            ),
+            cv.Optional(CONF_OUTDOOR_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=2,
+                icon="mdi:sun-thermometer",
             ),
             cv.Optional(CONF_HEAT_CAPACITY): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
@@ -264,6 +270,10 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_SH_RETURN_TEMPERATURE])
         cg.add(sens.set_icon(config[CONF_SH_RETURN_TEMPERATURE].get(CONF_ICON, "mdi:thermometer-lines")))
         cg.add(var.set_sh_return_temp_sensor(sens))
+
+    if CONF_OUTDOOR_TEMPERATURE in config:
+        sens = await sensor.new_sensor(config[CONF_OUTDOOR_TEMPERATURE])
+        cg.add(var.set_outdoor_temp_sensor(sens))
         
     if CONF_HEAT_CAPACITY in config:
         sens = await sensor.new_sensor(config[CONF_HEAT_CAPACITY])

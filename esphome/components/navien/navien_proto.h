@@ -241,7 +241,7 @@ typedef struct {
   uint8_t  inlet_temp;
   uint8_t  sh_outlet_temp; // combi (and space heat?) models
   uint8_t  sh_return_temp; // combi (and space heat?) models
-  uint8_t  unknown_19;     // 0x9E on NCB-H models
+  uint8_t  outdoor_temp;   // Note sign-magnitude encoded, whole degrees Celsius. 0x9E if no probe connected.
   uint8_t  heat_capacity;  // varies based on boiler cycling while operating
   uint8_t  system_status_2;  // bit 5 always on on NCB-H models; bit 2 is hotbutton-enabled on NPE2 models; bit 0 is units on both
   uint8_t  current_gas_lo;

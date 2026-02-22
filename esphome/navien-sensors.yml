@@ -65,6 +65,12 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+    outdoor_temperature:
+      name: "${friendly_name} Outdoor Temp${sensor_suffix}"
+      filters:
+        - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+      disabled_by_default: true
     water_flow:
       name: "${friendly_name} Water Flow${sensor_suffix}"
       filters:

@@ -146,6 +146,7 @@ public:
   static float flow2gpm(uint8_t f);
   static float t2c(uint8_t);
   static float flow2lpm(uint8_t f);
+  static float ot2c(uint8_t);
 
 protected:
   /**

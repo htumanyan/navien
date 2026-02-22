@@ -175,6 +175,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     this->state.gas.sh_set_temp = NavienLink::t2c(gas.sh_set_temp);
     this->state.gas.sh_outlet_temp = NavienLink::t2c(gas.sh_outlet_temp);
     this->state.gas.sh_return_temp = NavienLink::t2c(gas.sh_return_temp);
+    this->state.gas.outdoor_temp = NavienLink::ot2c(gas.outdoor_temp);
     this->state.device_type = static_cast<DEVICE_TYPE>(gas.device_type);
     this->state.gas.heat_capacity = gas.heat_capacity * 0.5f;
     this->state.gas.total_dhw_usage = gas.cumulative_domestic_usage_cnt_hi << 8 | gas.cumulative_domestic_usage_cnt_lo;
@@ -227,6 +228,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->sh_set_temp_sensor,
       this->sh_outlet_temp_sensor,
       this->sh_return_temp_sensor,
+      this->outdoor_temp_sensor,
       this->heat_capacity_sensor,
       this->total_dhw_usage_sensor,
       this->total_operating_time_sensor,
@@ -372,6 +374,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->sh_outlet_temp_sensor->publish_state(this->state.gas.sh_outlet_temp);
     if (this->sh_return_temp_sensor != nullptr)
       this->sh_return_temp_sensor->publish_state(this->state.gas.sh_return_temp);
+    if (this->outdoor_temp_sensor != nullptr)
+      this->outdoor_temp_sensor->publish_state(this->state.gas.outdoor_temp);
     if (this->gas_current_sensor != nullptr)
       this->gas_current_sensor->publish_state(this->state.gas.current_gas_usage);
     if (this->total_dhw_usage_sensor != nullptr)
