@@ -29,6 +29,8 @@ esp32:
 packages:
   navien: !include navien-base.yml
   sensors: !include navien-sensors.yml
+  climate: !include navien-climate.yml
+  #water_heater: !include navien-water-heater.yml
 
 logger:
   level: INFO

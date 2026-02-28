@@ -310,6 +310,15 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     }
 #endif
 
+#ifdef USE_WATER_HEATER
+    if (this->water_heater != nullptr){
+      this->water_heater->set_current_temperature(this->state.water.outlet_temp);
+      this->water_heater->set_target_temperature_state(this->state.water.dhw_set_temp);
+      this->water_heater->set_on_state(this->state.power == POWER_ON);
+      this->water_heater->publish_state();
+    }
+#endif
+
     if (this->recirc_mode_sensor != nullptr) {
       this->recirc_mode_sensor->publish_state(device_recirc_mode_to_str(this->state.recirculation));
     }

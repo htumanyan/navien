@@ -4,6 +4,7 @@
 #include <list>
 
 #include "esphome/core/component.h"
+#include "esphome/components/button/button.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
@@ -15,6 +16,10 @@
 
 #ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
+#endif
+
+#ifdef USE_WATER_HEATER
+#include "water_heater/navien_water_heater.h"
 #endif
 
 #include "navien_link.h"
@@ -207,6 +212,10 @@ namespace navien {
     void set_climate(climate::Climate * c){climate = c;}
 #endif
 
+#ifdef USE_WATER_HEATER
+    void set_water_heater(NavienWaterHeater * w){water_heater = w;}
+#endif
+
   protected:
     /**
      * Sensor definitions
@@ -253,6 +262,10 @@ namespace navien {
 
 #ifdef USE_CLIMATE
     climate::Climate *climate = nullptr;
+#endif
+
+#ifdef USE_WATER_HEATER
+    NavienWaterHeater *water_heater = nullptr;
 #endif
 
     NavienLink *navien_link_;

@@ -1,0 +1,9 @@
+climate:
+  - platform: navien
+    navien: navien_main
+    id: navien_climate
+    visual:
+      min_temperature: 98F
+      max_temperature: 120F
+      temperature_step: '1°F'
+    name: "${friendly_name} DHW Set Temperature"
