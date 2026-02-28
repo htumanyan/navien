@@ -85,15 +85,21 @@ sensor:
       accuracy_decimals: 1
     gas_total:
       name: "${friendly_name} Accumulated Gas Usage${sensor_suffix}"
+      # 1 CCF ~= 1.038 therms; Home Assistant doesn't accept therms.
+      # This expression is
+      # 9131.0 / 25193.0 / 10.0 / 1.038 = 0.03491733605
       filters:
-        - lambda: return x * 9131.0 / 25193.0 / 10.0;
-      unit_of_measurement: "Therms"
+        - lambda: return x * 0.0349;
+      unit_of_measurement: "CCF"
       accuracy_decimals: 1
     gas_current:
       name: "${friendly_name} Current Gas Usage${sensor_suffix}"
       filters:
-        - lambda: return x * 3.9680;
-      unit_of_measurement: "BTU"
+        # x is BTU/min. Convert to kW:
+        # BTU/min * 60 / 3412 = kW
+        # Remember, this is a power entity, not energy.
+        - lambda: return x * 0.017585;
+      unit_of_measurement: "kW"
       device_class: power
       state_class: measurement
       accuracy_decimals: 1
