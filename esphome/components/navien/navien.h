@@ -112,6 +112,7 @@ namespace navien {
       float  sh_set_temp;
       float  sh_outlet_temp; // combi (and space heat?) models
       float  sh_return_temp; // combi (and space heat?) models
+      float  outdoor_temp;
       uint8_t heat_capacity;
       uint16_t total_dhw_usage;
       uint16_t total_operating_time;
@@ -175,6 +176,7 @@ namespace navien {
     void set_sh_set_temp_sensor(sensor::Sensor *sensor) { sh_set_temp_sensor = sensor; }
     void set_sh_outlet_temp_sensor(sensor::Sensor *sensor) { sh_outlet_temp_sensor = sensor; }
     void set_sh_return_temp_sensor(sensor::Sensor *sensor) { sh_return_temp_sensor = sensor; }
+    void set_outdoor_temp_sensor(sensor::Sensor *sensor) { outdoor_temp_sensor = sensor; }
     void set_heat_capacity_sensor(sensor::Sensor *sensor) { heat_capacity_sensor = sensor; } 
     void set_boiler_active_sensor(binary_sensor::BinarySensor *sensor) { boiler_active_sensor = sensor; } 
     void set_days_since_install_sensor(sensor::Sensor *sensor) { days_since_install_sensor = sensor; }
@@ -223,6 +225,7 @@ namespace navien {
     sensor::Sensor *sh_set_temp_sensor = nullptr;
     sensor::Sensor *sh_outlet_temp_sensor = nullptr;
     sensor::Sensor *sh_return_temp_sensor = nullptr;
+    sensor::Sensor *outdoor_temp_sensor = nullptr;
     sensor::Sensor *heat_capacity_sensor = nullptr;
     sensor::Sensor *total_dhw_usage_sensor = nullptr;
     sensor::Sensor *total_operating_time_sensor = nullptr;

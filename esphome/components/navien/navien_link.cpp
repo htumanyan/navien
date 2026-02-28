@@ -285,6 +285,17 @@ float NavienLink::flow2gpm(uint8_t f){
 float NavienLink::t2c(uint8_t c){
   return (float)c / 2.f;
 }
+
+float NavienLink::ot2c(uint8_t c){
+  // Value when no probe is connected.
+  // Decodes to right at low end of many 10k thermistors (-30C) so probably min reportable?
+  if (c == 0x9E) {
+    return NAN;
+  }
+  float sign = c & 0x80 ? -1 : 1;
+  float mag = c & 0x7F;
+  return sign * mag;
+}
   
 uint8_t NavienLink::t2f(uint8_t c){
   float f = c;
