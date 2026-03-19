@@ -32,7 +32,7 @@ climate::ClimateTraits NavienClimate::traits(){
   
 void NavienClimate::control(const climate::ClimateCall &call){
   if (call.get_target_temperature().has_value()){
-    esphome::optional<float> f = call.get_target_temperature();
+    std::optional<float> f = call.get_target_temperature();
     float target = *f;
     
     ESP_LOGD(TAG, "Setting target temperature to %f", target);
