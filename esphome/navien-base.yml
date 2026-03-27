@@ -135,7 +135,7 @@ binary_sensor:
 
 switch:
   - platform: navien
-    name: Power On/Off
+    name: Power On-Off
 
 button:
   - platform: restart
