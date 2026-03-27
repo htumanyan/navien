@@ -14,7 +14,6 @@ void NavienClimate::dump_config() {
 
 climate::ClimateTraits NavienClimate::traits() {
     auto traits = climate::ClimateTraits();
-    traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
 
     // OLD (caused compile error):
     // static const std::set<climate::ClimateMode> supported_modes =
