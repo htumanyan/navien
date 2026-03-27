@@ -11,6 +11,10 @@ substitutions:
 packages:
   navien: !include navien-base.yml
 
+esp32:
+  framework:
+    type: arduino
+
 
 
 logger:
