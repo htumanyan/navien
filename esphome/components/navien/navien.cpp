@@ -607,15 +607,6 @@ void NavienOnOffSwitch::dump_config(){
 
 void NavienAllowScheduledRecircSwitch::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Allow Recirculation Switch '%s'...", this->name_.c_str());
-
-  bool initial_state = false;
-
-  // write state before setup
-  if (initial_state) {
-    this->turn_on();
-  } else {
-    this->turn_off();
-  }
 }
 
 void NavienAllowScheduledRecircSwitch::write_state(bool state) {
