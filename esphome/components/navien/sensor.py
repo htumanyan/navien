@@ -21,7 +21,6 @@ Navien = navien_ns.class_("Navien", cg.PollingComponent, uart.UARTDevice)
 
 from esphome.const import (
     CONF_ID, UNIT_EMPTY, ICON_EMPTY,
-    CONF_ICON,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_SENSOR,
@@ -80,30 +79,35 @@ CONFIG_SCHEMA = cv.All(
 
             cv.Optional(CONF_TARGET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
+                icon="mdi:coolant-temperature",
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_INLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
+                icon="mdi:water-thermometer",
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_OUTLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
+                icon="mdi:water-thermometer-outline",
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
+                icon="mdi:waves-arrow-right",
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_VOLUME_FLOW_RATE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
+                icon="mdi:water-percent",
                 accuracy_decimals=2,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
@@ -127,6 +131,7 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_BTU,
+                icon="mdi:gas-burner",
                 accuracy_decimals=2,
                 device_class=DEVICE_CLASS_POWER,
                 state_class=STATE_CLASS_MEASUREMENT,
@@ -151,27 +156,22 @@ async def to_code(config):
 
     if CONF_TARGET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TARGET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_TARGET_TEMPERATURE].get(CONF_ICON, "mdi:coolant-temperature")))
         cg.add(var.set_target_temp_sensor(sens))
         
     if CONF_INLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_INLET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_INLET_TEMPERATURE].get(CONF_ICON, "mdi:water-thermometer")))
         cg.add(var.set_inlet_temp_sensor(sens))
         
     if CONF_OUTLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_OUTLET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_OUTLET_TEMPERATURE].get(CONF_ICON, "mdi:water-thermometer-outline")))
         cg.add(var.set_outlet_temp_sensor(sens))
 
     if CONF_WATER_FLOW in config:
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
-        cg.add(sens.set_icon(config[CONF_WATER_FLOW].get(CONF_ICON, "mdi:waves-arrow-right")))
         cg.add(var.set_water_flow_sensor(sens))
 
     if CONF_WATER_UTILIZATION in config:
         sens = await sensor.new_sensor(config[CONF_WATER_UTILIZATION])
-        cg.add(sens.set_icon(config[CONF_WATER_UTILIZATION].get(CONF_ICON, "mdi:water-percent")))
         cg.add(var.set_water_utilization_sensor(sens))
 
     if CONF_SYS_STATUS in config:
@@ -188,7 +188,6 @@ async def to_code(config):
 
     if CONF_GAS_CURRENT in config:
         sens = await sensor.new_sensor(config[CONF_GAS_CURRENT])
-        cg.add(sens.set_icon(config[CONF_GAS_CURRENT].get(CONF_ICON, "mdi:gas-burner")))
         cg.add(var.set_gas_current_sensor(sens))
 
     if CONF_REAL_TIME in config:
