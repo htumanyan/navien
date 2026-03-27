@@ -15,10 +15,6 @@ void NavienClimate::dump_config() {
 climate::ClimateTraits NavienClimate::traits() {
     auto traits = climate::ClimateTraits();
 
-    // This is deprecated but still works (just a warning).
-    // You can comment it out if the warning bothers you.
-    traits.set_supports_current_temperature(true);
-
     // OLD (caused compile error):
     // static const std::set<climate::ClimateMode> supported_modes =
     //     {climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_HEAT};
