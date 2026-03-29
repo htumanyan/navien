@@ -109,7 +109,6 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
                 accuracy_decimals=2,
-                device_class=DEVICE_CLASS_GAS,
                 state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
