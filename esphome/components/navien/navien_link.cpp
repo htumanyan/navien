@@ -10,6 +10,22 @@ namespace navien {
 
 static const char *TAG = "navien.link";
 
+namespace {
+
+int visitor_index_from_status_src(uint8_t src) {
+  if (src < PACKET_SRC_STATUS) {
+    return -1;
+  }
+
+  const uint8_t index = src - PACKET_SRC_STATUS;
+  if (index >= NavienLink::NAVIEN_CASCADE_MAX) {
+    return -1;
+  }
+
+  return index;
+}
+
+}  // namespace
 
 NavienLink *NavienLink::get_instance(NavienUartI *uart) {
   static NavienLink *instance = nullptr;
@@ -57,6 +73,8 @@ void NavienLink::parse_control_packet(){
 }
   
 void NavienLink::parse_status_packet(){
+  const int visitor_index = visitor_index_from_status_src(this->recv_buffer.hdr.src);
+
   switch(this->recv_buffer.hdr.dst){
   case PACKET_DST_WATER:
     ESP_LOGD(TAG, "SRC:0x%02X B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
@@ -64,18 +82,26 @@ void NavienLink::parse_status_packet(){
              this->recv_buffer.water.unknown_06,
              this->recv_buffer.water.unknown_32,
              this->recv_buffer.water.recirculation_enabled);
-    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
-      if (visitors_[i]) {
-        visitors_[i]->on_water(recv_buffer.water, recv_buffer.hdr.src);
-      }
+
+    if (visitor_index < 0) {
+      ESP_LOGW(TAG, "Unhandled water status packet source 0x%02X", this->recv_buffer.hdr.src);
+      break;
+    }
+
+    if (visitors_[visitor_index]) {
+      visitors_[visitor_index]->on_water(recv_buffer.water, recv_buffer.hdr.src);
     }
     break;
   case PACKET_DST_GAS:
-    ESP_LOGD(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src); 
-    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
-      if (visitors_[i]) {
-        visitors_[i]->on_gas(recv_buffer.gas, recv_buffer.hdr.src);
-      }
+    ESP_LOGD(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src);
+
+    if (visitor_index < 0) {
+      ESP_LOGW(TAG, "Unhandled gas status packet source 0x%02X", this->recv_buffer.hdr.src);
+      break;
+    }
+
+    if (visitors_[visitor_index]) {
+      visitors_[visitor_index]->on_gas(recv_buffer.gas, recv_buffer.hdr.src);
     }
     break;
   }
