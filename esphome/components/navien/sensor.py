@@ -15,8 +15,7 @@ NavienLink = navien_ns.class_("NavienLink")
 
 from esphome.const import (
     CONF_UART_ID,
-    CONF_ID, UNIT_EMPTY, ICON_EMPTY,
-    CONF_ICON,
+    CONF_ID, UNIT_EMPTY,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_SENSOR,
@@ -79,32 +78,39 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_DHW_SET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:coolant-temperature",
             ),
 
             # Left for backwards compatibility in config. Alias for DHW_SET_TEMPERATURE.
             cv.Optional(CONF_TARGET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:coolant-temperature",
             ),
-            
+
             cv.Optional(CONF_INLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:water-thermometer",
             ),
             cv.Optional(CONF_OUTLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:water-thermometer-outline",
             ),
             cv.Optional(CONF_WATER_FLOW): sensor.sensor_schema(
                 unit_of_measurement=UNIT_LPM,
                 accuracy_decimals=2,
+                icon="mdi:gauge",
             ),
             cv.Optional(CONF_WATER_UTILIZATION): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
                 accuracy_decimals=2,
+                icon="mdi:water-percent",
             ),
             cv.Optional(CONF_RECIRC_RUNNING): binary_sensor.binary_sensor_schema(
-                device_class = DEVICE_CLASS_RUNNING
+                device_class=DEVICE_CLASS_RUNNING,
+                icon="mdi:water-sync",
             ),
             cv.Optional(CONF_GAS_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CUBIC_METER,
@@ -114,18 +120,22 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_GAS_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_BTU,
                 accuracy_decimals=2,
+                icon="mdi:gas-burner",
             ),
             cv.Optional(CONF_SH_SET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:coolant-temperature",
             ),
             cv.Optional(CONF_SH_OUTLET_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:thermometer-lines",
             ),
             cv.Optional(CONF_SH_RETURN_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
+                icon="mdi:thermometer-lines",
             ),
             cv.Optional(CONF_OUTDOOR_TEMPERATURE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
@@ -135,26 +145,32 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_HEAT_CAPACITY): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
                 accuracy_decimals=2,
+                icon="mdi:heat-wave",
             ),
             cv.Optional(CONF_TOTAL_DHW_USAGE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 accuracy_decimals=0,
+                icon="mdi:water-boiler",
             ),
             cv.Optional(CONF_TOTAL_OPERATING_TIME): sensor.sensor_schema(
                 unit_of_measurement=UNIT_HOUR,
                 accuracy_decimals=0,
+                icon="mdi:clock-outline",
             ),
             cv.Optional(CONF_CUMULATIVE_DWH_USAGE_HOURS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_HOUR,
                 accuracy_decimals=0,
+                icon="mdi:clock-outline",
             ),
             cv.Optional(CONF_CUMULATIVE_SH_USAGE_HOURS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_HOUR,
                 accuracy_decimals=0,
+                icon="mdi:clock-outline",
             ),
             cv.Optional(CONF_DAYS_SINCE_INSTALL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 accuracy_decimals=0,
+                icon="mdi:calendar-clock",
             ),
             cv.Optional(CONF_BOILER_ACTIVE): binary_sensor.binary_sensor_schema(),
             
@@ -203,32 +219,26 @@ async def to_code(config):
 
     if dhw_set_temp_config_key:
         sens = await sensor.new_sensor(config[dhw_set_temp_config_key])
-        cg.add(sens.set_icon(config[dhw_set_temp_config_key].get(CONF_ICON, "mdi:coolant-temperature")))
         cg.add(var.set_dhw_set_temp_sensor(sens))
-    
+
     if CONF_INLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_INLET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_INLET_TEMPERATURE].get(CONF_ICON, "mdi:water-thermometer")))
         cg.add(var.set_inlet_temp_sensor(sens))
-   
+
     if CONF_OUTLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_OUTLET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_OUTLET_TEMPERATURE].get(CONF_ICON, "mdi:water-thermometer-outline")))
         cg.add(var.set_outlet_temp_sensor(sens))
-    
+
     if CONF_WATER_FLOW in config:
         sens = await sensor.new_sensor(config[CONF_WATER_FLOW])
-        cg.add(sens.set_icon(config[CONF_WATER_FLOW].get(CONF_ICON, "mdi:gauge")))
         cg.add(var.set_water_flow_sensor(sens))
 
     if CONF_WATER_UTILIZATION in config:
         sens = await sensor.new_sensor(config[CONF_WATER_UTILIZATION])
-        cg.add(sens.set_icon(config[CONF_WATER_UTILIZATION].get(CONF_ICON, "mdi:water-percent")))
         cg.add(var.set_water_utilization_sensor(sens))
 
     if CONF_RECIRC_RUNNING in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_RECIRC_RUNNING])
-        cg.add(sens.set_icon(config[CONF_RECIRC_RUNNING].get(CONF_ICON, "mdi:water-sync")))
         cg.add(var.set_recirc_running_sensor(sens))
         
     if CONF_GAS_TOTAL in config:
@@ -237,7 +247,6 @@ async def to_code(config):
 
     if CONF_GAS_CURRENT in config:
         sens = await sensor.new_sensor(config[CONF_GAS_CURRENT])
-        cg.add(sens.set_icon(config[CONF_GAS_CURRENT].get(CONF_ICON, "mdi:gas-burner")))
         cg.add(var.set_gas_current_sensor(sens))
         
     if CONF_REAL_TIME in config:
@@ -257,17 +266,14 @@ async def to_code(config):
 
     if CONF_SH_SET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_SH_SET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_SH_SET_TEMPERATURE].get(CONF_ICON, "mdi:coolant-temperature")))
         cg.add(var.set_sh_set_temp_sensor(sens))
 
     if CONF_SH_OUTLET_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_SH_OUTLET_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_SH_OUTLET_TEMPERATURE].get(CONF_ICON, "mdi:thermometer-lines")))
         cg.add(var.set_sh_outlet_temp_sensor(sens))
-        
+
     if CONF_SH_RETURN_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_SH_RETURN_TEMPERATURE])
-        cg.add(sens.set_icon(config[CONF_SH_RETURN_TEMPERATURE].get(CONF_ICON, "mdi:thermometer-lines")))
         cg.add(var.set_sh_return_temp_sensor(sens))
 
     if CONF_OUTDOOR_TEMPERATURE in config:
@@ -276,32 +282,26 @@ async def to_code(config):
         
     if CONF_HEAT_CAPACITY in config:
         sens = await sensor.new_sensor(config[CONF_HEAT_CAPACITY])
-        cg.add(sens.set_icon(config[CONF_HEAT_CAPACITY].get(CONF_ICON, "mdi:heat-wave")))
         cg.add(var.set_heat_capacity_sensor(sens))
-        
+
     if CONF_TOTAL_DHW_USAGE in config:
         sens = await sensor.new_sensor(config[CONF_TOTAL_DHW_USAGE])
-        cg.add(sens.set_icon(config[CONF_TOTAL_DHW_USAGE].get(CONF_ICON, "mdi:water-boiler")))
         cg.add(var.set_total_dhw_usage_sensor(sens))
-        
+
     if CONF_TOTAL_OPERATING_TIME in config:
         sens = await sensor.new_sensor(config[CONF_TOTAL_OPERATING_TIME])
-        cg.add(sens.set_icon(config[CONF_TOTAL_OPERATING_TIME].get(CONF_ICON, "mdi:clock-outline")))
-        cg.add(var.set_total_operating_time_sensor(sens))  
-        
+        cg.add(var.set_total_operating_time_sensor(sens))
+
     if CONF_CUMULATIVE_DWH_USAGE_HOURS in config:
         sens = await sensor.new_sensor(config[CONF_CUMULATIVE_DWH_USAGE_HOURS])
-        cg.add(sens.set_icon(config[CONF_CUMULATIVE_DWH_USAGE_HOURS].get(CONF_ICON, "mdi:clock-outline")))
-        cg.add(var.set_cumulative_dwh_usage_hours_sensor(sens))  
-        
+        cg.add(var.set_cumulative_dwh_usage_hours_sensor(sens))
+
     if CONF_CUMULATIVE_SH_USAGE_HOURS in config:
         sens = await sensor.new_sensor(config[CONF_CUMULATIVE_SH_USAGE_HOURS])
-        cg.add(sens.set_icon(config[CONF_CUMULATIVE_SH_USAGE_HOURS].get(CONF_ICON, "mdi:clock-outline")))
-        cg.add(var.set_cumulative_sh_usage_hours_sensor(sens))  
-        
+        cg.add(var.set_cumulative_sh_usage_hours_sensor(sens))
+
     if CONF_DAYS_SINCE_INSTALL in config:
         sens = await sensor.new_sensor(config[CONF_DAYS_SINCE_INSTALL])
-        cg.add(sens.set_icon(config[CONF_DAYS_SINCE_INSTALL].get(CONF_ICON, "mdi:calendar-clock")))
         cg.add(var.set_days_since_install_sensor(sens))
  
     if CONF_OTHER_NAVILINK_INSTALLED in config:

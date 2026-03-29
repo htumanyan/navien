@@ -43,9 +43,6 @@ async def to_code(config):
     var = await switch.new_switch(config)
     await cg.register_component(var, config)
 
-    if CONF_ICON in config:
-        cg.add(var.set_icon(config[CONF_ICON]))
-    
     paren = await cg.get_variable(config[NAVIEN_CONFIG_ID])
     cg.add(var.set_parent(paren))
     
