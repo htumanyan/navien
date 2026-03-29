@@ -1,0 +1,8 @@
+# Available with esphome >= 2026.2.0
+water_heater:
+  - platform: navien
+    id: navien_water_heater
+    name: "${friendly_name} Water Heater${sensor_suffix}"
+    min_temperature: 98F
+    max_temperature: 120F
+

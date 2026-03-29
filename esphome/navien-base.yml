@@ -79,18 +79,6 @@ text_sensor:
       name: "${friendly_name} Mac"
       id: mac_address
 
-
-
-climate:
-  - platform: navien
-    navien: navien_main
-    id: navien_climate
-    visual:
-      min_temperature: 98F
-      max_temperature: 120F
-      temperature_step: '1°F'
-    name: "${friendly_name} DHW Set Temperature"
-
 uart:
   tx_pin: ${tx_pin}
   rx_pin: ${rx_pin}
