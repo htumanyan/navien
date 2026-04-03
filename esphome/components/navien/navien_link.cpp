@@ -312,7 +312,8 @@ void NavienLink::print_buffer(const uint8_t *data, size_t length) {
    char hex_buffer[100];
    hex_buffer[(3 * 32) + 1] = 0;
    for (size_t i = 0; i < length; i++) {
-     snprintf(&hex_buffer[3 * (i % 32)], sizeof(hex_buffer), "%02X ", data[i]);
+     size_t offset = 3 * (i % 32);
+     snprintf(&hex_buffer[offset], sizeof(hex_buffer) - offset, "%02X ", data[i]);
      if (i % 32 == 31) {
        ESP_LOGI(TAG, "   %s", hex_buffer);
      }
