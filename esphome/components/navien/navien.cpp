@@ -84,6 +84,10 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::on_water(const WATER_DATA & water, uint8_t src){
+    if (src != PACKET_SRC_STATUS + this->src_) {
+      return;
+    }
+
     ESP_LOGD(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
              src,
              water.dhw_set_temp,
@@ -148,6 +152,10 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::on_gas(const GAS_DATA & gas, uint8_t src){
+    if (src != PACKET_SRC_STATUS + this->src_) {
+      return;
+    }
+
     ESP_LOGD(TAG, "SRC:0x%02X Received Gas DHW Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, SH Temp: 0x%02X",
        src,
        gas.dhw_set_temp,

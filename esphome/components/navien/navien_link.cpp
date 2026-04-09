@@ -10,7 +10,6 @@ namespace navien {
 
 static const char *TAG = "navien.link";
 
-
 NavienLink *NavienLink::get_instance(NavienUartI *uart) {
   static NavienLink *instance = nullptr;
   if (instance == nullptr) {
@@ -64,19 +63,13 @@ void NavienLink::parse_status_packet(){
              this->recv_buffer.water.unknown_06,
              this->recv_buffer.water.unknown_32,
              this->recv_buffer.water.recirculation_enabled);
-    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
-      if (visitors_[i]) {
-        visitors_[i]->on_water(recv_buffer.water, recv_buffer.hdr.src);
-      }
-    }
+    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i)
+      if (visitors_[i]) visitors_[i]->on_water(recv_buffer.water, recv_buffer.hdr.src);
     break;
   case PACKET_DST_GAS:
-    ESP_LOGD(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src); 
-    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i) {
-      if (visitors_[i]) {
-        visitors_[i]->on_gas(recv_buffer.gas, recv_buffer.hdr.src);
-      }
-    }
+    ESP_LOGD(TAG, "SRC:0x%02X => Gas", this->recv_buffer.hdr.src);
+    for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i)
+      if (visitors_[i]) visitors_[i]->on_gas(recv_buffer.gas, recv_buffer.hdr.src);
     break;
   }
 }
