@@ -102,6 +102,8 @@ namespace navien {
       bool boiler_active;
       bool scheduled_recirc_allowed;
       bool recirc_running;
+      uint16_t error_code;
+      uint8_t error_level;
     } water;
     struct{
       float  dhw_set_temp;
@@ -188,6 +190,8 @@ namespace navien {
     void set_cumulative_sh_usage_hours_sensor(sensor::Sensor *sensor) { cumulative_sh_usage_hours_sensor = sensor; }
     void set_cumulative_domestic_usage_cnt_sensor(sensor::Sensor *sensor) { cumulative_domestic_usage_cnt_sensor = sensor; }
     void set_other_navilink_installed_sensor(binary_sensor::BinarySensor *sensor) { other_navilink_installed_sensor = sensor; }
+    void set_error_code_sensor(sensor::Sensor * sensor) { error_code_sensor = sensor; }
+    void set_error_level_sensor(sensor::Sensor *sensor) { error_level_sensor = sensor; }
 
 #ifdef USE_SWITCH
     /**
@@ -233,6 +237,8 @@ namespace navien {
     sensor::Sensor *cumulative_sh_usage_hours_sensor = nullptr;
     sensor::Sensor *cumulative_domestic_usage_cnt_sensor = nullptr;
     sensor::Sensor *days_since_install_sensor = nullptr;
+    sensor::Sensor *error_code_sensor = nullptr;
+    sensor::Sensor *error_level_sensor = nullptr;
 
     text_sensor::TextSensor *controller_version_sensor = nullptr;
     text_sensor::TextSensor *panel_version_sensor = nullptr;
