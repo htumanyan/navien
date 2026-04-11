@@ -15,29 +15,31 @@ Interestingly, the temperature values in gas and water packets, while often simi
 
 This distinction suggests that the gas and water temperature readings serve specific purposes, reflecting measurements taken at different but closely connected stages of the heating process.
 
-Gas and water packets are differentiated by the value at offset 3 in the header
+Gas and water status segments are selected by destination/service routing in header byte 0x03 (`dst`), not by a standalone packet-kind byte.
+
+For full source/destination/direction routing details, see [Protocol Data Flow](./protocol_data_flow.md).
 
 ```
 +---------------------------------------------------
-| F7 | Unknown Byte | Direction | Packet Type | ....
+| F7 | Unknown Byte | Src | Dst | Direction | ....
 +---------------------------------------------------
 
 F7 - the fixed marker of a beginning of the packet
 
-Unknown byte** - always 0x5, likely protocol version
+Unknown byte** - observed as 0x05, likely protocol/version marker
 
-Direction** - 0x50 for reporting packets
+Src** - source node ID (for example `0x50` main status source, `0x0F` local controller)
 
-Packet Type:
-	0x50 - water
-	0x0F - gas
+Dst** - destination/service routing byte (`0x50` water status path, `0x0F` gas status path)
+
+Direction** - parser treats `0x90` as status path and `0x10` as control path
 ```
 
 ### Sample Water Header
 
 ```
 +---------------------------------------------------
-| F7 | 0x50 | 0x50 | 0x50 | ....
+| F7 | 0x05 | 0x50 | 0x50 | 0x90 | ....
 +---------------------------------------------------
 ```
 
@@ -45,7 +47,7 @@ Packet Type:
 
 ```
 +---------------------------------------------------
-| F7 | 0x50 | 0x50 | 0x0F | ....
+| F7 | 0x05 | 0x50 | 0x0F | 0x90 | ....
 +---------------------------------------------------
 ```
 
