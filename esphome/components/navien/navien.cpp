@@ -445,7 +445,9 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->other_navilink_installed_sensor->publish_state(this->navien_link_->is_other_navilink_installed());
 
     update_water_sensors();
-    update_gas_sensors();
+    // Test branch: disable gas-path publishing to isolate oscillation source.
+    // If inlet/outlet oscillation disappears, mixed water/gas publishes are the likely cause.
+    // update_gas_sensors();
   }
 
   
