@@ -1,0 +1,47 @@
+substitutions:
+  tx_pin: GPIO2
+  rx_pin: GPIO1
+  platform: esp32
+  board: esp32-c6-devkitc-1
+  friendly_name: Navien
+  project_name: Navien.NanoC6-Thread
+  project_version: "0.0.0.1"
+
+esp32:
+  framework:
+    type: esp-idf
+
+packages:
+  navien: !include navien-base.yml
+  sensors: !include navien-sensors.yml
+
+# Thread networking - replaces wifi: block
+network:
+  enable_ipv6: true
+
+openthread:
+  device_type: FTD
+  tlv: !secret thread_tlv
+  force_dataset: true
+
+api:
+
+logger:
+  level: DEBUG
+  baud_rate: 0 # UART logging disabled - pins used for RS-485
+
+# Optional: include water heater entity (requires ESPHome >= 2026.2.0)
+# Uncomment the block below to expose a water_heater entity in Home Assistant
+# instead of (or in addition to) the default climate entity in navien-base.yml.
+# If using water_heater, consider commenting out the climate package in navien-base.yml.
+#
+# water_heater:
+#   - platform: navien
+#     id: navien_water_heater
+#     name: "${friendly_name} Water Heater"
+#     min_temperature: 98F
+#     max_temperature: 130F
+
+button:
+  - platform: navien
+    name: ${friendly_name} Hot Button
