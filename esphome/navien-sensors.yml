@@ -133,6 +133,12 @@ sensor:
     other_navilink_installed:
       id: other_navilink_installed
       name: "${friendly_name} Other NaviLink Installed${sensor_suffix}"
+    error_code:
+      id: error_code
+      name: "${friendly_name} Error Code${sensor_suffix}"
+    error_level:
+      id: error_level
+      name: "${friendly_name} Error Level${sensor_suffix}"
 
   # HA-compatible gas sensors. These are disabled by default; enable them in
   # the ESPHome integration if you want Energy Dashboard compatibility.

@@ -88,7 +88,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       return;
     }
 
-    ESP_LOGD(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+    ESP_LOGD(TAG, "SRC:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X, "
+                  "Err Code:0x%02X 0x%02X, Err Lvl:0x%02X",
              src,
              water.dhw_set_temp,
              water.inlet_temp,
@@ -96,7 +97,10 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
              water.water_flow,
              water.system_power,
              water.system_status,
-             water.recirculation_enabled);
+             water.recirculation_enabled,
+             water.error_code_hi,
+             water.error_code_lo,
+             water.error_level);
 
     if (water.system_power & POWER_STATUS_ON_OFF_MASK){
       state.power = POWER_ON;
@@ -146,6 +150,9 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
             (water.recirculation_enabled & RECIRC_STATUS_FLAG_HOTBUTTON_ON);
     }
     this->state.water.scheduled_recirc_allowed = water.recirculation_enabled & RECIRC_STATUS_FLAG_SCHEDULED_ON;
+
+    this->state.water.error_code = water.error_code_hi << 8 | water.error_code_lo;
+    this->state.water.error_level = water.error_level;
 
     if (this->is_rt)
       this->update_water_sensors();
@@ -243,7 +250,9 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->cumulative_dwh_usage_hours_sensor,
       this->cumulative_sh_usage_hours_sensor,
       this->cumulative_domestic_usage_cnt_sensor,
-      this->days_since_install_sensor
+      this->days_since_install_sensor,
+      this->error_code_sensor,
+      this->error_level_sensor
     };
 
     for (sensor::Sensor *s : sensors) {
@@ -356,6 +365,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     if (this->operating_state_sensor != nullptr){
       std::string operating_state_str = op_state_to_str(this->state.operating_state);
       this->operating_state_sensor->publish_state(operating_state_str);
+    }
+    if (this->error_code_sensor != nullptr){
+        this->error_code_sensor->publish_state(this->state.water.error_code);
+    }
+    if (this->error_level_sensor != nullptr){
+        this->error_level_sensor->publish_state(this->state.water.error_level);
     }
   }
 

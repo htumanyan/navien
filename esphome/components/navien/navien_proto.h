@@ -190,9 +190,9 @@ typedef struct {
   uint8_t dhw_set_temp;
   uint8_t outlet_temp;
   uint8_t inlet_temp;
-  uint8_t unknown_14; //0x00 on NCB-H
-  uint8_t unknown_15; //0x00 on NCB-H
-  uint8_t unknown_16; //0x00 on NCB-H
+  uint8_t error_code_lo;
+  uint8_t error_code_hi;
+  uint8_t error_level; // Possibly more info in high bits?
   uint8_t operating_capacity;
   uint8_t water_flow;
   uint8_t unknown_19; //0x00 on NCB-H

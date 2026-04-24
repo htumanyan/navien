@@ -65,6 +65,8 @@ CONF_CUMULATIVE_SH_USAGE_HOURS  = "total_sh_usage_hours"
 CONF_DAYS_SINCE_INSTALL         = "days_since_install"
 CONF_SRC                        = "src"
 CONF_OTHER_NAVILINK_INSTALLED   = "other_navilink_installed"
+CONF_ERROR_CODE                 = "error_code"
+CONF_ERROR_LEVEL                = "error_level"
 
 
 CONFIG_SCHEMA = cv.All(
@@ -180,6 +182,16 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_OTHER_NAVILINK_INSTALLED): binary_sensor.binary_sensor_schema(
                 device_class = DEVICE_CLASS_CONNECTIVITY,
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC
+            ),
+            cv.Optional(CONF_ERROR_CODE): sensor.sensor_schema(
+                accuracy_decimals=0,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+                icon="mdi:alert-circle",
+            ),
+            cv.Optional(CONF_ERROR_LEVEL): sensor.sensor_schema(
+                accuracy_decimals=0,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+                icon="mdi:alert-circle",
             ),
             cv.Optional(CONF_REAL_TIME): cv.boolean,
             cv.Optional(CONF_SRC): cv.int_range(min=0, max=15)
@@ -306,3 +318,11 @@ async def to_code(config):
     if CONF_OTHER_NAVILINK_INSTALLED in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_OTHER_NAVILINK_INSTALLED])
         cg.add(var.set_other_navilink_installed_sensor(sens))
+
+    if CONF_ERROR_CODE in config:
+        sens = await sensor.new_sensor(config[CONF_ERROR_CODE])
+        cg.add(var.set_error_code_sensor(sens))
+
+    if CONF_ERROR_LEVEL in config:
+        sens = await sensor.new_sensor(config[CONF_ERROR_LEVEL])
+        cg.add(var.set_error_level_sensor(sens))
