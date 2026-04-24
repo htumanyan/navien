@@ -28,6 +28,7 @@ esp32:
     
 packages:
   navien: !include navien-base.yml
+  transport: !include navien-transport-wifi.yml
   sensors: !include navien-sensors.yml
   #water_heater: !include navien-water-heater.yml
 
