@@ -337,8 +337,10 @@ namespace navien {
      * NavienLinkVisitorI interface implementation
      */
     virtual void on_water(const WATER_DATA & water, uint8_t src);
+    virtual void on_cascade_water(const WATER_DATA & water, uint8_t dst) override;
     virtual void on_gas(const GAS_DATA & gas, uint8_t src);
     virtual void on_error();
+    void apply_water_data_(const WATER_DATA & water, OPERATING_STATE operating_state, bool boiler_active);
 
   protected:
   /**
