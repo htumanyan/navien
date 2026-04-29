@@ -102,6 +102,31 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
              water.error_code_lo,
              water.error_level);
 
+    this->apply_water_data_(water, static_cast<OPERATING_STATE>(water.operating_state), water.boiler_active & 0x01);
+  }
+
+  void Navien::on_cascade_water(const WATER_DATA & water, uint8_t dst){
+    if (dst != PACKET_SRC_STATUS + this->src_) {
+      return;
+    }
+
+    ESP_LOGD(TAG, "Cascade DST:0x%02X Received Temp: 0x%02X, Inlet: 0x%02X, Outlet: 0x%02X, Flow: 0x%02X, Sys Power: 0x%02X, Sys Status: 0x%02X, Recirc Enabled: 0x%02X",
+             dst,
+             water.dhw_set_temp,
+             water.inlet_temp,
+             water.outlet_temp,
+             water.water_flow,
+             water.system_power,
+             water.system_status,
+             water.recirculation_enabled);
+
+    bool boiler_active =
+        (water.heating_mode != HEATING_MODE_IDLE) || water.water_flow > 0 || water.operating_capacity > 0;
+    OPERATING_STATE operating_state = boiler_active ? ACTIVE_COMBUSTION : STANDBY;
+    this->apply_water_data_(water, operating_state, boiler_active);
+  }
+
+  void Navien::apply_water_data_(const WATER_DATA & water, OPERATING_STATE operating_state, bool boiler_active){
     if (water.system_power & POWER_STATUS_ON_OFF_MASK){
       state.power = POWER_ON;
     }else{
@@ -123,14 +148,13 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     }else{
       state.recirculation = RECIRC_OFF;
     }
-    
-    state.heating_mode = static_cast<DEVICE_HEATING_MODE>(water.heating_mode);
 
-    state.operating_state = static_cast<OPERATING_STATE>(water.operating_state);
+    state.heating_mode = static_cast<DEVICE_HEATING_MODE>(water.heating_mode);
+    state.operating_state = operating_state;
     // Update the counter that will be used in assessment
     // of whether we're connected to navien or not
     this->received_cnt++;
-    this->state.water.boiler_active = water.boiler_active & 0x01;
+    this->state.water.boiler_active = boiler_active;
     this->state.water.dhw_set_temp = NavienLink::t2c(water.dhw_set_temp);
     this->state.water.outlet_temp = NavienLink::t2c(water.outlet_temp);
     this->state.water.inlet_temp = NavienLink::t2c(water.inlet_temp);
@@ -150,7 +174,6 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
             (water.recirculation_enabled & RECIRC_STATUS_FLAG_HOTBUTTON_ON);
     }
     this->state.water.scheduled_recirc_allowed = water.recirculation_enabled & RECIRC_STATUS_FLAG_SCHEDULED_ON;
-
     this->state.water.error_code = water.error_code_hi << 8 | water.error_code_lo;
     this->state.water.error_level = water.error_level;
 
