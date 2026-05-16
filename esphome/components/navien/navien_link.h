@@ -72,6 +72,7 @@ public:
    * @param src - the source address from the packet header
    */  
   virtual void on_water(const WATER_DATA & water, uint8_t src) = 0;
+  virtual void on_cascade_water(const WATER_DATA & water, uint8_t dst) { this->on_water(water, dst); }
 
   /**
    * Called then the direction is from Navien to reporting device
