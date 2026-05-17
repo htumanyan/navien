@@ -375,7 +375,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
   }
 
   void Navien::update_gas_sensors(){
-    if (this->dhw_set_temp_sensor != nullptr)
+    // The dhw_set / inlet / outlet temperature sensors are fed by *both* water
+    // and gas packets. The gas-packet values are gated by the user-facing
+    // switch; when disabled, those sensors keep the value last published from
+    // the water packet. SH and outdoor temperatures are gas-only and always
+    // publish.
+    if (this->gas_temps_enabled_ && this->dhw_set_temp_sensor != nullptr)
       this->dhw_set_temp_sensor->publish_state(this->state.gas.dhw_set_temp);
 
 #ifdef USE_CLIMATE
@@ -384,11 +389,11 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->climate->publish_state();
     }
 #endif
-  
-  if (this->outlet_temp_sensor != nullptr)
-    this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
 
-  if (this->inlet_temp_sensor != nullptr)
+    if (this->gas_temps_enabled_ && this->outlet_temp_sensor != nullptr)
+      this->outlet_temp_sensor->publish_state(this->state.gas.outlet_temp);
+
+    if (this->gas_temps_enabled_ && this->inlet_temp_sensor != nullptr)
       this->inlet_temp_sensor->publish_state(this->state.gas.inlet_temp);
 
     if (this->gas_total_sensor != nullptr)
@@ -660,6 +665,66 @@ void NavienAllowScheduledRecircSwitch::set_parent(Navien * parent) {
 
 void NavienAllowScheduledRecircSwitch::dump_config(){
     ESP_LOGCONFIG(TAG, "Navien Allow Scheduled Recirculation Switch");
+}
+
+void NavienUseGasTempsSwitch::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up Use Gas Temps Switch '%s'...", this->name_.c_str());
+
+  // Honor restored state if present; otherwise default to ON (existing behavior).
+  auto restored = this->get_initial_state_with_restore_mode();
+  bool initial_state = restored.value_or(true);
+  if (initial_state) {
+    this->turn_on();
+  } else {
+    this->turn_off();
+  }
+}
+
+void NavienUseGasTempsSwitch::write_state(bool state) {
+  ESP_LOGD(TAG, "Use Gas Temps set to %s", state ? "ON" : "OFF");
+  if (this->parent != nullptr) {
+    this->parent->set_gas_temps_enabled(state);
+  }
+  this->publish_state(state);
+}
+
+void NavienUseGasTempsSwitch::set_parent(Navien * parent) {
+  this->parent = parent;
+}
+
+void NavienUseGasTempsSwitch::dump_config(){
+  ESP_LOGCONFIG(TAG, "Navien Use Gas Temps Switch");
+}
+
+void NavienRealTimeSwitch::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up Real Time Switch '%s'...", this->name_.c_str());
+
+  // If no restored state exists, fall back to whatever the static `real_time:`
+  // YAML option set on the parent (default false). This way adding the switch
+  // never silently changes existing behavior on first boot.
+  auto restored = this->get_initial_state_with_restore_mode();
+  bool initial_state = restored.value_or(this->parent != nullptr && this->parent->get_real_time());
+  if (initial_state) {
+    this->turn_on();
+  } else {
+    this->turn_off();
+  }
+}
+
+void NavienRealTimeSwitch::write_state(bool state) {
+  ESP_LOGD(TAG, "Real Time set to %s", state ? "ON" : "OFF");
+  if (this->parent != nullptr) {
+    this->parent->set_real_time(state);
+  }
+  this->publish_state(state);
+}
+
+void NavienRealTimeSwitch::set_parent(Navien * parent) {
+  this->parent = parent;
+}
+
+void NavienRealTimeSwitch::dump_config(){
+  ESP_LOGCONFIG(TAG, "Navien Real Time Switch");
 }
 #endif
 
