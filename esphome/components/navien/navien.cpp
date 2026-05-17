@@ -695,6 +695,37 @@ void NavienUseGasTempsSwitch::set_parent(Navien * parent) {
 void NavienUseGasTempsSwitch::dump_config(){
   ESP_LOGCONFIG(TAG, "Navien Use Gas Temps Switch");
 }
+
+void NavienRealTimeSwitch::setup() {
+  ESP_LOGCONFIG(TAG, "Setting up Real Time Switch '%s'...", this->name_.c_str());
+
+  // If no restored state exists, fall back to whatever the static `real_time:`
+  // YAML option set on the parent (default false). This way adding the switch
+  // never silently changes existing behavior on first boot.
+  auto restored = this->get_initial_state_with_restore_mode();
+  bool initial_state = restored.value_or(this->parent != nullptr && this->parent->get_real_time());
+  if (initial_state) {
+    this->turn_on();
+  } else {
+    this->turn_off();
+  }
+}
+
+void NavienRealTimeSwitch::write_state(bool state) {
+  ESP_LOGD(TAG, "Real Time set to %s", state ? "ON" : "OFF");
+  if (this->parent != nullptr) {
+    this->parent->set_real_time(state);
+  }
+  this->publish_state(state);
+}
+
+void NavienRealTimeSwitch::set_parent(Navien * parent) {
+  this->parent = parent;
+}
+
+void NavienRealTimeSwitch::dump_config(){
+  ESP_LOGCONFIG(TAG, "Navien Real Time Switch");
+}
 #endif
 
 

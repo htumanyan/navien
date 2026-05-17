@@ -176,6 +176,7 @@ namespace navien {
     void set_device_type_sensor(text_sensor::TextSensor *sensor) { device_type_sensor = sensor; }
     void set_operating_state_sensor(text_sensor::TextSensor *sensor) { operating_state_sensor = sensor; }
     void set_real_time(bool rt){this->is_rt = rt;}
+    bool get_real_time() const { return this->is_rt; }
 
     void set_heating_mode_sensor(text_sensor::TextSensor *sensor) { heating_mode_sensor = sensor; }
     void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
@@ -405,6 +406,20 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
   // outdoor) and all non-temperature gas-packet sensors are unaffected.
   // Internal state.gas.* is always fully maintained.
   class NavienUseGasTempsSwitch : public switch_::Switch, public Component {
+  protected:
+    Navien * parent = nullptr;
+  public:
+    void setup() override;
+
+    void set_parent(Navien * parent);
+    void write_state(bool state) override;
+    void dump_config() override;
+  };
+
+  // Toggles real-time sensor publishing. ON = publish sensor states on every
+  // received packet; OFF = publish only on the periodic update_interval.
+  // Equivalent to the static `real_time:` option on the navien sensor block.
+  class NavienRealTimeSwitch : public switch_::Switch, public Component {
   protected:
     Navien * parent = nullptr;
   public:
