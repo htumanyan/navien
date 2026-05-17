@@ -212,6 +212,16 @@ namespace navien {
     void set_allow_recirc_switch(switch_::Switch * rs){allow_recirc_switch = rs;}
 #endif
 
+    /**
+     * Controls whether the gas-packet copies of the dhw_set / inlet / outlet
+     * temperature sensors are published. These three sensors are written from
+     * both water and gas packets; when this is false, only the water-packet
+     * values reach HA. Gas-only temperature sensors and all non-temperature
+     * gas fields are unaffected. state.gas.* is always fully maintained.
+     */
+    void set_gas_temps_enabled(bool v) { gas_temps_enabled_ = v; }
+    bool get_gas_temps_enabled() const { return gas_temps_enabled_; }
+
 #ifdef USE_CLIMATE
     void set_climate(climate::Climate * c){climate = c;}
 #endif
@@ -265,6 +275,10 @@ namespace navien {
     switch_::Switch *power_switch = nullptr;
     switch_::Switch *allow_recirc_switch = nullptr;
 #endif
+
+    // Gate for applying temperature fields from gas packets. Defaults to true
+    // so existing behavior is preserved when the switch isn't configured.
+    bool gas_temps_enabled_ = true;
 
 #ifdef USE_CLIMATE
     climate::Climate *climate = nullptr;
@@ -374,6 +388,23 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
   };
 
   class NavienAllowScheduledRecircSwitch : public switch_::Switch, public Component {
+  protected:
+    Navien * parent = nullptr;
+  public:
+    void setup() override;
+
+    void set_parent(Navien * parent);
+    void write_state(bool state) override;
+    void dump_config() override;
+  };
+
+  // Controls whether the gas-packet copies of the dhw_set / inlet / outlet
+  // temperature sensors are published. These three sensors are reported by
+  // both water and gas packets; when this switch is OFF, only the water-packet
+  // values reach HA. Gas-only temperature sensors (SH set/outlet/return,
+  // outdoor) and all non-temperature gas-packet sensors are unaffected.
+  // Internal state.gas.* is always fully maintained.
+  class NavienUseGasTempsSwitch : public switch_::Switch, public Component {
   protected:
     Navien * parent = nullptr;
   public:

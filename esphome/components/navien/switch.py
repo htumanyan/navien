@@ -11,9 +11,11 @@ navien_ns = cg.esphome_ns.namespace("navien")
 
 NavienOnOff = navien_ns.class_("NavienOnOffSwitch", switch.Switch, cg.Component)
 NavienAllowScheduledRecircSwitch = navien_ns.class_("NavienAllowScheduledRecircSwitch", switch.Switch, cg.Component)
+NavienUseGasTempsSwitch = navien_ns.class_("NavienUseGasTempsSwitch", switch.Switch, cg.Component)
 
 TYPE_POWER = "power"
 TYPE_ALLOW_SCHEDULED_RECIRC = "allow_scheduled_recirc"
+TYPE_USE_GAS_TEMPS = "use_gas_temps"
 
 
 CONFIG_SCHEMA = cv.typed_schema(
@@ -30,6 +32,17 @@ CONFIG_SCHEMA = cv.typed_schema(
             {
                 cv.GenerateID(NAVIEN_CONFIG_ID): cv.use_id(Navien),
                 cv.Optional(CONF_ICON, default="mdi:water-sync"): cv.icon,
+            }
+        )
+        .extend(cv.COMPONENT_SCHEMA),
+        TYPE_USE_GAS_TEMPS: switch.switch_schema(
+            NavienUseGasTempsSwitch,
+            default_restore_mode="RESTORE_DEFAULT_ON",
+            icon="mdi:gas-burner",
+        )
+        .extend(
+            {
+                cv.GenerateID(NAVIEN_CONFIG_ID): cv.use_id(Navien),
             }
         )
         .extend(cv.COMPONENT_SCHEMA),
