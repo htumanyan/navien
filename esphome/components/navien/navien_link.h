@@ -136,6 +136,8 @@ public:
   void send_scheduled_recirculation_on_cmd();
   void send_scheduled_recirculation_off_cmd();
   void send_dhw_set_temp_cmd(float temp);
+  // Space-heating (supply water) setpoint on combi / boiler units, deg C.
+  void send_sh_set_temp_cmd(float temp);
 
   
 public:
