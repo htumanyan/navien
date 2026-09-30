@@ -9,6 +9,13 @@ NAVIEN_CONFIG_ID = "navien"
 
 navien_ns = cg.esphome_ns.namespace(NAVIEN_NAMESPACE)
 
+# navien.h unconditionally includes the binary_sensor, text_sensor and button
+# core headers, and this platform exposes binary_sensor-backed values (e.g.
+# conn_status, boiler_active, recirc_running, other_navilink_installed). Force
+# ESPHome to bundle those core components so the build tree contains their
+# headers even when the user's YAML does not declare a top-level platform.
+AUTO_LOAD = ["binary_sensor", "text_sensor", "button"]
+
 Navien = navien_ns.class_("Navien", cg.PollingComponent)
 NavienLink = navien_ns.class_("NavienLink")
 
