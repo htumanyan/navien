@@ -1,0 +1,74 @@
+# Dashboard-importable package for the LOLIN/WEMOS C3 Mini.
+#
+# Connect GPIO21 (TX) and GPIO20 (RX) only to the logic side of a 3.3 V-
+# compatible RS-485 transceiver. Never connect the Navien RS-485 pair or its
+# approximately 13 V supply directly to an ESP32-C3 GPIO pin.
+
+substitutions:
+  device_name: navien-c3-mini
+  friendly_name: Navien
+  tx_pin: GPIO21
+  rx_pin: GPIO20
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: Navien.LOLIN-C3-Mini-ESP32
+    version: "1.0.0"
+
+esp32:
+  board: lolin_c3_mini
+  variant: esp32c3
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+wifi:
+  fast_connect: true
+  ap:
+    ssid: ${device_name} AP
+
+packages:
+  navien_base:
+    url: https://github.com/htumanyan/navien
+    ref: main
+    files: [esphome/packages/navien-base.yaml]
+    refresh: 30s
+
+# LED: green when API connected, off otherwise
+light:
+  - platform: esp32_rmt_led_strip
+    id: lolin_c3_mini_led
+    internal: true
+    pin: GPIO7
+    num_leds: 1
+    channel_colors: GRB
+    chipset: WS2812
+  - platform: status_led
+    id: lolin_c3_mini_status_led
+    internal: true
+    output: lolin_c3_mini_status_output
+
+output:
+  - platform: template
+    id: lolin_c3_mini_status_output
+    type: binary
+    write_action:
+      - if:
+          condition:
+            lambda: return state;
+          then:
+            - light.turn_on:
+                id: lolin_c3_mini_led
+                red: 0%
+                green: 100%
+                blue: 0%
+                brightness: 80%
+          else:
+            - light.turn_off: lolin_c3_mini_led
+
+dashboard_import:
+  package_import_url: github://htumanyan/navien/esphome/packages/navien-esphome-lolin-c3-mini.yaml@main
+  import_full_config: false
