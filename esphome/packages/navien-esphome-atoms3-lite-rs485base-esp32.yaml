@@ -9,7 +9,7 @@ esphome:
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
   project:
-    name: jhenkens.navien-atoms3-rs485base
+    name: htumanyan.navien-atoms3-rs485base
     version: "1.0.0"
 
 esp32:
@@ -25,8 +25,8 @@ wifi:
 
 packages:
   navien_base:
-    url: https://github.com/jhenkens/esphome-navien
-    ref: hardware-guide
+    url: https://github.com/htumanyan/esphome-navien
+    ref: main
     files: [esphome/packages/navien-base.yaml]
     refresh: 30s
 
@@ -78,5 +78,5 @@ binary_sensor:
       - button.press: safe_mode_button
 
 dashboard_import:
-  package_import_url: github://jhenkens/esphome-navien/esphome/packages/navien-esphome-atoms3-lite-rs485base-esp32.yaml@hardware-guide
+  package_import_url: github://htumanyan/esphome-navien/esphome/packages/navien-esphome-atoms3-lite-rs485base-esp32.yaml@main
   import_full_config: false
