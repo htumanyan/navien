@@ -565,7 +565,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       case CAS_NVW:
         return "CAS NVW";
       default:
-        return "unknown";
+        // Include the raw code so unsupported models can be identified
+        return "Unknown (" + std::to_string((int) type) + ")";
     }
   }
 
