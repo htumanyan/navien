@@ -525,8 +525,12 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
         return "Domestic Hot Water";
       case HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING:
         return "DHW Recirculating";
-      default:
-        return "unknown";
+      default: {
+        // Include the raw value so unsupported modes can be identified
+        char buf[20];
+        snprintf(buf, sizeof(buf), "Unknown (0x%02X)", (unsigned) (uint8_t) mode);
+        return buf;
+      }
     }
   }
 
