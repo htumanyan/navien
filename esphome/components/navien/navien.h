@@ -73,7 +73,8 @@ namespace navien {
     CAS_NPE2,
     NCB_H,
     NVW,
-    CAS_NVW
+    CAS_NVW,
+    NHB_H     // 16, reported by an NHB-110H
   } DEVICE_TYPE;
 
 
