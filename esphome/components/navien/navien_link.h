@@ -214,6 +214,11 @@ protected:
   // Buffer for queued commands.
   // TODO: add thread safety - cmd_buffer is used in different thread contexts
   std::list<NAVIEN_CMD> cmd_buffer;
+
+  // System type byte from the unit's status packets (0 until one is seen)
+  uint8_t unit_sys_type_{0};
+  // Write a control packet, matching the unit's system type where needed
+  void write_packet_(const uint8_t *data, uint8_t len);
 };
 
   
