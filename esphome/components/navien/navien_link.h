@@ -214,6 +214,17 @@ protected:
   // Buffer for queued commands.
   // TODO: add thread safety - cmd_buffer is used in different thread contexts
   std::list<NAVIEN_CMD> cmd_buffer;
+
+  // Transmit only into a quiet bus. Writing the instant a packet ends can
+  // land on top of the unit's next packet - the NCB-H sends its gas and water
+  // status packets back to back - and the command is silently lost.
+  // receive() arms a reply when a packet ends; transmit_if_quiet() sends it
+  // once the bus has been silent for TX_QUIET_MS.
+  static const uint32_t TX_QUIET_MS = 20;  // ~40 byte-times at 19200 baud
+  void transmit_if_quiet();
+  bool     tx_armed_ = false;                // a packet ended; a reply slot is owed
+  bool     tx_after_other_present_ = false;  // that packet was another NaviLink's PRESENT
+  uint32_t last_rx_ms_ = 0;                  // last time bytes were seen on the bus
 };
 
   
