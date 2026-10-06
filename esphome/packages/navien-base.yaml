@@ -40,24 +40,32 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: °F
+      device_class: temperature
+      state_class: measurement
     inlet_temperature:
       name: ${friendly_name} Inlet Temp
       entity_category: diagnostic
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: °F
+      device_class: temperature
+      state_class: measurement
     outlet_temperature:
       name: ${friendly_name} Outlet Temp
       entity_category: diagnostic
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: °F
+      device_class: temperature
+      state_class: measurement
     water_flow:
       name: ${friendly_name} Water Flow
       entity_category: diagnostic
       filters:
         - lambda: return x / 3.785;
-      unit_of_measurement: GPM
+      unit_of_measurement: gal/min
+      device_class: volume_flow_rate
+      state_class: measurement
     water_utilization:
       name: ${friendly_name} Water Capacity Utilization
       entity_category: diagnostic

@@ -25,18 +25,24 @@ sensor:
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+      device_class: temperature
+      state_class: measurement
     inlet_temperature:
       id: inlet_temp_sub
       name: "${friendly_name} Inlet Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+      device_class: temperature
+      state_class: measurement
     outlet_temperature:
       id: outlet_temp_sub
       name: "${friendly_name} Outlet Temp Sub"
       filters:
         - lambda: return x * (9.0/5.0) + 32.0;
       unit_of_measurement: "°F"
+      device_class: temperature
+      state_class: measurement
 
 switch:
   - platform: navien
