@@ -52,7 +52,8 @@ namespace navien {
     HEATING_MODE_IDLE = 0x00,
     HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING = 0x08,
     HEATING_MODE_SPACE_HEATING = 0x10,
-    HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND = 0x20
+    HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND = 0x20,
+    HEATING_MODE_DOMESTIC_HOT_WATER_INDIRECT = 0x40  // indirect tank heating, as reported by an NHB-110H
   } DEVICE_HEATING_MODE;
 
 
@@ -73,7 +74,8 @@ namespace navien {
     CAS_NPE2,
     NCB_H,
     NVW,
-    CAS_NVW
+    CAS_NVW,
+    NHB_H     // 16, reported by an NHB-110H
   } DEVICE_TYPE;
 
 

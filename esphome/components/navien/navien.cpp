@@ -522,11 +522,16 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       case HEATING_MODE_SPACE_HEATING:
         return "Space Heating";
       case HEATING_MODE_DOMESTIC_HOT_WATER_DEMAND:
+      case HEATING_MODE_DOMESTIC_HOT_WATER_INDIRECT:
         return "Domestic Hot Water";
       case HEATING_MODE_DOMESTIC_HOT_WATER_RECIRCULATING:
         return "DHW Recirculating";
-      default:
-        return "unknown";
+      default: {
+        // Include the raw value so unsupported modes can be identified
+        char buf[20];
+        snprintf(buf, sizeof(buf), "Unknown (0x%02X)", (unsigned) (uint8_t) mode);
+        return buf;
+      }
     }
   }
 
@@ -564,8 +569,11 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
         return "NVW";
       case CAS_NVW:
         return "CAS NVW";
+      case NHB_H:
+        return "NHB-H";
       default:
-        return "unknown";
+        // Include the raw code so unsupported models can be identified
+        return "Unknown (" + std::to_string((int) type) + ")";
     }
   }
 
