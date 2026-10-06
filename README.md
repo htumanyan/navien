@@ -49,12 +49,17 @@ guide](https://esphome.io/guides/getting_started_command_line.html).
 
 ### 3. Choose Your Configuration
 
-There are two ready-to-use YAML configurations in this repo:
+There are five ready-to-use YAML configurations in this repo:
 
 -   **navien-d1-mini.yml** → If you use the D1 Mini board
 -   **navien-wrd-hb.yml** → Version for D1 Mini with a hardwired hot button simulator
 -   **navien-esphome-atom-lite-esp32.yml** → If you use esp32 Atom Lite board
+-   **navien-esphome-lolin-c3-mini.yml** → If you use a LOLIN/WEMOS C3 Mini board
 -   **navien-ht-device.yml** → This is for custom esp device that I've designed and plan to open source soon
+
+For ESPHome Dashboard's **Import from URL** workflow, use the LOLIN/WEMOS
+C3 Mini package at
+`github://htumanyan/navien/esphome/packages/navien-esphome-lolin-c3-mini.yaml@main`.
 
 ### 5. Configure Wi-Fi
 
