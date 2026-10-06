@@ -160,6 +160,7 @@ namespace navien {
     void send_turn_off_cmd();
     void send_hot_button_cmd();
     void send_dhw_set_temp_cmd(float temp);
+    void send_sh_set_temp_cmd(float temp);  // combi / boiler units, deg C
     void send_scheduled_recirculation_on_cmd();
     void send_scheduled_recirculation_off_cmd();
 
@@ -296,6 +297,12 @@ namespace navien {
     void loop() override;
     void update() override;
     void dump_config() override;
+
+    // Read-only access for lambdas, e.g. a template number that shows the
+    // unit's reported SH setpoint (deg C). has_data() is false until the
+    // first status packet, when every value is still its zero default.
+    float get_sh_set_temp_c() const { return state.gas.sh_set_temp; }
+    bool has_data() const { return is_connected; }
 
   protected:
     // Debug helper to print hex buffers

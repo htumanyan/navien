@@ -249,6 +249,29 @@ void NavienLink::send_dhw_set_temp_cmd(float temp){
   this->send_cmd(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
 }
 
+/**
+ * Space-heating setpoint (combi / boiler units).
+ *
+ * Same 0x4F control packet as the DHW setpoint, with the temperature in
+ * byte 10 instead of byte 9 (deg C * 2). Byte 9 stays 0x00, which the unit
+ * treats as "leave DHW unchanged" - the mirror of DHW commands carrying 0x00
+ * in byte 10, which never move the SH setpoint.
+ *
+ * Verified on an NCB-240/110H (device type NCB_H, f7 06 framing): commands
+ * for 160.7 F, 158.9 F and 156.2 F were each followed by the unit reporting
+ * that value in the gas packet's sh_set_temp. Byte 10 is the slot tankless
+ * units always leave 0x00.
+ */
+void NavienLink::send_sh_set_temp_cmd(float temp){
+  uint8_t cmd[19];
+  memcpy(cmd, DHW_SET_TEMP_CMD_TEMPLATE, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
+  cmd[10] = temp * 2 + 0.5;
+  cmd[18] = NavienLink::checksum(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE) - 1, CHECKSUM_SEED_62);
+
+  NavienLink::print_buffer(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
+  this->send_cmd(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
+}
+
 void NavienLink::send_scheduled_recirculation_on_cmd(){
   this->send_cmd(SCHEDULED_RECIRC_ON_CMD, sizeof(SCHEDULED_RECIRC_ON_CMD));
 }

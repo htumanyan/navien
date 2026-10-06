@@ -70,6 +70,9 @@ void NavienBase::send_hot_button_cmd() {
 void NavienBase::send_dhw_set_temp_cmd(float temp) {
   if (navien_link_) navien_link_->send_dhw_set_temp_cmd(temp);
 }
+void NavienBase::send_sh_set_temp_cmd(float temp) {
+  if (navien_link_) navien_link_->send_sh_set_temp_cmd(temp);
+}
 void NavienBase::send_scheduled_recirculation_on_cmd() {
   if (navien_link_) navien_link_->send_scheduled_recirculation_on_cmd();
 }
