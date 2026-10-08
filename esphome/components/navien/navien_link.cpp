@@ -56,6 +56,7 @@ void NavienLink::parse_control_packet(){
 }
   
 void NavienLink::parse_status_packet(){
+  this->unit_sys_type_ = this->recv_buffer.hdr.sys_type;
   switch(this->recv_buffer.hdr.dst){
   case PACKET_DST_WATER:
     ESP_LOGD(TAG, "SRC:0x%02X B8: 0x%02X, B32: 0x%02X, r_enabled: 0x%02X",
@@ -191,7 +192,7 @@ void NavienLink::receive() {
           if (!this->other_navilink_installed || std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0) {
             NAVIEN_CMD cmd = cmd_buffer.back();
             cmd_buffer.pop_back();
-            uart->write_array(cmd.buffer, cmd.len);
+            this->write_packet_(cmd.buffer, cmd.len);
             // NavienLink::print_buffer(cmd.buffer, cmd.len);
           }
         } else {
@@ -201,7 +202,7 @@ void NavienLink::receive() {
             // when it does and does not recirculate (and it triggers the "Recirculation settings must be 
             // configured through the NaviLink app" message on the unit's front panel when you try to
             // change the recirculation setting)
-            uart->write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+            this->write_packet_(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
             // NavienLink::print_buffer(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
           }
         }
@@ -214,6 +215,25 @@ void NavienLink::receive() {
       }
     }
   }
+}
+
+/**
+ * NHB-H units report system type 0x04 in their status packets and appear to
+ * ignore control packets carrying the default 0x05. When the unit reports
+ * 0x04, send ours with 0x04 too and recompute the checksum. Other units are
+ * unaffected.
+ */
+void NavienLink::write_packet_(const uint8_t *data, uint8_t len){
+  static const uint8_t SYS_TYPE_NHB = 0x04;
+  uint8_t buf[32];
+  if (this->unit_sys_type_ != SYS_TYPE_NHB || len < 3 || len > sizeof(buf)) {
+    uart->write_array(data, len);
+    return;
+  }
+  memcpy(buf, data, len);
+  buf[offsetof(HEADER, sys_type)] = SYS_TYPE_NHB;
+  buf[len - 1] = NavienLink::checksum(buf, len - 1, CHECKSUM_SEED_62);
+  uart->write_array(buf, len);
 }
 
 void NavienLink::send_cmd(const uint8_t * buffer, uint8_t len, uint8_t tries){
