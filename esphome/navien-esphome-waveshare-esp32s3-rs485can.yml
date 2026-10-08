@@ -1,0 +1,52 @@
+# This configuration file is for a Waveshare ESP32-S3-RS485-CAN industrial control board.
+#
+# Board: https://www.waveshare.com/wiki/ESP32-S3-RS485-CAN
+#
+# RS485 terminal block pinout on this board:
+#   TX = GPIO17, RX = GPIO18, direction/"talk" pin = GPIO21
+# The onboard RS485 transceiver does NOT auto-switch direction, flow_control_pin
+# must be set below or transmit/receive will not work correctly.
+#
+# Confirm your Navien delivers +12V (give or take a volt) on the wire you intend
+# to power this board from, and match A/B polarity to the RS485 screw terminals.
+#
+# See [the 240 wiring docs](docs/240.md) for more info
+
+substitutions:
+  tx_pin: GPIO17
+  rx_pin: GPIO18
+  flow_control_pin: GPIO21
+  platform: esp32
+  board: esp32-s3-devkitc-1
+  friendly_name: Navien
+  project_name: Navien.Waveshare-ESP32S3-RS485CAN
+  project_version: "0.0.0.1"
+
+esp32:
+  framework:
+    type: esp-idf
+
+esphome:
+  platformio_options:
+    board_build.flash_mode: dio # use Dual IO (dio) instead of Quad IO (qio) to prevent boot loop after flashing
+
+packages:
+  navien: !include navien-base.yml
+  transport: !include navien-transport-wifi.yml
+  sensors: !include navien-sensors.yml
+  water_heater: !include navien-water-heater.yml
+
+uart:
+  flow_control_pin: ${flow_control_pin}
+
+logger:
+  level: INFO
+  baud_rate: 0 #disable logging over uart
+
+dashboard_import:
+  package_import_url: github://htumanyan/navien/esphome/navien-esphome-waveshare-esp32s3-rs485can.yml
+  import_full_config: false
+
+button:
+  - platform: navien
+    name: ${friendly_name} Hot Button

@@ -63,6 +63,8 @@ Your choices are persisted, so subsequent runs use your previous selections as d
 | navien.yml | D1 Mini (ESP8266) - main config |
 | navien-d1-mini.yml | D1 Mini variant |
 | navien-esphome-atom-lite-esp32.yml | ESP32 Atom Lite |
+| navien-esphome-atoms3-lite-tail485-esp32.yml | M5Stack AtomS3-Lite + Tail485 |
+| navien-esphome-waveshare-esp32s3-rs485can.yml | Waveshare ESP32-S3-RS485-CAN |
 | navien-ht-device.yml | Custom HT device |
 | navien-wrd-hb.yml | D1 Mini with hardwired hot button |
 

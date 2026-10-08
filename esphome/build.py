@@ -50,6 +50,7 @@ CONFIGS = {
     "4": ("navien-esphome-atoms3-lite-tail485-esp32.yml", "ESP32 Atom S3 Lite with Tail485 module"),
     "5": ("navien-ht-device.yml", "Custom HT device"),
     "6": ("navien-wrd-hb.yml", "D1 Mini with hardwired hot button"),
+    "7": ("navien-esphome-waveshare-esp32s3-rs485can.yml", "Waveshare ESP32-S3-RS485-CAN"),
 }
 
 
