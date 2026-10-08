@@ -1,10 +1,5 @@
 # Basic Config
 
-substitutions:
-  #   # https://esphome.io/guides/configuration-types.html#substitutions
-  #device_name: navien-heater # hostname & entity_id
-  #friendly_name: "Navien Gas Heater" # Displayed in HA frontend
-
 packages:
   navien: !include navien-d1-mini.yml
 
