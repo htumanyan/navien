@@ -142,8 +142,11 @@ void NavienLink::receive() {
 
   int available = uart->available();
   if (!available) {
+    // The bus is idle right now - the only safe moment to talk.
+    this->transmit_if_quiet();
     return;
   }
+  this->last_rx_ms_ = millis();
 
   ESP_LOGV(TAG, "%d bytes available", available);
   while (available) {
@@ -186,25 +189,12 @@ void NavienLink::receive() {
         }
         ESP_LOGV(TAG, "Got Packet => %d bytes", len + HDR_SIZE);
 
-        if (!this->cmd_buffer.empty()) {
-          // There are queued commands. Only send when we are sure the bus is clear to avoid collisions.
-          if (!this->other_navilink_installed || std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0) {
-            NAVIEN_CMD cmd = cmd_buffer.back();
-            cmd_buffer.pop_back();
-            uart->write_array(cmd.buffer, cmd.len);
-            // NavienLink::print_buffer(cmd.buffer, cmd.len);
-          }
-        } else {
-          if (!this->other_navilink_installed) {
-            // If there's no pending command, send a NAVILINK_PRESENT packet so the unit knows we're here.
-            // When the unit is in an automatic recirculation mode, this tell is that we're controlling 
-            // when it does and does not recirculate (and it triggers the "Recirculation settings must be 
-            // configured through the NaviLink app" message on the unit's front panel when you try to
-            // change the recirculation setting)
-            uart->write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
-            // NavienLink::print_buffer(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
-          }
-        }
+        // Don't write here: the unit's next packet may already be arriving.
+        // Arm a reply; transmit_if_quiet() sends it once the bus goes quiet.
+        this->last_rx_ms_ = millis();
+        this->tx_armed_ = true;
+        this->tx_after_other_present_ =
+            std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0;
 
         // Navien::print_buffer(this->recv_buffer.raw_data, len + HDR_SIZE);
         this->parse_packet();
@@ -213,6 +203,36 @@ void NavienLink::receive() {
         break;
       }
     }
+  }
+}
+
+/**
+ * The reply that used to be written straight after each packet, moved to the
+ * first quiet moment after it. Same decisions as before - a queued command if
+ * there is one (and either no other NaviLink, or the packet was that
+ * NaviLink's PRESENT, i.e. its slot), else our own NAVILINK_PRESENT - only
+ * the timing changes.
+ */
+void NavienLink::transmit_if_quiet(){
+  if (!this->tx_armed_ || this->recv_state != INITIAL)
+    return;
+  if (millis() - this->last_rx_ms_ < TX_QUIET_MS)
+    return;
+  this->tx_armed_ = false;
+
+  if (!this->cmd_buffer.empty()) {
+    if (!this->other_navilink_installed || this->tx_after_other_present_) {
+      NAVIEN_CMD cmd = cmd_buffer.back();
+      cmd_buffer.pop_back();
+      uart->write_array(cmd.buffer, cmd.len);
+    }
+  } else if (!this->other_navilink_installed) {
+    // No pending command: send NAVILINK_PRESENT so the unit knows we're here.
+    // When the unit is in an automatic recirculation mode, this tells it we're
+    // controlling when it does and does not recirculate (and it triggers the
+    // "Recirculation settings must be configured through the NaviLink app"
+    // message on the unit's front panel).
+    uart->write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
   }
 }
 
