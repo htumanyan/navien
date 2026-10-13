@@ -1,5 +1,5 @@
 external_components:
-  - source: github://htumanyan/esphome-navien@main
+  - source: github://richie510/navien@main
     components:
       - navien
 
