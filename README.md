@@ -117,6 +117,30 @@ Then, set up the automation:
 6. Fill in all the values per the directions (you might need to create some more helper entities depending on how you want to do things)
 7. Click "Save" and give the new automation a name.
 
+### 9. Command Mode (original NPE-A / NPE-S units)
+
+Original NPE-A/NPE-S units (for example an NPE-240A, reported as device type `NPE`) ignore the
+"Allow Recirculation" **on** command as the component has always sent it. A real NaviLink talks to
+these units differently: it only transmits when the bus is idle, announces itself every few seconds
+instead of after every packet, and sends recirculation commands with a token byte followed by a
+follow-up packet. The `command_mode` option selects which behaviour is used:
+
+```yaml
+sensor:
+  - platform: navien
+    id: navien_main
+    command_mode: auto      # auto (default) | legacy | navilink
+```
+
+- `auto` (default): `navilink` handling when the unit reports device type `NPE`, `legacy` for
+  everything else (NPE2, NCB, NCB-H, ...), so existing installs keep their current behaviour.
+- `legacy`: the original behaviour.
+- `navilink`: always use the NaviLink-style handling.
+
+In `navilink` mode the component also confirms recirculation changes against the unit's reported
+state and resends up to 3 times if the unit did not take the command. The diagnostic
+`Command Mode` text sensor (`command_mode_status`) shows which mode is active.
+
 ### 📖 User Manual for Custom Navien Controller
 
 For detailed instructions on connecting, configuring, and using the custom Navien controller device, see the [User Manual](./doc/user_manual.md). This guide covers hardware setup, wiring, and usage tips specific to the custom controller.
