@@ -120,10 +120,11 @@ Then, set up the automation:
 ### 9. Command Mode (original NPE-A / NPE-S units)
 
 Original NPE-A/NPE-S units (for example an NPE-240A, reported as device type `NPE`) ignore the
-"Allow Recirculation" **on** command as the component has always sent it. A real NaviLink talks to
-these units differently: it only transmits when the bus is idle, announces itself every few seconds
-instead of after every packet, and sends recirculation commands with a token byte followed by a
-follow-up packet. The `command_mode` option selects which behaviour is used:
+"Allow Recirculation" **on** command, the DHW setpoint and the power on/off commands as the
+component has always sent them. A real NaviLink talks to these units differently: it only transmits
+when the bus is idle, announces itself every few seconds instead of after every packet, and sends
+every control command with a token byte (byte 12), repeated, followed by an all-zero control packet
+carrying the same token. The `command_mode` option selects which behaviour is used:
 
 ```yaml
 sensor:
@@ -138,7 +139,10 @@ sensor:
 - `navilink`: always use the NaviLink-style handling.
 
 In `navilink` mode the component also confirms recirculation changes against the unit's reported
-state and resends up to 3 times if the unit did not take the command. The diagnostic
+state and resends up to 3 times if the unit did not take the command.
+
+Note: in °F mode an NPE-A only accepts the setpoints its front panel offers (5 °F steps above
+120 °F, e.g. 125/130/135/140); other values are silently ignored by the unit. The diagnostic
 `Command Mode` text sensor (`command_mode_status`) shows which mode is active.
 
 ### 📖 User Manual for Custom Navien Controller
