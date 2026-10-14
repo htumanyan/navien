@@ -139,6 +139,10 @@ sensor:
     recirc_mode:
       id: recirc_mode
       name: "${friendly_name} Recirculation Mode${sensor_suffix}"
+    # which command handling is active: "navilink" or "legacy" (with "(auto)" when auto-selected)
+    command_mode_status:
+      id: command_mode_status
+      name: "${friendly_name} Command Mode${sensor_suffix}"
     boiler_active:
       id: boiler_active
       name: "${friendly_name} Boiler Active${sensor_suffix}"

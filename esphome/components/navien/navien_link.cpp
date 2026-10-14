@@ -142,8 +142,10 @@ void NavienLink::receive() {
 
   int available = uart->available();
   if (!available) {
+    if (this->navilink_timing_) this->maybe_transmit();
     return;
   }
+  if (this->navilink_timing_) this->last_rx_ms_ = esphome::millis();
 
   ESP_LOGV(TAG, "%d bytes available", available);
   while (available) {
@@ -186,7 +188,9 @@ void NavienLink::receive() {
         }
         ESP_LOGV(TAG, "Got Packet => %d bytes", len + HDR_SIZE);
 
-        if (!this->cmd_buffer.empty()) {
+        if (this->navilink_timing_) {
+          // NaviLink timing: all transmissions happen in maybe_transmit() once the bus is idle.
+        } else if (!this->cmd_buffer.empty()) {
           // There are queued commands. Only send when we are sure the bus is clear to avoid collisions.
           if (!this->other_navilink_installed || std::memcmp(this->recv_buffer.raw_data, NAVILINK_PRESENT, 5) == 0) {
             NAVIEN_CMD cmd = cmd_buffer.back();
@@ -226,10 +230,18 @@ void NavienLink::send_cmd(const uint8_t * buffer, uint8_t len, uint8_t tries){
 }
   
 void NavienLink::send_turn_on_cmd(){
+  if (this->navilink_timing_) {
+    this->send_tokened_cmd(0x0A, 0x00, 0x00, POWER_REPEATS);
+    return;
+  }
   this->send_cmd(TURN_ON_CMD, sizeof(TURN_ON_CMD));
 }
 
 void NavienLink::send_turn_off_cmd(){
+  if (this->navilink_timing_) {
+    this->send_tokened_cmd(0x0B, 0x00, 0x00, POWER_REPEATS);
+    return;
+  }
   this->send_cmd(TURN_OFF_CMD, sizeof(TURN_OFF_CMD));
 }
 
@@ -245,6 +257,10 @@ void NavienLink::send_dhw_set_temp_cmd(float temp){
   cmd[9] = temp * 2 + 0.5;
   cmd[18] = NavienLink::checksum(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE) - 1, CHECKSUM_SEED_62);
 
+  if (this->navilink_timing_) {
+    this->send_tokened_cmd(0x00, cmd[9], 0x00, SETPOINT_REPEATS);
+    return;
+  }
   NavienLink::print_buffer(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
   this->send_cmd(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
 }
@@ -272,11 +288,87 @@ void NavienLink::send_sh_set_temp_cmd(float temp){
   this->send_cmd(cmd, sizeof(DHW_SET_TEMP_CMD_TEMPLATE));
 }
 
+void NavienLink::set_navilink_timing(bool enable){
+  if (enable == this->navilink_timing_) return;
+  this->navilink_timing_ = enable;
+  ESP_LOGI(TAG, "Command mode: %s", enable ? "navilink (bus-idle timing, tokenized commands)" : "legacy");
+}
+
+/**
+ * NaviLink-style bus access (command_mode: navilink, or auto on original NPE-A units).
+ *
+ * The unit answers status polls back to back and the bus has no flow control, so
+ * transmitting immediately after a received packet can collide. Mirrors
+ * dacarson/NavienManager, which is tested on an NPE-240A:
+ *  - transmit only after BUS_SILENCE_MS of silence while not mid-packet
+ *  - announce NAVILINK_PRESENT every ANNOUNCE_INTERVAL_MS instead of after every packet
+ *  - space control commands at least CMD_SPACING_MS apart
+ */
+void NavienLink::maybe_transmit(){
+  if (this->recv_state != INITIAL || this->other_navilink_installed) return;
+  const uint32_t now = esphome::millis();
+  if (now - this->last_rx_ms_ < BUS_SILENCE_MS) return;
+  if (this->last_announce_ms_ == 0 || now - this->last_announce_ms_ >= ANNOUNCE_INTERVAL_MS) {
+    uart->write_array(NAVILINK_PRESENT, sizeof(NAVILINK_PRESENT));
+    this->last_announce_ms_ = now;
+    this->last_rx_ms_ = now;
+    return;
+  }
+  if (!this->cmd_buffer.empty() && (this->last_cmd_ms_ == 0 || now - this->last_cmd_ms_ >= CMD_SPACING_MS)) {
+    NAVIEN_CMD cmd = cmd_buffer.back();
+    cmd_buffer.pop_back();
+    uart->write_array(cmd.buffer, cmd.len);
+    this->last_cmd_ms_ = now;
+    this->last_rx_ms_ = now;
+    ESP_LOGD(TAG, "Sent command, %d left in queue", (int) this->cmd_buffer.size());
+  }
+}
+
+/**
+ * Control commands as a real NaviLink sends them (captured from a NaviLink on an
+ * original NPE-240A): byte 8 = power (0x0A on / 0x0B off), byte 9 = DHW setpoint
+ * (degC x2), byte 11 = recirculation (0x08 on / 0x10 off), and a non-zero token in
+ * byte 12. The command is repeated, then followed by an all-zero control packet
+ * carrying the same token. An original NPE-240A ignores untokenized commands.
+ * (See also the HA community thread, post #117, and dacarson/NavienManager.)
+ */
+void NavienLink::send_tokened_cmd(uint8_t power_byte, uint8_t temp_byte, uint8_t recirc_byte, uint8_t repeats){
+  uint8_t token = (uint8_t)((esphome::millis() / 39000UL) & 0xFF);
+  if (token == 0) token = 0x5A;
+  const uint8_t n = sizeof(HOT_BUTTON_RELSE_CMD);
+  uint8_t cmd[sizeof(HOT_BUTTON_RELSE_CMD)];
+  uint8_t follow_up[sizeof(HOT_BUTTON_RELSE_CMD)];
+  memcpy(cmd, HOT_BUTTON_RELSE_CMD, n);
+  cmd[8] = power_byte;
+  cmd[9] = temp_byte;
+  cmd[11] = recirc_byte;
+  cmd[12] = token;
+  cmd[n - 1] = NavienLink::checksum(cmd, n - 1, CHECKSUM_SEED_62);
+  memcpy(follow_up, HOT_BUTTON_RELSE_CMD, n);
+  follow_up[12] = token;
+  follow_up[n - 1] = NavienLink::checksum(follow_up, n - 1, CHECKSUM_SEED_62);
+  NavienLink::print_buffer(cmd, n);
+  this->send_cmd(cmd, n, repeats);
+  this->send_cmd(follow_up, n, 1);
+}
+
+void NavienLink::send_recirc_cmd(uint8_t recirc_byte){
+  this->send_tokened_cmd(0x00, 0x00, recirc_byte, CMD_REPEATS);
+}
+
 void NavienLink::send_scheduled_recirculation_on_cmd(){
+  if (this->navilink_timing_) {
+    this->send_recirc_cmd(0x08);
+    return;
+  }
   this->send_cmd(SCHEDULED_RECIRC_ON_CMD, sizeof(SCHEDULED_RECIRC_ON_CMD));
 }
 
 void NavienLink::send_scheduled_recirculation_off_cmd(){
+  if (this->navilink_timing_) {
+    this->send_recirc_cmd(0x10);
+    return;
+  }
   this->send_cmd(SCHEDULED_RECIRC_OFF_CMD, sizeof(SCHEDULED_RECIRC_OFF_CMD));
 }
 

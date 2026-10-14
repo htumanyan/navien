@@ -155,6 +155,8 @@ namespace navien {
 
     void set_uart(esphome::uart::UARTComponent* uart) { uart_ = uart; }
     void set_src(uint8_t src) { src_ = src; }
+    // 0 = auto (navilink on original NPE-A units, legacy otherwise), 1 = legacy, 2 = navilink
+    void set_command_mode(uint8_t mode) { command_mode_ = mode; }
 
     void send_turn_on_cmd();
     void send_turn_off_cmd();
@@ -163,6 +165,15 @@ namespace navien {
     void send_sh_set_temp_cmd(float temp);  // combi / boiler units, deg C
     void send_scheduled_recirculation_on_cmd();
     void send_scheduled_recirculation_off_cmd();
+  protected:
+    void track_recirc_target_(int8_t target);
+    void check_recirc_target_(bool allowed);
+    static constexpr uint32_t RECIRC_CONFIRM_MS = 8000;
+    static constexpr uint8_t RECIRC_MAX_RETRIES = 3;
+    int8_t recirc_target_{-1};
+    uint32_t recirc_cmd_ms_{0};
+    uint8_t recirc_retries_{0};
+  public:
 
   public:
     void set_dhw_set_temp_sensor(sensor::Sensor *sensor) { dhw_set_temp_sensor = sensor; }
@@ -182,7 +193,8 @@ namespace navien {
 
     void set_heating_mode_sensor(text_sensor::TextSensor *sensor) { heating_mode_sensor = sensor; }
     void set_conn_status_sensor(binary_sensor::BinarySensor *sensor) { conn_status_sensor = sensor; }
-    void set_recirc_mode_sensor(text_sensor::TextSensor *sensor) { recirc_mode_sensor = sensor; }  
+    void set_recirc_mode_sensor(text_sensor::TextSensor *sensor) { recirc_mode_sensor = sensor; }
+    void set_command_mode_sensor(text_sensor::TextSensor *sensor) { command_mode_sensor = sensor; }
     void set_sh_set_temp_sensor(sensor::Sensor *sensor) { sh_set_temp_sensor = sensor; }
     void set_sh_outlet_temp_sensor(sensor::Sensor *sensor) { sh_outlet_temp_sensor = sensor; }
     void set_sh_return_temp_sensor(sensor::Sensor *sensor) { sh_return_temp_sensor = sensor; }
@@ -258,6 +270,7 @@ namespace navien {
     text_sensor::TextSensor *device_type_sensor = nullptr;
     text_sensor::TextSensor *operating_state_sensor = nullptr;
     text_sensor::TextSensor *recirc_mode_sensor = nullptr;
+    text_sensor::TextSensor *command_mode_sensor = nullptr;
 
     binary_sensor::BinarySensor *boiler_active_sensor = nullptr;
     binary_sensor::BinarySensor *conn_status_sensor = nullptr;
@@ -278,6 +291,7 @@ namespace navien {
 #endif
 
     NavienLink *navien_link_;
+    uint8_t command_mode_{0};
     esphome::uart::UARTComponent* uart_;
     uint8_t src_;
     bool is_rt;

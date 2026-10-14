@@ -75,9 +75,49 @@ void NavienBase::send_sh_set_temp_cmd(float temp) {
 }
 void NavienBase::send_scheduled_recirculation_on_cmd() {
   if (navien_link_) navien_link_->send_scheduled_recirculation_on_cmd();
+  this->track_recirc_target_(1);
 }
 void NavienBase::send_scheduled_recirculation_off_cmd() {
   if (navien_link_) navien_link_->send_scheduled_recirculation_off_cmd();
+  this->track_recirc_target_(0);
+}
+
+// In navilink command mode, confirm against the unit's reported recirculation flag and
+// resend if it did not take (the unit occasionally drops a command).
+void NavienBase::track_recirc_target_(int8_t target) {
+  if (navien_link_ == nullptr || !navien_link_->get_navilink_timing()) {
+    this->recirc_target_ = -1;
+    return;
+  }
+  this->recirc_target_ = target;
+  this->recirc_cmd_ms_ = esphome::millis();
+  this->recirc_retries_ = 0;
+}
+
+void NavienBase::check_recirc_target_(bool allowed) {
+  if (this->recirc_target_ < 0 || navien_link_ == nullptr) return;
+  if (allowed == (this->recirc_target_ == 1)) {
+    if (this->recirc_retries_ > 0)
+      ESP_LOGI(TAG, "Recirculation %s confirmed after %d retr%s", allowed ? "on" : "off",
+               this->recirc_retries_, this->recirc_retries_ == 1 ? "y" : "ies");
+    this->recirc_target_ = -1;
+    return;
+  }
+  if (esphome::millis() - this->recirc_cmd_ms_ < RECIRC_CONFIRM_MS) return;
+  if (this->recirc_retries_ >= RECIRC_MAX_RETRIES) {
+    ESP_LOGW(TAG, "Unit did not confirm recirculation %s after %d retries",
+             this->recirc_target_ == 1 ? "on" : "off", this->recirc_retries_);
+    this->recirc_target_ = -1;
+    return;
+  }
+  this->recirc_retries_++;
+  this->recirc_cmd_ms_ = esphome::millis();
+  ESP_LOGI(TAG, "Recirculation %s not confirmed, resending (retry %d)",
+           this->recirc_target_ == 1 ? "on" : "off", this->recirc_retries_);
+  if (this->recirc_target_ == 1)
+    navien_link_->send_scheduled_recirculation_on_cmd();
+  else
+    navien_link_->send_scheduled_recirculation_off_cmd();
 }
 
   // Navien implementation
@@ -153,6 +193,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
             (water.recirculation_enabled & RECIRC_STATUS_FLAG_HOTBUTTON_ON);
     }
     this->state.water.scheduled_recirc_allowed = water.recirculation_enabled & RECIRC_STATUS_FLAG_SCHEDULED_ON;
+    this->check_recirc_target_(this->state.water.scheduled_recirc_allowed);
 
     this->state.water.error_code = water.error_code_hi << 8 | water.error_code_lo;
     this->state.water.error_level = water.error_level;
@@ -195,6 +236,19 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     this->state.gas.sh_return_temp = NavienLink::t2c(gas.sh_return_temp);
     this->state.gas.outdoor_temp = NavienLink::ot2c(gas.outdoor_temp);
     this->state.device_type = static_cast<DEVICE_TYPE>(gas.device_type);
+    if (this->navien_link_ != nullptr) {
+      // auto: only the original NPE-A/S units (device type NPE) need NaviLink timing;
+      // NPE2 and others keep the legacy behaviour, which is verified on them.
+      const bool navilink = this->command_mode_ == 2 ||
+                            (this->command_mode_ == 0 && this->state.device_type == NPE);
+      this->navien_link_->set_navilink_timing(navilink);
+      if (this->command_mode_sensor != nullptr) {
+        std::string mode = navilink ? "navilink" : "legacy";
+        if (this->command_mode_ == 0) mode += " (auto)";
+        if (!this->command_mode_sensor->has_state() || this->command_mode_sensor->get_state() != mode)
+          this->command_mode_sensor->publish_state(mode);
+      }
+    }
     this->state.gas.heat_capacity = gas.heat_capacity * 0.5f;
     this->state.gas.total_dhw_usage = gas.cumulative_domestic_usage_cnt_hi << 8 | gas.cumulative_domestic_usage_cnt_lo;
     this->state.gas.total_operating_time = gas.total_operating_time_hi << 8 | gas.total_operating_time_lo;
