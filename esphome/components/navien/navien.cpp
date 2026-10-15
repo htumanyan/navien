@@ -313,6 +313,14 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->recirc_running_sensor->publish_state(this->state.water.recirc_running);
     }
 
+    // On an NHB-H (boiler with an indirect tank) the water packet's temperatures
+    // are the heating loop's. The tank setpoint and tank temperature are in the
+    // gas packet: they match the unit's "DHW Tank Set Temp" and the tap reading
+    // on its home screen.
+    const bool indirect_tank = this->state.device_type == NHB_H;
+    const float dhw_current = indirect_tank ? this->state.gas.outlet_temp : this->state.water.outlet_temp;
+    const float dhw_target = indirect_tank ? this->state.gas.dhw_set_temp : this->state.water.dhw_set_temp;
+
 #ifdef USE_CLIMATE
     // Update the climate control with the current target temperature
     if (this->climate != nullptr){
@@ -324,16 +332,16 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
         this->climate->mode = climate::ClimateMode::CLIMATE_MODE_OFF;
       }
 
-      this->climate->current_temperature = this->state.water.outlet_temp;
-      this->climate->target_temperature = this->state.water.dhw_set_temp;
+      this->climate->current_temperature = dhw_current;
+      this->climate->target_temperature = dhw_target;
       this->climate->publish_state();
     }
 #endif
 
 #ifdef USE_WATER_HEATER
     if (this->water_heater != nullptr){
-      this->water_heater->set_current_temperature(this->state.water.outlet_temp);
-      this->water_heater->set_target_temperature_state(this->state.water.dhw_set_temp);
+      this->water_heater->set_current_temperature(dhw_current);
+      this->water_heater->set_target_temperature_state(dhw_target);
       this->water_heater->set_on_state(this->state.power == POWER_ON);
       this->water_heater->publish_state();
     }
