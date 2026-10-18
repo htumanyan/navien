@@ -57,6 +57,12 @@ There are five ready-to-use YAML configurations in this repo:
 -   **navien-esphome-lolin-c3-mini.yml** → If you use a LOLIN/WEMOS C3 Mini board
 -   **navien-ht-device.yml** → This is for custom esp device that I've designed and plan to open source soon
 
+Combi boilers and boilers (NFC, NCB-H, NHB-H and similar) need the
+`navien-combi.yml` package, or use
+**navien-esphome-waveshare-esp32s3-rs485can-combi.yml**. See
+[esphome/README.md](./esphome/README.md#combi-boilers-and-boilers-nfc-ncb-ncb-h-nhb-nhb-h-nfb)
+and [doc/combi_boilers.md](./doc/combi_boilers.md).
+
 For ESPHome Dashboard's **Import from URL** workflow, use the LOLIN/WEMOS
 C3 Mini package at
 `github://htumanyan/navien/esphome/packages/navien-esphome-lolin-c3-mini.yaml@main`.

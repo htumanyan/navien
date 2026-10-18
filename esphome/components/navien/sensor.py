@@ -74,6 +74,7 @@ CONF_SRC                        = "src"
 CONF_OTHER_NAVILINK_INSTALLED   = "other_navilink_installed"
 CONF_ERROR_CODE                 = "error_code"
 CONF_ERROR_LEVEL                = "error_level"
+CONF_COMMAND_SYS_TYPE           = "command_sys_type"
 
 
 CONFIG_SCHEMA = cv.All(
@@ -201,7 +202,11 @@ CONFIG_SCHEMA = cv.All(
                 icon="mdi:alert-circle",
             ),
             cv.Optional(CONF_REAL_TIME): cv.boolean,
-            cv.Optional(CONF_SRC): cv.int_range(min=0, max=15)
+            cv.Optional(CONF_SRC): cv.int_range(min=0, max=15),
+            # System type byte (header byte 1) for outgoing commands. Leave
+            # unset to pick it from the unit's own packets; see
+            # doc/combi_boilers.md before forcing a value.
+            cv.Optional(CONF_COMMAND_SYS_TYPE): cv.hex_int_range(min=1, max=255),
         }
     )
     .extend(cv.polling_component_schema("5s"))
@@ -223,6 +228,8 @@ async def to_code(config):
     if CONF_SRC in config:
         src = config[CONF_SRC]
     cg.add(var.set_src(src))
+    if CONF_COMMAND_SYS_TYPE in config:
+        cg.add(var.set_command_sys_type(config[CONF_COMMAND_SYS_TYPE]))
     await cg.register_component(var, config)
 
     dhw_set_temp_config_key = None
