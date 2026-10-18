@@ -1,0 +1,69 @@
+# Waveshare ESP32-S3-RS485-CAN board connected to a Navien combi boiler
+# (NFC, NCB, NCB-H) or boiler (NHB, NFB). Same board setup as
+# navien-esphome-waveshare-esp32s3-rs485can.yml, plus navien-combi.yml.
+#
+# Board: https://www.waveshare.com/wiki/ESP32-S3-RS485-CAN
+#
+# RS485 terminal block pinout on this board:
+#   TX = GPIO17, RX = GPIO18, direction/"talk" pin = GPIO21
+# The onboard RS485 transceiver does NOT auto-switch direction, flow_control_pin
+# must be set below or transmit/receive will not work correctly.
+#
+# Confirm your Navien delivers +12V (give or take a volt) on the wire you intend
+# to power this board from, and match A/B polarity to the RS485 screw terminals.
+#
+# See [the 240 wiring docs](../doc/240.md) for more info
+
+substitutions:
+  tx_pin: GPIO17
+  rx_pin: GPIO18
+  flow_control_pin: GPIO21
+  platform: esp32
+  board: esp32-s3-devkitc-1
+  friendly_name: Navien
+  device_description: "Navien Combi Boiler"
+  project_name: Navien.Waveshare-ESP32S3-RS485CAN-Combi
+  project_version: "0.0.0.1"
+  # Setpoint limits for the Home Assistant controls. Defaults are the
+  # published NFC-H ranges; set the SH limits for your heating system
+  # (radiant floors need a much lower maximum than radiators).
+  dhw_min_temperature: 86F
+  dhw_max_temperature: 140F
+  sh_min_temperature: 77F
+  sh_max_temperature: 185F
+
+esp32:
+  framework:
+    type: esp-idf
+
+esphome:
+  platformio_options:
+    board_build.flash_mode: dio # use Dual IO (dio) instead of Quad IO (qio) to prevent boot loop after flashing
+
+packages:
+  navien: !include navien-base.yml
+  transport: !include navien-transport-wifi.yml
+  sensors: !include navien-sensors.yml
+  water_heater: !include navien-water-heater.yml
+  combi: !include navien-combi.yml
+
+uart:
+  flow_control_pin: ${flow_control_pin}
+
+logger:
+  # Set to DEBUG to capture raw frames when reporting an unsupported model
+  # (see doc/combi_boilers.md).
+  level: INFO
+  baud_rate: 0 #disable logging over uart
+
+# Why the board last restarted (power loss, crash, watchdog, OTA update...).
+debug:
+
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: ${friendly_name} Reset Reason
+
+button:
+  - platform: navien
+    name: ${friendly_name} Hot Button

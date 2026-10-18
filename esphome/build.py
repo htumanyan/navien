@@ -51,6 +51,7 @@ CONFIGS = {
     "5": ("navien-ht-device.yml", "Custom HT device"),
     "6": ("navien-wrd-hb.yml", "D1 Mini with hardwired hot button"),
     "7": ("navien-esphome-waveshare-esp32s3-rs485can.yml", "Waveshare ESP32-S3-RS485-CAN"),
+    "8": ("navien-esphome-waveshare-esp32s3-rs485can-combi.yml", "Waveshare ESP32-S3-RS485-CAN on a combi boiler / boiler"),
 }
 
 

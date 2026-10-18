@@ -26,7 +26,9 @@ typedef struct {
   uint8_t packet_marker;
 
   /**
-   * System type - identifies the type of Navien system
+   * System type - identifies the type of Navien system ("framing" byte).
+   * Observed in status packets: 0x05 NPE tankless, 0x06 NCB-H and NFC
+   * combi, 0x04 NHB-H boiler. See SYS_TYPE_* below and doc/combi_boilers.md.
    */
   uint8_t sys_type;
 
@@ -75,6 +77,21 @@ const uint8_t PACKET_DIR_CONTROL = 0x10;
 
 const uint16_t CHECKSUM_SEED_4B = 0x4b;
 const uint16_t CHECKSUM_SEED_62 = 0x62;
+
+/**
+ * Values of HEADER.sys_type seen in status packets.
+ * Control packets must carry a value the unit accepts:
+ *  - NPE (0x05): 0x05.
+ *  - NCB-H (0x06): accepts 0x05 (verified, upstream PR #81). The NFC-250
+ *    also reports 0x06, uses the NCB-H frame layout and accepts 0x05
+ *    (DHW and SH setpoint and power verified).
+ *  - NHB-H (0x04): ignores 0x05, needs 0x04 (verified, upstream PR #91).
+ * Other values (e.g. NFB, not yet captured) are mirrored back to the unit.
+ */
+const uint8_t SYS_TYPE_UNKNOWN = 0x00;
+const uint8_t SYS_TYPE_NHB_H   = 0x04;
+const uint8_t SYS_TYPE_NPE     = 0x05;
+const uint8_t SYS_TYPE_NCB_H   = 0x06;
 
 
 const uint8_t POWER_STATUS_ON_OFF_MASK     = 0x01;

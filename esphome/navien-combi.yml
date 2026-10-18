@@ -1,0 +1,49 @@
+# Extras for combi boilers (NFC, NCB, NCB-H) and boilers (NHB, NHB-H, NFB).
+#
+# Adds a space-heating (supply water) setpoint control, a "Raw RS-485
+# Capture" switch (logs every frame, for mapping models that aren't verified
+# yet; see doc/combi_boilers.md), and widens the DHW range of the water
+# heater / climate entities. It extends navien_climate and navien_water_heater,
+# so include it after navien-base.yml, navien-sensors.yml and
+# navien-water-heater.yml:
+#
+#   packages:
+#     ...
+#     combi: !include navien-combi.yml
+#
+# The defaults are the published NFC-H ranges (DHW 86-140F, SH supply
+# 77-185F). Override the substitutions in your own config to match your
+# boiler AND your heating system: radiant floors need a much lower SH maximum
+# than radiators. The unit also clamps values outside its own limits.
+
+substitutions:
+  dhw_min_temperature: 86F
+  dhw_max_temperature: 140F
+  sh_min_temperature: 77F
+  sh_max_temperature: 185F
+
+number:
+  - platform: navien
+    navien: navien_main
+    id: navien_sh_set_temperature
+    name: "${friendly_name} Space Heating Setpoint"
+    min_value: ${sh_min_temperature}
+    max_value: ${sh_max_temperature}
+
+switch:
+  - platform: navien
+    navien: navien_main
+    type: raw_capture
+    id: navien_raw_capture
+    name: "${friendly_name} Raw RS-485 Capture"
+
+water_heater:
+  - id: !extend navien_water_heater
+    min_temperature: ${dhw_min_temperature}
+    max_temperature: ${dhw_max_temperature}
+
+climate:
+  - id: !extend navien_climate
+    visual:
+      min_temperature: ${dhw_min_temperature}
+      max_temperature: ${dhw_max_temperature}

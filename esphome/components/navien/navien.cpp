@@ -50,6 +50,13 @@ void NavienBase::setup() {
   navien_link_ = NavienLink::get_instance(&global_uart_adapter);
   if (navien_link_ != nullptr) {
     navien_link_->add_visitor(this, src_);
+    if (command_sys_type_ != 0) {
+      ESP_LOGI(TAG, "Commands will use system type 0x%02X (set by command_sys_type)", command_sys_type_);
+      navien_link_->set_command_sys_type(command_sys_type_);
+    }
+    // In case raw capture was switched on before the link existed
+    if (raw_capture_)
+      navien_link_->set_raw_capture(true);
   } else {
     ESP_LOGE(TAG, "Failed to acquire NavienLink singleton");
   }
@@ -57,6 +64,11 @@ void NavienBase::setup() {
 
   // NavienBase implementation
 // NavienLinkEsp removed. set_link now uses NavienLink.
+
+void NavienBase::set_raw_capture(bool enable) {
+  raw_capture_ = enable;
+  if (navien_link_) navien_link_->set_raw_capture(enable);
+}
 
 void NavienBase::send_turn_on_cmd() {
   if (navien_link_) navien_link_->send_turn_on_cmd();
@@ -194,7 +206,15 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     this->state.gas.sh_outlet_temp = NavienLink::t2c(gas.sh_outlet_temp);
     this->state.gas.sh_return_temp = NavienLink::t2c(gas.sh_return_temp);
     this->state.gas.outdoor_temp = NavienLink::ot2c(gas.outdoor_temp);
-    this->state.device_type = static_cast<DEVICE_TYPE>(gas.device_type);
+
+    const DEVICE_TYPE device_type = static_cast<DEVICE_TYPE>(gas.device_type);
+    if (!this->gas_received || device_type != this->state.device_type) {
+      ESP_LOGI(TAG, "SRC:0x%02X device type: %s (code %u)%s", src, device_type_to_str(device_type).c_str(),
+               gas.device_type,
+               has_space_heating(device_type) ? " - combi/boiler, DHW values come from the gas packet" : "");
+    }
+    this->state.device_type = device_type;
+    this->gas_received = true;
     this->state.gas.heat_capacity = gas.heat_capacity * 0.5f;
     this->state.gas.total_dhw_usage = gas.cumulative_domestic_usage_cnt_hi << 8 | gas.cumulative_domestic_usage_cnt_lo;
     this->state.gas.total_operating_time = gas.total_operating_time_hi << 8 | gas.total_operating_time_lo;
@@ -292,7 +312,25 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
         }
     }
 
+#ifdef USE_NUMBER
+    if (this->sh_set_temp_number != nullptr)
+      this->sh_set_temp_number->publish_state(NAN);
+#endif
+
+    this->gas_received = false;
     this->is_connected = false;
+  }
+
+  float Navien::dhw_set_temp_c() const {
+    return has_space_heating(this->state.device_type) ? this->state.gas.dhw_set_temp : this->state.water.dhw_set_temp;
+  }
+
+  float Navien::dhw_outlet_temp_c() const {
+    return has_space_heating(this->state.device_type) ? this->state.gas.outlet_temp : this->state.water.outlet_temp;
+  }
+
+  float Navien::dhw_inlet_temp_c() const {
+    return has_space_heating(this->state.device_type) ? this->state.gas.inlet_temp : this->state.water.inlet_temp;
   }
 
   void Navien::update_water_sensors(){
@@ -324,16 +362,16 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
         this->climate->mode = climate::ClimateMode::CLIMATE_MODE_OFF;
       }
 
-      this->climate->current_temperature = this->state.water.outlet_temp;
-      this->climate->target_temperature = this->state.water.dhw_set_temp;
+      this->climate->current_temperature = this->dhw_outlet_temp_c();
+      this->climate->target_temperature = this->dhw_set_temp_c();
       this->climate->publish_state();
     }
 #endif
 
 #ifdef USE_WATER_HEATER
     if (this->water_heater != nullptr){
-      this->water_heater->set_current_temperature(this->state.water.outlet_temp);
-      this->water_heater->set_target_temperature_state(this->state.water.dhw_set_temp);
+      this->water_heater->set_current_temperature(this->dhw_outlet_temp_c());
+      this->water_heater->set_target_temperature_state(this->dhw_set_temp_c());
       this->water_heater->set_on_state(this->state.power == POWER_ON);
       this->water_heater->publish_state();
     }
@@ -359,12 +397,14 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     }
 #endif
 
+    // On combi/boiler units these come from the gas packet, so they don't
+    // alternate with the gas values published in update_gas_sensors().
     if (this->dhw_set_temp_sensor != nullptr)
-      this->dhw_set_temp_sensor->publish_state(this->state.water.dhw_set_temp);
+      this->dhw_set_temp_sensor->publish_state(this->dhw_set_temp_c());
     if (this->outlet_temp_sensor != nullptr)
-      this->outlet_temp_sensor->publish_state(this->state.water.outlet_temp);
+      this->outlet_temp_sensor->publish_state(this->dhw_outlet_temp_c());
     if (this->inlet_temp_sensor != nullptr)
-      this->inlet_temp_sensor->publish_state(this->state.water.inlet_temp);
+      this->inlet_temp_sensor->publish_state(this->dhw_inlet_temp_c());
     if (this->operating_state_sensor != nullptr){
       std::string operating_state_str = op_state_to_str(this->state.operating_state);
       this->operating_state_sensor->publish_state(operating_state_str);
@@ -405,6 +445,11 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->heat_capacity_sensor->publish_state(this->state.gas.heat_capacity);
     if (this->sh_set_temp_sensor != nullptr)
       this->sh_set_temp_sensor->publish_state(this->state.gas.sh_set_temp);
+#ifdef USE_NUMBER
+    // Only once the unit has reported a value, so 0 never shows as a setpoint
+    if (this->sh_set_temp_number != nullptr && this->gas_received)
+      this->sh_set_temp_number->publish_state(this->state.gas.sh_set_temp);
+#endif
     if (this->sh_outlet_temp_sensor != nullptr)
       this->sh_outlet_temp_sensor->publish_state(this->state.gas.sh_outlet_temp);
     if (this->sh_return_temp_sensor != nullptr)
@@ -617,16 +662,9 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
 #ifdef USE_SWITCH
 void NavienOnOffSwitch::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", this->name_.c_str());
-
-  bool initial_state = true;//this->get_initial_state_with_restore_mode().value_or(false);
-
-  // write state before setup
-  if (initial_state) {
-    this->turn_on();
-  } else {
-    this->turn_off();
-  }
-
+  // No command at boot: the switch shows the power state the unit reports.
+  // (It used to send "power on" on every boot, which turned a unit that had
+  // been switched off back on whenever the ESP restarted.)
 }
 
 void NavienOnOffSwitch::write_state(bool state) {
@@ -672,8 +710,55 @@ void NavienAllowScheduledRecircSwitch::set_parent(Navien * parent) {
 void NavienAllowScheduledRecircSwitch::dump_config(){
     ESP_LOGCONFIG(TAG, "Navien Allow Scheduled Recirculation Switch");
 }
+
+void NavienRawCaptureSwitch::setup() {
+  // Defaults to off (restore_mode ALWAYS_OFF unless configured otherwise)
+  this->write_state(this->get_initial_state_with_restore_mode().value_or(false));
+}
+
+void NavienRawCaptureSwitch::write_state(bool state) {
+  ESP_LOGI(TAG, "Raw RS-485 capture %s (log tag navien.raw)", state ? "on" : "off");
+  this->parent->set_raw_capture(state);
+  this->publish_state(state);
+}
+
+void NavienRawCaptureSwitch::set_parent(Navien * parent) {
+  this->parent = parent;
+}
+
+void NavienRawCaptureSwitch::dump_config(){
+  LOG_SWITCH("", "Navien Raw Capture Switch", this);
+}
 #endif
 
+
+#ifdef USE_NUMBER
+void NavienShSetpointNumber::set_parent(Navien * parent) {
+  this->parent = parent;
+  parent->set_sh_set_temp_number(this);
+}
+
+void NavienShSetpointNumber::control(float value) {
+  // Don't send a space-heating command to a unit that hasn't identified
+  // itself yet, or to a tankless model that has no space heating.
+  if (!this->parent->has_data()) {
+    ESP_LOGW(TAG, "SH setpoint %.1f C ignored - no data from the unit yet", value);
+    return;
+  }
+  if (!this->parent->is_space_heating_device()) {
+    ESP_LOGW(TAG, "SH setpoint %.1f C ignored - device type %u has no space heating", value,
+             (unsigned) this->parent->get_device_type());
+    return;
+  }
+  ESP_LOGD(TAG, "Setting SH setpoint to %.1f C", value);
+  this->parent->send_sh_set_temp_cmd(value);
+  // No publish here: the unit's reported setpoint is published when it arrives.
+}
+
+void NavienShSetpointNumber::dump_config() {
+  LOG_NUMBER("", "Navien SH Setpoint", this);
+}
+#endif
 
 #ifdef USE_BUTTON
 void NavienHotButton::setup() {

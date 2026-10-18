@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <cinttypes>
+#include <cstring>
 #include <list>
 
 #include "esphome/core/helpers.h"
@@ -126,7 +128,34 @@ public:
    * Returns true if we're sharing the RS485 bus with another NaviLink-like device, otherwise false.
    */
   bool is_other_navilink_installed(){return this->other_navilink_installed;}
-  
+
+  /**
+   * System type byte (header byte 1) from the unit's status packets,
+   * SYS_TYPE_UNKNOWN until the first valid status packet.
+   */
+  uint8_t get_unit_sys_type() const { return this->unit_sys_type_; }
+
+  /**
+   * Force the system type byte used in our control packets.
+   * 0 (default) picks it automatically from the unit's status packets,
+   * see command_sys_type().
+   */
+  void set_command_sys_type(uint8_t sys_type) { this->command_sys_type_override_ = sys_type; }
+
+  /**
+   * System type byte our control packets will carry.
+   */
+  uint8_t command_sys_type() const;
+
+  /**
+   * Raw capture: every frame received or sent, and any bytes found between
+   * frames, is logged as one hex line under the "navien.raw" tag. On a DEBUG
+   * build that always happens (at DEBUG level). Enabling capture logs the
+   * same lines at INFO, so it also works on an INFO build.
+   */
+  void set_raw_capture(bool enable) { this->raw_capture_ = enable; }
+  bool is_raw_capture() const { return this->raw_capture_; }
+
   /**
    * Send commands
    */
@@ -214,6 +243,78 @@ protected:
   // Buffer for queued commands.
   // TODO: add thread safety - cmd_buffer is used in different thread contexts
   std::list<NAVIEN_CMD> cmd_buffer;
+
+  // Largest body (data + checksum) that fits in recv_buffer after the header.
+  static constexpr uint8_t MAX_BODY_LEN = sizeof(RECV_BUFFER) - HDR_SIZE - 1;
+
+  // System type byte reported by the unit, and an optional user override for
+  // the one we send (0 = automatic).
+  uint8_t unit_sys_type_ = SYS_TYPE_UNKNOWN;
+  uint8_t command_sys_type_override_ = 0;
+
+  // Writes a packet, rewriting its system type byte (and checksum) when the
+  // unit needs a different one than the template carries.
+  void write_packet_(const uint8_t *data, uint8_t len);
+
+  // True for packets that another controller (a real NaviLink) sends to the
+  // unit, or specifically its NAVILINK_PRESENT. Ignores the system type byte.
+  bool is_from_other_controller_() const;
+  bool is_navilink_present_() const;
+
+  // Transmit only into a quiet bus (upstream PR #82). Writing the instant a
+  // packet ends can land on top of the unit's next packet - combi/boiler units
+  // send their gas and water packets back to back - and the command is lost
+  // without any error. receive() arms a reply when a packet ends;
+  // transmit_if_quiet_() sends it once the bus has been silent for TX_QUIET_MS.
+  static constexpr uint32_t TX_QUIET_MS = 20;  // ~40 byte-times at 19200 baud
+  // If the bus never goes quiet this long after a reply was armed (e.g. a
+  // busy cascade bus), reply straight after a packet as before.
+  static constexpr uint32_t TX_FALLBACK_MS = 250;
+  // A frame still incomplete after this much silence is abandoned.
+  static constexpr uint32_t FRAME_TIMEOUT_MS = 100;
+  // A reply this long after the unit's last packet ended is skipped: the unit's
+  // next packet may be starting, and its first bytes can still sit in the UART
+  // FIFO where available() doesn't see them. Happens when the main loop stalls
+  // (e.g. while every sensor is published). Replies normally go out 20-40 ms
+  // after a packet; on an NFC-250 the next packet follows ~195 ms after one ends.
+  static constexpr uint32_t TX_LATE_MS = 100;
+  // After this many skipped slots in a row, reply late rather than not at all.
+  static constexpr uint8_t TX_MAX_LATE_SKIPS = 3;
+  void arm_reply_();
+  void transmit_if_quiet_();
+  void send_reply_(bool in_other_controller_slot);
+  bool     tx_armed_ = false;                // a packet ended; a reply slot is owed
+  uint32_t tx_armed_ms_ = 0;                 // when that reply was armed
+  bool     tx_after_other_controller_ = false;  // another NaviLink spoke since then
+  uint32_t last_rx_ms_ = 0;                  // last time bytes were seen on the bus
+  // Earliest time the last complete packet may have ended. receive() can't see
+  // when bytes arrived, only that they were there by this call, so a packet
+  // read in one go after a loop stall is dated back to the previous call.
+  uint32_t last_frame_ms_ = 0;
+  uint32_t poll_ms_ = 0;                     // when receive() last ran
+  uint32_t prev_poll_ms_ = 0;                // when it ran before that
+  uint8_t  late_skips_ = 0;                  // slots skipped in a row (TX_LATE_MS)
+
+  // Rate limit for warnings about malformed or unexpected frames.
+  static constexpr uint32_t LOG_THROTTLE_MS = 60000;
+  uint32_t last_bad_len_log_ms_ = 0;
+  uint32_t last_unknown_log_ms_ = 0;
+  bool bad_len_logged_ = false;
+  bool unknown_logged_ = false;
+  // Short status packets are a property of the model: reported once per type.
+  bool short_water_logged_ = false;
+  bool short_gas_logged_ = false;
+
+  // Raw capture (see set_raw_capture()). Bytes skipped while looking for a
+  // frame marker are collected in junk_ and logged in chunks.
+  bool raw_capture_ = false;
+  uint8_t junk_[32];
+  uint8_t junk_len_ = 0;
+  bool raw_log_enabled_() const;
+  void log_raw_(const char *what, const uint8_t *data, size_t len);
+  void note_junk_(uint8_t byte);
+  void flush_junk_();
+  bool should_log_(uint32_t &last_ms, bool &logged_once);
 };
 
   

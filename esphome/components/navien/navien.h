@@ -18,6 +18,10 @@
 #include "esphome/components/switch/switch.h"
 #endif
 
+#ifdef USE_NUMBER
+#include "esphome/components/number/number.h"
+#endif
+
 #ifdef USE_WATER_HEATER
 #include "water_heater/navien_water_heater.h"
 #endif
@@ -77,6 +81,28 @@ namespace navien {
     CAS_NVW,
     NHB_H     // 16, reported by an NHB-110H
   } DEVICE_TYPE;
+
+  /**
+   * True for models with space heating: combi boilers (NCB, NCB-H, NFC) and
+   * boilers (NHB, NHB-H, NFB and their cascades). Their gas packet reports DHW
+   * and space-heating values separately, while the water packet's temperatures
+   * can belong to the heating loop (seen on NHB-H). See doc/combi_boilers.md.
+   */
+  inline bool has_space_heating(DEVICE_TYPE type) {
+    switch (type) {
+      case NCB:
+      case NHB:
+      case CAS_NHB:
+      case NFB:
+      case CAS_NFB:
+      case NFC:
+      case NCB_H:
+      case NHB_H:
+        return true;
+      default:
+        return false;
+    }
+  }
 
 
   //based on https://github.com/ificator/navien_ha
@@ -155,6 +181,10 @@ namespace navien {
 
     void set_uart(esphome::uart::UARTComponent* uart) { uart_ = uart; }
     void set_src(uint8_t src) { src_ = src; }
+    // Force the system type byte of outgoing commands (0 = automatic)
+    void set_command_sys_type(uint8_t sys_type) { command_sys_type_ = sys_type; }
+    // Log every RS-485 frame at INFO (see NavienLink::set_raw_capture)
+    void set_raw_capture(bool enable);
 
     void send_turn_on_cmd();
     void send_turn_off_cmd();
@@ -280,6 +310,8 @@ namespace navien {
     NavienLink *navien_link_;
     esphome::uart::UARTComponent* uart_;
     uint8_t src_;
+    uint8_t command_sys_type_ = 0;
+    bool raw_capture_ = false;
     bool is_rt;
   };
 
@@ -303,6 +335,13 @@ namespace navien {
     // first status packet, when every value is still its zero default.
     float get_sh_set_temp_c() const { return state.gas.sh_set_temp; }
     bool has_data() const { return is_connected; }
+
+    DEVICE_TYPE get_device_type() const { return state.device_type; }
+    bool is_space_heating_device() const { return has_space_heating(state.device_type); }
+
+#ifdef USE_NUMBER
+    void set_sh_set_temp_number(number::Number *n) { sh_set_temp_number = n; }
+#endif
 
   protected:
     // Debug helper to print hex buffers
@@ -336,10 +375,27 @@ namespace navien {
      */
     static std::string device_recirc_mode_to_str(DEVICE_RECIRC_MODE state);
 
+    /**
+     * DHW values for sensors, climate and water heater. Combi/boiler units
+     * report their DHW setpoint and temperatures in the gas packet (next to
+     * the space-heating ones); their water packet can carry heating-loop
+     * values instead. Tankless units keep using the water packet as before.
+     */
+    float dhw_set_temp_c() const;
+    float dhw_outlet_temp_c() const;
+    float dhw_inlet_temp_c() const;
+
   protected:
     // Data, extracted from gas and water packers and stored
     // Once the "update" is called this data gets reported to readers.
     NAVIEN_STATE state = {};
+
+    // True once a gas packet has been decoded (cleared on comm errors)
+    bool gas_received = false;
+
+#ifdef USE_NUMBER
+    number::Number *sh_set_temp_number = nullptr;
+#endif
 
   protected:
     /**
@@ -394,6 +450,38 @@ class NavienOnOffSwitch : public switch_::Switch, public Component {
     void set_parent(Navien * parent);
     void write_state(bool state) override;
     void dump_config() override;
+  };
+
+  /**
+   * Turns raw RS-485 capture on and off at runtime: while on, every frame is
+   * logged at INFO under the "navien.raw" tag. Nothing is sent to the unit.
+   */
+  class NavienRawCaptureSwitch : public switch_::Switch, public Component {
+  protected:
+    Navien * parent = nullptr;
+  public:
+    void setup() override;
+
+    void set_parent(Navien * parent);
+    void write_state(bool state) override;
+    void dump_config() override;
+  };
+#endif
+
+#ifdef USE_NUMBER
+  /**
+   * Space-heating (supply water) setpoint for combi / boiler units, deg C.
+   * Shows the setpoint the unit reports rather than the last value sent, so a
+   * command the unit rejected or clamped stays visible.
+   */
+  class NavienShSetpointNumber : public number::Number, public Component {
+  protected:
+    Navien * parent = nullptr;
+  public:
+    void set_parent(Navien * parent);
+    void dump_config() override;
+  protected:
+    void control(float value) override;
   };
 #endif
 
