@@ -12,16 +12,12 @@ Status per model:
 | NHB-H (boiler) | 16 | `0x04` | Verified: reading, DHW + SH setpoint (upstream PRs #89, #91, #92) |
 | NFC (fire-tube combi, e.g. NFC-250) | 8 | `0x06` | Verified on an NFC-250: reading, DHW + SH setpoint, power on/off (captures below). Same frame layout as the NCB-H |
 | NCB, NHB, NFB | 2, 3, 6 (from the enum, not captured) | Not captured yet | Supported on the same rules; needs a capture to confirm |
+| CAS NHB-H, NFB700-C, CAS NFB700-C, NCB700, NFB700-H, CAS NFB700-H | 17, 20, 21, 22, 24, 25 (not captured) | Not captured yet | Same as above |
 
-Device-type codes follow the `DEVICE_TYPE` enum in `navien.h` (from
-[PyNavienSmartControl](https://github.com/rudybrian/PyNavienSmartControl)).
+Device-type codes follow the `DEVICE_TYPE` enum in `navien.h`. Codes 0-16 come
+from [PyNavienSmartControl](https://github.com/rudybrian/PyNavienSmartControl);
+17-25 are newer models that haven't been seen on the bus yet.
 An unmapped code shows as `Unknown (N)` on the Device Type sensor.
-
-> **Note.** The Android "Navien" app (`com.navien.app`) is a product-lookup and
-> support app (serial-number lookup, manuals, troubleshooting pages, AI chat).
-> It has no device protocol, telemetry or control code, so it can't be used as
-> a protocol reference. Version 1.7.0 was checked: no MQTT/NaviLink/setpoint
-> strings or device-type tables in the Hermes bundle or the Java code.
 
 ## System type byte (header byte 1)
 
@@ -115,7 +111,8 @@ On the NFC-250 the water packet's set / outlet / inlet temperatures match the
 gas packet's DHW values (see the capture below), so they are DHW values there.
 
 For every model with space heating (`has_space_heating()` in `navien.h`:
-NCB, NCB-H, NFC, NHB, NHB-H, NFB and the boiler cascades), the DHW Set /
+NCB, NCB-H, NFC, NCB700, NHB, NHB-H, NFB, the NFB700 models and the boiler
+cascades), the DHW Set /
 Outlet / Inlet sensors and the water heater and climate entities use the gas
 packet's DHW values. Before this change those sensors were published from both
 packets and flipped between two different values on every update.

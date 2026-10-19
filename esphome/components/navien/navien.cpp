@@ -619,6 +619,18 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
         return "CAS NVW";
       case NHB_H:
         return "NHB-H";
+      case CAS_NHB_H:
+        return "CAS NHB-H";
+      case NFB700_C:
+        return "NFB700-C";
+      case CAS_NFB700_C:
+        return "CAS NFB700-C";
+      case NCB700:
+        return "NCB700";
+      case NFB700_H:
+        return "NFB700-H";
+      case CAS_NFB700_H:
+        return "CAS NFB700-H";
       default:
         // Include the raw code so unsupported models can be identified
         return "Unknown (" + std::to_string((int) type) + ")";
