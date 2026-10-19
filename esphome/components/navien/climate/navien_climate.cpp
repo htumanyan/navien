@@ -41,7 +41,7 @@ void NavienClimate::control(const climate::ClimateCall &call){
     
   if (call.get_mode().has_value()) {
     esphome::climate::ClimateMode mode = call.get_mode().value();
-    ESP_LOGD(TAG, "Setting mode to %s", climate::climate_mode_to_string(mode));
+    ESP_LOGD(TAG, "Setting mode to %s", LOG_STR_ARG(climate::climate_mode_to_string(mode)));
     switch(mode){
     case climate::ClimateMode::CLIMATE_MODE_OFF:
       parent->send_turn_off_cmd();
@@ -50,7 +50,7 @@ void NavienClimate::control(const climate::ClimateCall &call){
       parent->send_turn_on_cmd();
       break;
     default:
-      ESP_LOGD(TAG, "Unsupported Mode (%s)", climate::climate_mode_to_string(mode));
+      ESP_LOGD(TAG, "Unsupported Mode (%s)", LOG_STR_ARG(climate::climate_mode_to_string(mode)));
     }
   }
 }

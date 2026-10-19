@@ -10,6 +10,7 @@ Navien supports several types of remote control devices. The older generation, s
 
 ## Protocols
 ### [RS485 Connection](rs485.md)
+### [Combi Boilers and Boilers (NFC, NCB-H, NHB-H)](combi_boilers.md)
 
  <!-- ### [2-Wire Connection](/doc/2-wire.md)-->
  
