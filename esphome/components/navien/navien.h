@@ -79,12 +79,20 @@ namespace navien {
     NCB_H,
     NVW,
     CAS_NVW,
-    NHB_H     // 16, reported by an NHB-110H
+    NHB_H,    // 16, reported by an NHB-110H
+    // Newer models, not captured on the bus yet. 18, 19 and 23 are unused.
+    CAS_NHB_H    = 17,
+    NFB700_C     = 20,
+    CAS_NFB700_C = 21,
+    NCB700       = 22,
+    NFB700_H     = 24,
+    CAS_NFB700_H = 25
   } DEVICE_TYPE;
 
   /**
-   * True for models with space heating: combi boilers (NCB, NCB-H, NFC) and
-   * boilers (NHB, NHB-H, NFB and their cascades). Their gas packet reports DHW
+   * True for models with space heating: combi boilers (NCB, NCB-H, NFC,
+   * NCB700, NFB700-C) and boilers (NHB, NHB-H, NFB, NFB700-H and their
+   * cascades). Their gas packet reports DHW
    * and space-heating values separately, while the water packet's temperatures
    * can belong to the heating loop (seen on NHB-H). See doc/combi_boilers.md.
    */
@@ -98,6 +106,12 @@ namespace navien {
       case NFC:
       case NCB_H:
       case NHB_H:
+      case CAS_NHB_H:
+      case NFB700_C:
+      case CAS_NFB700_C:
+      case NCB700:
+      case NFB700_H:
+      case CAS_NFB700_H:
         return true;
       default:
         return false;
