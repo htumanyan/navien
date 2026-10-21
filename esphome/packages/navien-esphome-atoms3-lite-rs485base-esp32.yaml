@@ -25,7 +25,7 @@ wifi:
 
 packages:
   navien_base:
-    url: https://github.com/htumanyan/esphome-navien
+    url: https://github.com/htumanyan/navien
     ref: main
     files: [esphome/packages/navien-base.yaml]
     refresh: 30s
@@ -78,5 +78,5 @@ binary_sensor:
       - button.press: safe_mode_button
 
 dashboard_import:
-  package_import_url: github://htumanyan/esphome-navien/esphome/packages/navien-esphome-atoms3-lite-rs485base-esp32.yaml@main
+  package_import_url: github://htumanyan/navien/esphome/packages/navien-esphome-atoms3-lite-rs485base-esp32.yaml@main
   import_full_config: false
