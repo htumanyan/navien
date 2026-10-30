@@ -105,6 +105,17 @@ void NavienLink::parse_packet(){
    * we're yet to discover. For now we simply ignore those packets. 
    */
     if (this->recv_buffer.hdr.src != PACKET_SRC_CONTROL) {
+      if (this->recv_buffer.hdr.src == PACKET_SRC_STATUS && this->recv_buffer.hdr.len == 34 &&
+          this->recv_buffer.hdr.dst > PACKET_DST_WATER &&
+          this->recv_buffer.hdr.dst < PACKET_DST_WATER + NAVIEN_CASCADE_MAX) {
+        ESP_LOGD(TAG, "Cascade sub water packet src:0x%02X dst:0x%02X len:%u",
+                 this->recv_buffer.hdr.src,
+                 this->recv_buffer.hdr.dst,
+                 this->recv_buffer.hdr.len);
+        for (uint8_t i = 0; i < NAVIEN_CASCADE_MAX; ++i)
+          if (visitors_[i]) visitors_[i]->on_cascade_water(recv_buffer.water, recv_buffer.hdr.dst);
+        return;
+      }
       ESP_LOGD(TAG, "Control packet from SRC:0x%02X - we don't know how to handle it yet", this->recv_buffer.hdr.src);
       return;
     }
