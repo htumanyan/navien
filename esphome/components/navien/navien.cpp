@@ -157,6 +157,15 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     this->state.water.error_code = water.error_code_hi << 8 | water.error_code_lo;
     this->state.water.error_level = water.error_level;
 
+    // Bytes 35 and 39 are only confirmed on NHB-H (checked against the unit's front panel)
+    if (this->state.device_type == NHB_H) {
+      this->state.water.exhaust_temp = water.exhaust_temp;
+      this->state.water.dhw_boiler_set_temp = NavienLink::t2c(water.dhw_boiler_set_temp);
+    } else {
+      this->state.water.exhaust_temp = NAN;
+      this->state.water.dhw_boiler_set_temp = NAN;
+    }
+
     if (this->is_rt)
       this->update_water_sensors();
   }
@@ -247,6 +256,8 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
       this->sh_outlet_temp_sensor,
       this->sh_return_temp_sensor,
       this->outdoor_temp_sensor,
+      this->exhaust_temp_sensor,
+      this->dhw_boiler_set_temp_sensor,
       this->heat_capacity_sensor,
       this->total_dhw_usage_sensor,
       this->total_operating_time_sensor,
@@ -312,6 +323,10 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
     if (this->recirc_running_sensor != nullptr){
       this->recirc_running_sensor->publish_state(this->state.water.recirc_running);
     }
+    if (this->exhaust_temp_sensor != nullptr)
+      this->exhaust_temp_sensor->publish_state(this->state.water.exhaust_temp);
+    if (this->dhw_boiler_set_temp_sensor != nullptr)
+      this->dhw_boiler_set_temp_sensor->publish_state(this->state.water.dhw_boiler_set_temp);
 
 #ifdef USE_CLIMATE
     // Update the climate control with the current target temperature
