@@ -58,6 +58,8 @@ CONF_SH_SET_TEMPERATURE = "sh_set_temperature"
 CONF_SH_OUTLET_TEMPERATURE = "sh_outlet_temperature"
 CONF_SH_RETURN_TEMPERATURE = "sh_return_temperature"
 CONF_OUTDOOR_TEMPERATURE = "outdoor_temperature"
+CONF_EXHAUST_TEMPERATURE = "exhaust_temperature"
+CONF_DHW_BOILER_SET_TEMPERATURE = "dhw_boiler_set_temperature"
 CONF_RECIRC_RUNNING = "recirc_running"
 
 CONF_CONN_STATUS        = "conn_status"
@@ -149,6 +151,16 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_CELSIUS,
                 accuracy_decimals=2,
                 icon="mdi:sun-thermometer",
+            ),
+            cv.Optional(CONF_EXHAUST_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=0,
+                icon="mdi:fire",
+            ),
+            cv.Optional(CONF_DHW_BOILER_SET_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=1,
+                icon="mdi:thermometer-water",
             ),
             cv.Optional(CONF_HEAT_CAPACITY): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
@@ -297,6 +309,12 @@ async def to_code(config):
     if CONF_OUTDOOR_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_OUTDOOR_TEMPERATURE])
         cg.add(var.set_outdoor_temp_sensor(sens))
+    if CONF_EXHAUST_TEMPERATURE in config:
+        sens = await sensor.new_sensor(config[CONF_EXHAUST_TEMPERATURE])
+        cg.add(var.set_exhaust_temp_sensor(sens))
+    if CONF_DHW_BOILER_SET_TEMPERATURE in config:
+        sens = await sensor.new_sensor(config[CONF_DHW_BOILER_SET_TEMPERATURE])
+        cg.add(var.set_dhw_boiler_set_temp_sensor(sens))
         
     if CONF_HEAT_CAPACITY in config:
         sens = await sensor.new_sensor(config[CONF_HEAT_CAPACITY])

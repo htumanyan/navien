@@ -52,3 +52,23 @@ Direction** - parser treats `0x90` as status path and `0x10` as control path
 ```
 
 
+
+## NHB-H water status fields (bytes 35 and 39)
+
+Two bytes of the water status packet have been identified on an NHB-110H (device type 16) by comparing them with the unit's front panel. Offsets are packet offsets, counting the `F7` marker as byte 0. They are only exposed for NHB-H; other models have not been checked.
+
+| Offset | Field | Scaling | How it was confirmed |
+|---|---|---|---|
+| 35 | `exhaust_temp` | whole °C | Matches the exhaust temperature shown on the front panel |
+| 39 | `dhw_boiler_set_temp` | raw / 2 °C | Follows the installer setting "DHW Boiler Set Temp" (the boiler supply target while heating the indirect tank): changing it 82 → 81 → 82 °C on the panel changed the byte 0xA4 → 0xA2 → 0xA4 within a minute |
+
+Example water frame from the same NHB-110H:
+
+```
+F7:04:50:50:90:22:42:00:00:17:14:76:80:82:00:00:00:00:00:00:00:64:20:00:02:04:00:00:24:00:18:00:00:C8:AA:2D:00:00:78:A4:38
+                                                                                                         ^^          ^^
+```
+
+byte 35 = 0x2D = 45 °C (exhaust), byte 39 = 0xA4 = 82 °C (DHW boiler set).
+
+The ESPHome keys are `exhaust_temperature` and `dhw_boiler_set_temperature`; both publish `NAN` on other device types.

@@ -220,11 +220,11 @@ typedef struct {
   uint8_t unknown_32;
   uint8_t recirculation_enabled;
   uint8_t unknown_34;
-  uint8_t unknown_35;
+  uint8_t exhaust_temp;        // NHB-H: exhaust temperature, whole deg C
   uint8_t unknown_36;
   uint8_t unknown_37;
   uint8_t unknown_38;
-  uint8_t unknown_39;
+  uint8_t dhw_boiler_set_temp; // NHB-H: boiler supply target while heating an indirect tank, deg C x2
 } WATER_DATA;
 
 typedef struct {
