@@ -68,6 +68,26 @@ cp secrets.yaml.sample secrets.yaml
 ```
 Edit secrets.yaml - change XXXX to your Wi-Fi network/password and AP SSID network/password in case if it fails to acquire Wi-Fi connection
 
+#### Optional: password-protect the web server
+
+Most of the configs in this repo enable ESPHome's [web server](https://esphome.io/components/web_server.html) on port 80 without a password, so anyone on your network can open the heater's web UI and change its settings. To require a login, add these to `secrets.yaml`:
+
+```yaml
+esp_web_user: "XXXXXXXXXX"
+esp_web_password: "XXXXXXXXXX"
+```
+
+Then add this to your device YAML, or uncomment the `auth:` block in `navien-transport-wifi.yml`:
+
+```yaml
+web_server:
+  auth:
+    username: !secret esp_web_user
+    password: !secret esp_web_password
+```
+
+ESPHome merges this with the `web_server` settings from the package, so the port and other options stay the same. Home Assistant connects through the native API, not the web server, so it isn't affected.
+
 ### 6. Compile and Upload
 
 Compile your firmware:

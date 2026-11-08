@@ -13,6 +13,11 @@ captive_portal:
 web_server:
   port: 80
   # https://esphome.io/components/web_server.html
+  # Optional: require a login for the web UI. Add esp_web_user and
+  # esp_web_password to secrets.yaml, then uncomment:
+  # auth:
+  #   username: !secret esp_web_user
+  #   password: !secret esp_web_password
 
 text_sensor:
   - platform: wifi_info
