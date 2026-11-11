@@ -4,6 +4,9 @@
 #include <list>
 
 #include "esphome/core/component.h"
+#include "esphome/core/entity_base.h"
+#include "esphome/core/log.h"
+#include "esphome/core/version.h"
 #include "esphome/components/button/button.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
@@ -27,6 +30,17 @@
 
 namespace esphome {
 namespace navien {
+
+// Entity name for a "%s" log argument. ESPHome 2026.11.0 deprecates
+// get_name() and name_.c_str() (both removed in 2027.5.0) in favor of
+// get_log_name(), which older releases don't have.
+inline const char *navien_log_name(const EntityBase *entity) {
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 11, 0)
+  return LOG_STR_ARG(entity->get_log_name());
+#else
+  return entity->get_name().c_str();
+#endif
+}
 
 
   typedef enum _DEVICE_POWER_STATE{

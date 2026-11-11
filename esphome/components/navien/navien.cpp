@@ -631,7 +631,7 @@ void NavienBase::send_scheduled_recirculation_off_cmd() {
 
 #ifdef USE_SWITCH
 void NavienOnOffSwitch::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", this->name_.c_str());
+  ESP_LOGCONFIG(TAG, "Setting up Switch '%s'...", navien_log_name(this));
 
   bool initial_state = true;//this->get_initial_state_with_restore_mode().value_or(false);
 
@@ -665,7 +665,7 @@ void NavienOnOffSwitch::dump_config(){
 }
 
 void NavienAllowScheduledRecircSwitch::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Allow Recirculation Switch '%s'...", this->name_.c_str());
+  ESP_LOGCONFIG(TAG, "Setting up Allow Recirculation Switch '%s'...", navien_log_name(this));
 }
 
 void NavienAllowScheduledRecircSwitch::write_state(bool state) {
@@ -692,7 +692,7 @@ void NavienAllowScheduledRecircSwitch::dump_config(){
 
 #ifdef USE_BUTTON
 void NavienHotButton::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", this->name_.c_str());
+  ESP_LOGCONFIG(TAG, "Setting up Button '%s'...", navien_log_name(this));
 }
 
 void NavienHotButton::press_action(){
