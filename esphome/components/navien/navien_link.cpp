@@ -172,6 +172,18 @@ void NavienLink::receive() {
         ESP_LOGV(TAG, "Parsed header. %d bytes of body left", this->recv_buffer.hdr.len);
         // fall through
       case HEADER_PARSED: {
+        // hdr.len comes straight off the wire. After a false marker sync (a 0xF7 byte
+        // inside a payload) or a bus collision it can be anything up to 255, and
+        // read_array() below would write past the 128-byte recv_buffer into the members
+        // that follow it (cmd_buffer's std::list internals) and from there into the heap.
+        // Drop the header and resync on the next marker instead.
+        if (HDR_SIZE + (size_t) this->recv_buffer.hdr.len + 1 > sizeof(this->recv_buffer.raw_data)) {
+          ESP_LOGW(TAG, "Bad packet length %u (max %u) - resyncing", (unsigned) this->recv_buffer.hdr.len,
+                   (unsigned) (sizeof(this->recv_buffer.raw_data) - HDR_SIZE - 1));
+          this->recv_state = INITIAL;
+          available = uart->available();
+          break;
+        }
         available = uart->available();
 
         // +1 here is for the checksum - it is in the last byte
