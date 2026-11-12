@@ -164,8 +164,9 @@ void NavienLink::receive() {
         }
         if (!uart->read_array(this->recv_buffer.raw_data, HDR_SIZE)) {
           ESP_LOGW(TAG, "Failed to read header");
+          this->recv_state = INITIAL;
           this->on_error();
-          break;
+          return;
         }
         this->recv_state = HEADER_PARSED;
         ESP_LOGV(TAG, "Parsed header. %d bytes of body left", this->recv_buffer.hdr.len);
@@ -174,15 +175,27 @@ void NavienLink::receive() {
         available = uart->available();
 
         // +1 here is for the checksum - it is in the last byte
-        uint8_t len = this->recv_buffer.hdr.len + 1;
+        // Validate before narrowing or reading: a corrupt length can overwrite
+        // the command queue adjacent to recv_buffer (255 also wraps to zero).
+        const size_t body_length = static_cast<size_t>(this->recv_buffer.hdr.len) + 1;
+        if (body_length > sizeof(this->recv_buffer.raw_data) - HDR_SIZE) {
+          ESP_LOGW(TAG, "Rejecting oversized packet payload: %u bytes",
+                   static_cast<unsigned>(this->recv_buffer.hdr.len));
+          this->recv_state = INITIAL;
+          this->on_error();
+          available = uart->available();
+          break;
+        }
+        const uint8_t len = static_cast<uint8_t>(body_length);
         if (available < len) {
           ESP_LOGV(TAG, "Only %d data bytes available - less than len", available);
           return;
         }
         if (!uart->read_array(this->recv_buffer.raw_data + HDR_SIZE, len)) {
           ESP_LOGW(TAG, "Failed to read %d bytes", len);
+          this->recv_state = INITIAL;
           this->on_error();
-          break;
+          return;
         }
         ESP_LOGV(TAG, "Got Packet => %d bytes", len + HDR_SIZE);
 

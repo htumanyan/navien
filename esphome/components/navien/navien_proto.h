@@ -55,8 +55,7 @@ typedef struct {
   uint8_t direction;
 
   /**
-   * Length of the packet including the header and checksum, i.e. total number of bytes
-   * in the packet, including everything
+   * Payload length, excluding the six-byte header and trailing checksum byte.
    */
   uint8_t len;
 } HEADER;
