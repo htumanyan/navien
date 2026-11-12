@@ -135,6 +135,9 @@ public:
   void send_hot_button_cmd();
   void send_scheduled_recirculation_on_cmd();
   void send_scheduled_recirculation_off_cmd();
+  // Select NaviLink-style bus timing + tokenized recirculation commands (see maybe_transmit()).
+  void set_navilink_timing(bool enable);
+  bool get_navilink_timing() const { return navilink_timing_; }
   void send_dhw_set_temp_cmd(float temp);
   // Space-heating (supply water) setpoint on combi / boiler units, deg C.
   void send_sh_set_temp_cmd(float temp);
@@ -214,6 +217,19 @@ protected:
   // Buffer for queued commands.
   // TODO: add thread safety - cmd_buffer is used in different thread contexts
   std::list<NAVIEN_CMD> cmd_buffer;
+  void maybe_transmit();
+  void send_recirc_cmd(uint8_t recirc_byte);
+  void send_tokened_cmd(uint8_t power_byte, uint8_t temp_byte, uint8_t recirc_byte, uint8_t repeats);
+  static constexpr uint32_t BUS_SILENCE_MS = 50;
+  static constexpr uint32_t ANNOUNCE_INTERVAL_MS = 5000;
+  static constexpr uint32_t CMD_SPACING_MS = 1000;
+  static constexpr uint8_t CMD_REPEATS = 3;       // recirculation (NaviLink sends 2)
+  static constexpr uint8_t POWER_REPEATS = 5;     // NaviLink sends 5
+  static constexpr uint8_t SETPOINT_REPEATS = 5;  // NaviLink sends 9-10
+  bool navilink_timing_{false};
+  uint32_t last_rx_ms_{0};
+  uint32_t last_announce_ms_{0};
+  uint32_t last_cmd_ms_{0};
 };
 
   
