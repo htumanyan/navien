@@ -24,7 +24,7 @@ void NavienWaterHeater::dump_config() {
                      "  name: %s\n"
                      "  min_temperature: %.1f\n"
                      "  max_temperature: %.1f",
-                     this->get_name().c_str(),
+                     navien_log_name(this),
                      this->min_temperature,
                      this->max_temperature);
 }
